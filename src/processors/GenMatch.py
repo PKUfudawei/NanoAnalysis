@@ -6,7 +6,7 @@ from coffea.nanoevents.methods.base import NanoEventsArray
 from coffea.nanoevents.methods.nanoaod import FatJetArray, GenParticleArray
 
 class GenMatch():
-    def __init__(self):
+    def __init__(self) -> None:
         self.PDGID = {
             "d": 1,
             "u": 2,
@@ -31,19 +31,38 @@ class GenMatch():
             "H": 25,
             "Z'": 9906663
         }
-        self.GEN_FLAGS = ["fromHardProcess", "isLastCopy"]
         self.particle = {}
         self.childs_of = {} ## childs shorter than children
         self.genVars = {}
+        "statusFlags().isLastCopyBeforeFSR()                  * 16384 +"
+        "statusFlags().isLastCopy()                           * 8192  +"
+        "statusFlags().isFirstCopy()                          * 4096  +"
+        "statusFlags().fromHardProcessBeforeFSR()             * 2048  +"
+        "statusFlags().isDirectHardProcessTauDecayProduct()   * 1024  +"
+        "statusFlags().isHardProcessTauDecayProduct()         * 512   +"
+        "statusFlags().fromHardProcess()                      * 256   +"
+        "statusFlags().isHardProcess()                        * 128   +"
+        "statusFlags().isDirectHadronDecayProduct()           * 64    +"
+        "statusFlags().isDirectPromptTauDecayProduct()        * 32    +"
+        "statusFlags().isDirectTauDecayProduct()              * 16    +"
+        "statusFlags().isPromptTauDecayProduct()              * 8     +"
+        "statusFlags().isTauDecayProduct()                    * 4     +"
+        "statusFlags().isDecayedLeptonHadron()                * 2     +"
+        "statusFlags().isPrompt()                             * 1      "
+        self.GEN_FLAGS = ["fromHardProcess", "isLastCopy"]
         
-    def _update(self, name: str, genPart: GenParticleArray, variables: set={'pt', 'eta', 'phi', 'mass', 'pdgId'},
-                flatten: bool=True, maxNum: int=1, axis: int=-1, clip: bool=False): ## default genPart shape: (event, particle)
+    def _update(self, name: str, genPart: GenParticleArray, flatten: bool=True,
+                variables: set={'pt', 'eta', 'phi', 'mass', 'pdgId'},
+                maxNum: int=1, axis: int=-1, clip: bool=False): ## default genPart shape: (event, particle)
+        
         self.particle[name] = genPart  ## shape: (event, particle) 
         self.childs_of[name] = ak.flatten(genPart.children, axis=2) if flatten else genPart.children 
         ## shape: (event, child_particle) if flatten else (event, particle, child_particle) 
         
         return {
-            f'gen_{name}_{var}': ak.pad_none(array=genPart[var], target=maxNum, axis=axis, clip=clip) for var in variables
+            f'gen_{name}_{var}': ak.pad_none(
+                array=genPart[var], target=maxNum, axis=axis, clip=clip
+            ) for var in variables
         }
         
     def HGamma(self, events: NanoEventsArray):  
@@ -94,8 +113,8 @@ class GenMatch():
         )
         
         return {
-            **self.genVars["Z'"], **self.genVars["H"], **self.genVars["a"], **self.genVars["WW"], **self.genVars["WW_childs"], 
-            'HWW_decay_mode': HWW_decay_mode, 
+            **self.genVars["Z'"], **self.genVars["H"], **self.genVars["a"], **self.genVars["WW"], 
+            **self.genVars["WW_childs"], 'HWW_decay_mode': HWW_decay_mode, 
         }
         
         
