@@ -114,12 +114,6 @@ class GenMatch():
         
         return {
             **self.genVars["Z'"], **self.genVars["H"], **self.genVars["a"], **self.genVars["WW"], 
-            **self.genVars["WW_childs"], 'HWW_decay_mode': HWW_decay_mode, 
+            **self.genVars["WW_childs"], 'gen_HWW_decay_mode': HWW_decay_mode, 
         }
-        
-        
-        
-        
-        
-        
         
