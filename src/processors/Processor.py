@@ -11,8 +11,9 @@ from coffea.nanoevents.methods.nanoaod import FatJetArray, GenParticleArray
 from .GenMatch import GenMatch
 
 class Processor(processor.ProcessorABC):
-    def __init__(self) -> None:
+    def __init__(self, triggers: list=[]) -> None:
         super().__init__()
+        self.triggers = triggers
         self.object = {}
         self.variables = {}
         self._accumulator = processor.defaultdict_accumulator() ## useless
@@ -23,10 +24,10 @@ class Processor(processor.ProcessorABC):
                 'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
                 'photon': {'pt', 'eta', 'phi', 'mass'},
                 'event': {'MET_pt'},
-            }, trigger: str='Photon175'
+            }
         ):
         self.object['event'] = events
-        event_cut = events.HLT[trigger]
+        event_cut = ak.sum([events.HLT[trigger] for trigger in self.triggers if trigger in events.HLT.fields], axis=0)>0
         
         ## Muon
         muons = self.object['event'].Muon # (event, muon)
@@ -98,7 +99,12 @@ class Processor(processor.ProcessorABC):
 
         return event_cut
 
-    def process(self, events: NanoEventsArray, deltaR_cut: float=0.8) -> ak.Array:
+    def process(
+        self, events: NanoEventsArray, deltaR_cut: float=0.8,
+        triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM']
+    ) -> ak.Array:
+        if triggers: 
+            self.triggers = triggers
         event_cut = self.__preselect_HGamma(events=events, deltaR_cut=deltaR_cut)
         events = events[event_cut]
         gen_match = GenMatch()
