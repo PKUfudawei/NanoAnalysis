@@ -66,7 +66,7 @@ class Processor(processor.ProcessorABC):
         AK8jet_cut = ( # (event, boolean)
             (AK8jets.msoftdrop > 30) & # Corrected soft drop mass with PUPPI
             (AK8jets.pt > 250) & 
-            (abs(AK8jets.eta) < 2.6) & 
+            (abs(AK8jets.eta) < 2.4) & 
             (AK8jets.jetId&2 > 0)
             # Jet ID flags bit1 is loose (always false in 2017 since it does not exist), bit2 is tight, bit3 is tightLepVeto
         )
