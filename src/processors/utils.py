@@ -1,9 +1,3 @@
-"""
-Common functions for processors.
-
-Author(s): Raghav Kansal
-"""
-
 import numpy as np
 import awkward as ak
 

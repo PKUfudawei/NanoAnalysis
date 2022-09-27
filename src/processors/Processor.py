@@ -98,13 +98,13 @@ class Processor(processor.ProcessorABC):
 
         return event_cut
 
-    def process(self, events: NanoEventsArray, deltaR_cut: float=0.8):
+    def process(self, events: NanoEventsArray, deltaR_cut: float=0.8) -> ak.Array:
         event_cut = self.__preselect_HGamma(events=events, deltaR_cut=deltaR_cut)
         events = events[event_cut]
         gen_match = GenMatch()
         self.variables.update(gen_match.HGamma(events))
         
-        return self.variables
+        return ak.Array(self.variables)
     
     @property ## transform method into attribute and make it unchangable to hide _accumulator
     def accumulator(self):

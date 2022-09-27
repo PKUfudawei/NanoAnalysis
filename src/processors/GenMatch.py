@@ -51,7 +51,7 @@ class GenMatch():
         "statusFlags().isPrompt()                             * 1      "
         self.GEN_FLAGS = ["fromHardProcess", "isLastCopy"]
         
-    def _update(self, name: str, genPart: GenParticleArray, flatten: bool=True,
+    def _updateParticle(self, name: str, genPart: GenParticleArray, flatten: bool=True,
                 variables: set={'pt', 'eta', 'phi', 'mass', 'pdgId'},
                 maxNum: int=1, axis: int=-1, clip: bool=False) -> dict: ## default genPart shape: (event, particle)
         
@@ -65,31 +65,31 @@ class GenMatch():
             ) for var in variables
         }
         
-    def HGamma(self, events: NanoEventsArray):  
+    def HGamma(self, events: NanoEventsArray) -> dict:  
         """Get gen-info. and the wanted variables of H, WW, W_children and gamma"""
         
-        self.genVars["Z'"] = self._update( ## shape: (event, particle)
+        self.genVars["Z'"] = self._updateParticle( ## shape: (event, particle)
             genPart = events.GenPart[
                 (events.GenPart.pdgId == self.PDGID["Z'"]) &
                 events.GenPart.hasFlags(self.GEN_FLAGS)
             ], name="Z'", flatten=True, maxNum=1
         )
         
-        self.genVars["H"] = self._update( ## shape: (event, H)
+        self.genVars["H"] = self._updateParticle( ## shape: (event, H)
             genPart = self.childs_of["Z'"][
                 (self.childs_of["Z'"].pdgId == self.PDGID["H"]) &
                 self.childs_of["Z'"].hasFlags(self.GEN_FLAGS)
             ], name="H", flatten=True, maxNum=1
         )
         
-        self.genVars["a"] = self._update( ## shape: (event, gamma)
+        self.genVars["a"] = self._updateParticle( ## shape: (event, gamma)
             genPart = self.childs_of["Z'"][
                 (self.childs_of["Z'"].pdgId == self.PDGID["a"]) &
                 self.childs_of["Z'"].hasFlags(self.GEN_FLAGS)
             ], name="a", flatten=True, maxNum=1
         )
         
-        self.genVars["WW"] = self._update( ## shape: (event, WW)
+        self.genVars["WW"] = self._updateParticle( ## shape: (event, WW)
             genPart = self.childs_of["H"][ ## shape: (event, H_childs)
                 (ak.num(self.childs_of['H'].pdgId, axis=-1) == 2) &
                 ak.all(abs(self.childs_of['H'].pdgId) == self.PDGID["W+"], axis=-1) &
@@ -97,31 +97,28 @@ class GenMatch():
             ], name="WW", flatten=True, maxNum=2
         )
         
-        self.genVars["WW_childs"] = self._update( ## shape: (event, WW_childs)
+        self.genVars["WW_childs"] = self._updateParticle( ## shape: (event, WW_childs)
             genPart = self.childs_of["WW"][ ## shape: (event, WW)
                 (ak.num(self.childs_of["WW"].pdgId, axis=-1) == 4) &
                 self.childs_of["WW"].hasFlags(self.GEN_FLAGS)
             ], name="WW_childs", flatten=True, maxNum=4
         )
         
+        HWW_decay_mode = (
+            ak.Array([0 for _ in range(len(events))]) + 
+            1 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==11, axis=-1) + # num. of electrons in WW_childs
+            2 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==13, axis=-1) + # num. of muons in WW_childs
+            4 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==15, axis=-1) + # num. of tauons in WW_childs
+            8 * ak.num(abs(self.childs_of['WW_childs'].pdgId)<=6, axis=-1)    # num. of quarks in WW_childs 
+        )
+        H_a_pair = ak.cartesian({'H': self.particle['H'], 'a': self.particle['a']}, axis=1, nested=False)
         self.genVars['event'] = {
-            'gen_HWW_decay_mode': (
-                ak.Array([0 for _ in range(len(events))]) + 
-                1 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==11, axis=-1) + # num. of electrons in WW_childs
-                2 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==13, axis=-1) + # num. of muons in WW_childs
-                4 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==15, axis=-1) + # num. of tauons in WW_childs
-                8 * ak.num(abs(self.childs_of['WW_childs'].pdgId)<=6, axis=-1)    # num. of quarks in WW_childs
-            ),
-            'gen_H_a': ak.flatten(ak.num(self.particle['H'], axis=1)*ak.num(self.particle['a'], axis=1)>0, axis=-1)
+            'gen_H_a': ak.flatten(ak.num(H_a_pair, axis=1)==1, axis=-1),
+            'gen_deltaR_H_a': ak.flatten(ak.pad_none(H_a_pair.H.delta_r(H_a_pair.a), target=1, axis=1), axis=-1),
+            'gen_HWW_decay_mode': HWW_decay_mode,
+            'gen_HWW_a': ak.flatten((HWW_decay_mode>0) * ak.num(H_a_pair, axis=1) == 1, axis=-1)
         }
-        self.genVars['event']['gen_deltaR_H_a'] = ak.flatten(
-            self.particle['H'][self.genVars['event']['gen_H_a']].delta_r(
-                self.particle['a'][self.genVars['event']['gen_H_a']]
-            ), axis=-1
-        )
-        self.genVars['event']['gen_HWW_a'] = ak.flatten(
-            (self.genVars['event']['gen_HWW_decay_mode']>0)*ak.num(self.particle['a'], axis=1)>0, axis=-1
-        )
+ 
         
         return {
             **self.genVars["Z'"], **self.genVars["H"], **self.genVars["a"], **self.genVars["WW"], 
