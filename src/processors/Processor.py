@@ -18,7 +18,7 @@ class Processor(processor.ProcessorABC):
         self._accumulator = processor.defaultdict_accumulator() ## useless
     
     def __preselect_HGamma( ## _ in prefix means private method
-            self, events: NanoEventsArray, deltaR_cut: float=0.8,
+            self, events: NanoEventsArray, deltaR_cut: float,
             variables: dict={
                 'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
                 'photon': {'pt', 'eta', 'phi', 'mass'},
@@ -94,10 +94,12 @@ class Processor(processor.ProcessorABC):
             else:
                 self.variables.update({obj+'_'+var: self.object[obj][var] for var in variables[obj]})
 
+        self.variables['deltaR_jet_phton'] = ak.flatten(self.object['photon'].delta_r(self.object['AK8jet']), axis=-1)
+
         return event_cut
 
-    def process(self, events: NanoEventsArray):
-        event_cut = self.__preselect_HGamma(events)
+    def process(self, events: NanoEventsArray, deltaR_cut: float=0.8):
+        event_cut = self.__preselect_HGamma(events=events, deltaR_cut=deltaR_cut)
         events = events[event_cut]
         gen_match = GenMatch()
         self.variables.update(gen_match.HGamma(events))

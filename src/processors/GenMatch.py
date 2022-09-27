@@ -53,7 +53,7 @@ class GenMatch():
         
     def _update(self, name: str, genPart: GenParticleArray, flatten: bool=True,
                 variables: set={'pt', 'eta', 'phi', 'mass', 'pdgId'},
-                maxNum: int=1, axis: int=-1, clip: bool=False): ## default genPart shape: (event, particle)
+                maxNum: int=1, axis: int=-1, clip: bool=False) -> dict: ## default genPart shape: (event, particle)
         
         self.particle[name] = genPart  ## shape: (event, particle) 
         self.childs_of[name] = ak.flatten(genPart.children, axis=2) if flatten else genPart.children 
@@ -104,16 +104,27 @@ class GenMatch():
             ], name="WW_childs", flatten=True, maxNum=4
         )
         
-        HWW_decay_mode = (
-            ak.Array([0 for _ in range(len(events))]) + 
-            1 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==11, axis=-1) + # num. of electrons in WW_childs
-            2 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==13, axis=-1) + # num. of muons in WW_childs
-            4 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==15, axis=-1) + # num. of tauons in WW_childs
-            8 * ak.num(abs(self.childs_of['WW_childs'].pdgId)<=6, axis=-1)    # num. of quarks in WW_childs
+        self.genVars['event'] = {
+            'gen_HWW_decay_mode': (
+                ak.Array([0 for _ in range(len(events))]) + 
+                1 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==11, axis=-1) + # num. of electrons in WW_childs
+                2 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==13, axis=-1) + # num. of muons in WW_childs
+                4 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==15, axis=-1) + # num. of tauons in WW_childs
+                8 * ak.num(abs(self.childs_of['WW_childs'].pdgId)<=6, axis=-1)    # num. of quarks in WW_childs
+            ),
+            'gen_H_a': ak.flatten(ak.num(self.particle['H'], axis=1)*ak.num(self.particle['a'], axis=1)>0, axis=-1)
+        }
+        self.genVars['event']['gen_deltaR_H_a'] = ak.flatten(
+            self.particle['H'][self.genVars['event']['gen_H_a']].delta_r(
+                self.particle['a'][self.genVars['event']['gen_H_a']]
+            ), axis=-1
+        )
+        self.genVars['event']['gen_HWW_a'] = ak.flatten(
+            (self.genVars['event']['gen_HWW_decay_mode']>0)*ak.num(self.particle['a'], axis=1)>0, axis=-1
         )
         
         return {
             **self.genVars["Z'"], **self.genVars["H"], **self.genVars["a"], **self.genVars["WW"], 
-            **self.genVars["WW_childs"], 'gen_HWW_decay_mode': HWW_decay_mode, 
+            **self.genVars["WW_childs"], **self.genVars['event']
         }
         
