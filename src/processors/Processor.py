@@ -1,6 +1,7 @@
 import numpy as np
 import awkward as ak
 import uproot
+import os
 
 from coffea import processor
 from coffea.nanoevents.methods import candidate
@@ -18,15 +19,24 @@ class Processor(processor.ProcessorABC):
         self.variables = {}
         self._accumulator = processor.defaultdict_accumulator() ## useless
     
+    def __to_parquet(self, arrays: dict) -> None:
+        output_dir = os.path.abspath(os.path.join('..', 'output'))
+        tokens = self.object['event'].behavior["__events_factory__"]._partition_key.split('/')
+        output_file = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens ])
+        ak.to_parquet(arrays, where = output_dir+'/'+output_file)
+
+
     def __preselect_HGamma( ## _ in prefix means private method
-            self, events: NanoEventsArray, deltaR_cut: float,
+            self, events: NanoEventsArray, deltaR_cut: float=0.8,
             variables: dict={
                 'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
                 'photon': {'pt', 'eta', 'phi', 'mass'},
                 'event': {'MET_pt'},
-            }
-        ):
+            }, triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM']
+        ) -> ak.Array:
         self.object['event'] = events
+        if triggers:
+            self.triggers = triggers
         event_cut = ak.sum([events.HLT[trigger] for trigger in self.triggers if trigger in events.HLT.fields], axis=0)>0
         
         ## Muon
@@ -90,7 +100,7 @@ class Processor(processor.ProcessorABC):
             self.object[obj] = self.object[obj][event_cut]
             if obj=='event':
                 self.variables.update({
-                    obj+'_'+var: self.object[obj][var.split('_')[0]][var.split('_')[1:]] for var in variables[obj]
+                    obj+'_'+var: self.object[obj][var.split('_')[0]]['_'.join(var.split('_')[1:])] for var in variables[obj]
                 })
             else:
                 self.variables.update({obj+'_'+var: self.object[obj][var] for var in variables[obj]})
@@ -99,18 +109,14 @@ class Processor(processor.ProcessorABC):
 
         return event_cut
 
-    def process(
-        self, events: NanoEventsArray, deltaR_cut: float=0.8,
-        triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM']
-    ) -> ak.Array:
-        if triggers: 
-            self.triggers = triggers
-        event_cut = self.__preselect_HGamma(events=events, deltaR_cut=deltaR_cut)
+    def process(self, events: NanoEventsArray):
+        event_cut = self.__preselect_HGamma(events=events)
         events = events[event_cut]
         gen_match = GenMatch()
         self.variables.update(gen_match.HGamma(events))
+        self.__to_parquet(arrays=self.variables)
         
-        return ak.Array(self.variables)
+        return {}
     
     @property ## transform method into attribute and make it unchangable to hide _accumulator
     def accumulator(self):
