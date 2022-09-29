@@ -12,31 +12,35 @@ from coffea.nanoevents.methods.nanoaod import FatJetArray, GenParticleArray
 from .GenMatch import GenMatch
 
 class Processor(processor.ProcessorABC):
-    def __init__(self, triggers: list=[]) -> None:
+    def __init__(
+        self, triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
+        cut: dict={
+            'deltaR': {'min': 0},
+        }
+    ) -> None:
         super().__init__()
         self.triggers = triggers
         self.object = {}
         self.variables = {}
-        self._accumulator = processor.defaultdict_accumulator() ## useless
+        self.cut = cut
+        self._accumulator = processor.defaultdict_accumulator()
     
     def __to_parquet(self, arrays: dict) -> None:
         output_dir = os.path.abspath(os.path.join('..', 'output'))
         tokens = self.object['event'].behavior["__events_factory__"]._partition_key.split('/')
         output_file = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens ])
-        ak.to_parquet(arrays, where = output_dir+'/'+output_file)
+        ak.to_parquet(arrays, where = output_dir+'/'+output_file+'.parq')
 
 
     def __preselect_HGamma( ## _ in prefix means private method
-            self, events: NanoEventsArray, deltaR_cut: float=0.8,
+            self, events: NanoEventsArray,
             variables: dict={
                 'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
                 'photon': {'pt', 'eta', 'phi', 'mass'},
                 'event': {'MET_pt'},
-            }, triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM']
+            }
         ) -> ak.Array:
         self.object['event'] = events
-        if triggers:
-            self.triggers = triggers
         event_cut = ak.sum([events.HLT[trigger] for trigger in self.triggers if trigger in events.HLT.fields], axis=0)>0
         
         ## Muon
@@ -88,7 +92,7 @@ class Processor(processor.ProcessorABC):
         photon_jet_index_pair = ak.argcartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
         
         photon_jet_dr = photon_jet_pair.photon.delta_r(photon_jet_pair.jet)
-        photon_jet_clean = (photon_jet_dr > deltaR_cut)
+        photon_jet_clean = (photon_jet_dr > self.cut['deltaR']['min'])
         photon_index, jet_index = photon_jet_index_pair.photon[photon_jet_clean], photon_jet_index_pair.jet[photon_jet_clean]
         
         self.object['photon'] = self.object['photon'][photon_index] ## may exists repetition
