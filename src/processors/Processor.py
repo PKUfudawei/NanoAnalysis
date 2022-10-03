@@ -43,6 +43,12 @@ class Processor(processor.ProcessorABC):
         self.object['event'] = events
         event_cut = ak.sum([events.HLT[trigger] for trigger in self.triggers if trigger in events.HLT.fields], axis=0)>0
         
+        ## b veto
+        AK4jets = self.object['event'].Jet
+        b_tagging = (AK4jets.btagDeepFlavB > 0.2783) # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
+        # refer to https://gitlab.cern.ch/groups/cms-btv/-/wikis/SFCampaigns/UL2018
+        event_cut = event_cut * (ak.sum(b_tagging, axis=-1)==0) ## b-veto
+
         ## Muon
         muons = self.object['event'].Muon # (event, muon)
         muon_cut = ( # (event, boolean)
