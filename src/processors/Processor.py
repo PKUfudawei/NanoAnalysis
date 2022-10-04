@@ -16,21 +16,30 @@ class Processor(processor.ProcessorABC):
         self, triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
         cut: dict={
             'deltaR': {'min': 0},
-        }
+        }, outdir: str=os.path.join('..', 'output')
     ) -> None:
         super().__init__()
         self.triggers = triggers
-        self.object = {}
+        self.object = {'event': None}
         self.variables = {}
+        self.cutflow = {}
+        self.outdir = outdir
         self.cut = cut
+        self.oldCut = None
+        self.newCut = 'raw'
         self._accumulator = processor.defaultdict_accumulator()
     
-    def __to_parquet(self, arrays: dict) -> None:
-        output_dir = os.path.abspath(os.path.join('..', 'output'))
+    def _passCut(self, cutName: str, cut: ak.Array):
+        self.oldCut, self.newCut = self.newCut, cutName
+        self.cutflow[self.newCut] = ak.fill_none(array=self.cutflow[self.oldCut] * cut, value=False)
+        self.object['event'] = ak.mask(array=self.object['event'], mask=self.cutflow[self.newCut])
+    
+    def _to_parquet(self, arrays: dict) -> None:
+        output_dir = os.path.abspath(self.outdir)
         tokens = self.object['event'].behavior["__events_factory__"]._partition_key.split('/')
         output_file = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens ])
         ak.to_parquet(arrays, where = output_dir+'/'+output_file+'.parq')
-
+        
 
     def __preselect_HGamma( ## _ in prefix means private method
             self, events: NanoEventsArray,
@@ -38,95 +47,107 @@ class Processor(processor.ProcessorABC):
                 'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
                 'photon': {'pt', 'eta', 'phi', 'mass'},
                 'event': {'MET_pt'},
+                'photon-jet': {'pt', 'eta', 'phi', 'mass'},
             }
         ) -> ak.Array:
+        ## initialize
         self.object['event'] = events
-        event_cut = ak.sum([events.HLT[trigger] for trigger in self.triggers if trigger in events.HLT.fields], axis=0)>0
+        self.cutflow['raw'] = ak.Array([True for _ in range(len(self.object['event']))])
+        
+        ## triggers
+        self._passCut(
+            cut=ak.sum(
+                [self.object['event'].HLT[trigger] for trigger in self.triggers if trigger in self.object['event'].HLT.fields], axis=0
+            ) > 0, cutName='trigger'
+        ) ## pass any trigger
         
         ## b veto
-        AK4jets = self.object['event'].Jet
-        b_tagging = (AK4jets.btagDeepFlavB > 0.2783) # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
+        raw_AK4jet = self.object['event'].Jet
+        b_tagging = (raw_AK4jet.btagDeepFlavB > 0.2783) # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
         # refer to https://gitlab.cern.ch/groups/cms-btv/-/wikis/SFCampaigns/UL2018
-        event_cut = event_cut * (ak.sum(b_tagging, axis=-1)==0) ## b-veto
+        self._passCut(cutName='b-veto', cut=(ak.sum(b_tagging, axis=-1)==0)) ## b-veto
 
         ## Muon
-        muons = self.object['event'].Muon # (event, muon)
+        raw_muon = self.object['event'].Muon # (event, muon)
         muon_cut = ( # (event, boolean)
             # high-pT cut-based ID (1 = tracker high pT, 2 = global high pT, which includes tracker high pT)
-            (muons.highPtId == 2) & 
-            (muons.tkRelIso < 0.1) & # Tracker-based relative isolation dR=0.3 for highPt, trkIso/tunePpt
-            (abs(muons.eta) < 2.4) & 
-            (muons.pt > 20) # I don't use `muon_corrected_pt` coming from ROOT.RoccoR
+            (raw_muon.highPtId == 2) & 
+            (raw_muon.tkRelIso < 0.1) & # Tracker-based relative isolation dR=0.3 for highPt, trkIso/tunePpt
+            (abs(raw_muon.eta) < 2.4) & 
+            (raw_muon.pt > 20) # I don't use `muon_corrected_pt` coming from ROOT.RoccoR
         )
-        self.object['muon'] = muons[muon_cut]
-        event_cut = event_cut * (ak.sum(muon_cut, axis=-1)==0) ## 0 muon
+        self._passCut(cutName='muon', cut=(ak.sum(muon_cut, axis=-1)==0)) ## 0 muon
 
         ## Electron
-        electrons = self.object['event'].Electron # (event, electron)
+        raw_electron = self.object['event'].Electron # (event, electron)
         electron_cut = ( # (event, boolean)
-            (electrons.cutBased_HEEP == True) & # cut-based HEEP ID
-            (abs(electrons.eta) < 2.5) &
-            (electrons.pt > 20)
+            (raw_electron.cutBased_HEEP == True) & # cut-based HEEP ID
+            (abs(raw_electron.eta) < 2.5) &
+            (raw_electron.pt > 20)
         )
-        self.object['electron'] = electrons[electron_cut]
-        event_cut = event_cut * (ak.sum(muon_cut, axis=-1)==0) ## 0 electron
+        self._passCut(cutName='electron', cut=(ak.sum(electron_cut, axis=-1)==0)) ## 0 electron
         
         ## Photon
-        photons = self.object['event'].Photon # (event, photon)
+        raw_photon = self.object['event'].Photon # (event, photon), >=1 photon per event
         photon_cut = ( # (event, boolean)
-            (photons.mvaID_WP90 > 0.2) &
-            (photons.pt > 200) &
-            (abs(photons.eta) < 2.4)
+            (raw_photon.mvaID_WP90 > 0.2) &
+            (raw_photon.pt > 200) &
+            (abs(raw_photon.eta) < 2.4)
         )
-        self.object['photon'] = photons[photon_cut]
-        event_cut = event_cut * (ak.sum(photon_cut, axis=-1)>0) ## >=1 photon
+        self.object['photon'] = raw_photon[photon_cut]
+        self._passCut(cutName='photon', cut=(ak.sum(photon_cut, axis=-1)>0)) ## >=1 photon
 
         ## AK8 jet
-        AK8jets = self.object['event'].FatJet # (event, fatjet)
+        raw_AK8jet = self.object['event'].FatJet # (event, fatjet), >=1 AK8 jet per event
         AK8jet_cut = ( # (event, boolean)
-            (AK8jets.msoftdrop > 30) & # Corrected soft drop mass with PUPPI
-            (AK8jets.pt > 250) & 
-            (abs(AK8jets.eta) < 2.4) & 
-            (AK8jets.jetId&2 > 0)
+            (raw_AK8jet.msoftdrop > 30) & # Corrected soft drop mass with PUPPI
+            (raw_AK8jet.pt > 250) & 
+            (abs(raw_AK8jet.eta) < 2.4) & 
+            (raw_AK8jet.jetId&2 > 0)
             # Jet ID flags bit1 is loose (always false in 2017 since it does not exist), bit2 is tight, bit3 is tightLepVeto
         )
-        self.object['AK8jet'] = AK8jets[AK8jet_cut]
-        event_cut = event_cut * (ak.sum(AK8jet_cut, axis=-1)>0) ## >=1 AK8 jet
+        self.object['AK8jet'] = raw_AK8jet[AK8jet_cut]
+        self._passCut(cutName='AK8jet', cut=(ak.sum(AK8jet_cut, axis=-1)>0)) ## >=1 AK8 jet
         
         ## Photon-Jet cleaning
-        photon_jet_pair = ak.cartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
-        photon_jet_index_pair = ak.argcartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
+        pj_pair = ak.cartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
+        pj_index_pair = ak.argcartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
+        pj_dr = pj_pair.photon.delta_r(pj_pair.jet)
+        pj_clean = (pj_dr > self.cut['deltaR']['min'])
+        photon_index, jet_index = pj_index_pair.photon[pj_clean], pj_index_pair.jet[pj_clean]
+        self._passCut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1)) ## exactly 1 pair photon-jet
         
-        photon_jet_dr = photon_jet_pair.photon.delta_r(photon_jet_pair.jet)
-        photon_jet_clean = (photon_jet_dr > self.cut['deltaR']['min'])
-        photon_index, jet_index = photon_jet_index_pair.photon[photon_jet_clean], photon_jet_index_pair.jet[photon_jet_clean]
-        
-        self.object['photon'] = self.object['photon'][photon_index] ## may exists repetition
-        self.object['AK8jet'] = self.object['AK8jet'][jet_index] ## may exists repetition
-        event_cut = event_cut * (ak.sum(photon_jet_clean, axis=-1)==1) ## exactly 1 pair
+        ## final event-cut
+        final_cut = self.cutflow['photon-jet_cleaning']
+        self.object['event'] = self.object['event'][final_cut]
+        self.object['photon'] = self.object['photon'][photon_index][final_cut] ## shape=(event, photon), 1 photon per event
+        self.object['AK8jet'] = self.object['AK8jet'][jet_index][final_cut] ## shape=(event, AK8jet), 1 AK8jet per event
+        self.object['photon-jet'] = self.object['photon'][:, 0] + self.object['AK8jet'][:, 0] ## shape=(event, )
         
         ## Return vars of objects after pre-selection
-        for obj in ['event', 'photon', 'AK8jet']:
-            self.object[obj] = self.object[obj][event_cut]
+        for obj in variables.keys():
             if obj=='event':
                 self.variables.update({
                     obj+'_'+var: self.object[obj][var.split('_')[0]]['_'.join(var.split('_')[1:])] for var in variables[obj]
                 })
             else:
-                self.variables.update({obj+'_'+var: self.object[obj][var] for var in variables[obj]})
+                self.variables.update({ obj+'_'+var: getattr(self.object[obj], var) for var in variables[obj] })
 
-        self.variables['deltaR_jet_phton'] = ak.flatten(self.object['photon'].delta_r(self.object['AK8jet']), axis=-1)
-
-        return event_cut
+        ## Additional vars by specific computing
+        self.variables['photon-jet_deltaR'] = ak.flatten(self.object['photon'].delta_r(self.object['AK8jet']), axis=-1)
+        
+        return final_cut
 
     def process(self, events: NanoEventsArray):
         event_cut = self.__preselect_HGamma(events=events)
+        if all(event_cut==False):
+            return {k: ak.sum(v) for (k,v) in self.cutflow.items()}
         events = events[event_cut]
         gen_match = GenMatch()
         self.variables.update(gen_match.HGamma(events))
-        self.__to_parquet(arrays=self.variables)
+        self._to_parquet(arrays=self.variables)
         
-        return {}
+        return {k: ak.sum(v) for (k,v) in self.cutflow.items()}
     
     @property ## transform method into attribute and make it unchangable to hide _accumulator
     def accumulator(self):
