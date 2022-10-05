@@ -42,7 +42,6 @@ cutflow['HGamma'] = processor.run_uproot_job(
     executor_args={"schema": NanoAODSchema, "workers": 36}, # running on $workers cpu cores
 )
 t1 = time.time()
-print('Finish HGamma in time: %f mins'%((t1-t0)/60))
 
 cutflow['GJets'] = processor.run_uproot_job(
     fileset=samples['GJets'],
@@ -53,8 +52,9 @@ cutflow['GJets'] = processor.run_uproot_job(
 )
 
 t2 = time.time()
-print('Finish GJets in time: %f mins'%((t2-t1)/60))
 
+cutflow['HGamma time'] = '%.2f mins'%((t1-t0)/60)
+cutflow['GJets time'] = '%.2f mins'%((t2-t1)/60)
 
 with open('../output/cutflow.txt', 'w') as file:
-     file.write(json.dumps(cutflow))
+    json.dump(cutflow, file)

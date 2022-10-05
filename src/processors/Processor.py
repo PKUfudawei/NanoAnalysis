@@ -140,14 +140,14 @@ class Processor(processor.ProcessorABC):
 
     def process(self, events: NanoEventsArray):
         event_cut = self.__preselect_HGamma(events=events)
+        cutflow = {k: int(ak.sum(v)) for (k,v) in self.cutflow.items()}
         if all(event_cut==False):
-            return {k: ak.sum(v) for (k,v) in self.cutflow.items()}
+            return cutflow
         events = events[event_cut]
         gen_match = GenMatch()
         self.variables.update(gen_match.HGamma(events))
         self._to_parquet(arrays=self.variables)
-        
-        return {k: ak.sum(v) for (k,v) in self.cutflow.items()}
+        return cutflow
     
     @property ## transform method into attribute and make it unchangable to hide _accumulator
     def accumulator(self):
