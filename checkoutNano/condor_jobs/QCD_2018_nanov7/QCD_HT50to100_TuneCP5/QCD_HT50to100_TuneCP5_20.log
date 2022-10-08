@@ -15,3 +15,24 @@
 	10  -  MemoryUsage of job (MB)
 	9836  -  ResidentSetSize of job (KB)
 ...
+040 (154736.020.000) 2022-10-09 00:03:45 Started transferring output files
+...
+040 (154736.020.000) 2022-10-09 00:03:45 Finished transferring output files
+...
+005 (154736.020.000) 2022-10-09 00:03:45 Job terminated.
+	(1) Normal termination (return value 1)
+		Usr 0 00:00:02, Sys 0 00:00:00  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:02, Sys 0 00:00:00  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	3511  -  Run Bytes Sent By Job
+	2937  -  Run Bytes Received By Job
+	3511  -  Total Bytes Sent By Job
+	2937  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :        0        1         1 
+	   Disk (KB)            :       21        3   2532361 
+	   Memory (MB)          :       10        1      1787 
+
+	Job terminated of its own accord at 2022-10-08T16:04:20Z with exit-code 1.
+...
