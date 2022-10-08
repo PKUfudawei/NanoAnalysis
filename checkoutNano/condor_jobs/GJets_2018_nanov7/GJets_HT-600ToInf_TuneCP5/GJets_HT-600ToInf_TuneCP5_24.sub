@@ -1,0 +1,7 @@
+executable = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/condor_jobs/GJets_2018_nanov7/GJets_HT-600ToInf_TuneCP5//GJets_HT-600ToInf_TuneCP5_24.sh
+universe = vanilla
+output = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/condor_jobs/GJets_2018_nanov7/GJets_HT-600ToInf_TuneCP5//GJets_HT-600ToInf_TuneCP5_24.out
+error = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/condor_jobs/GJets_2018_nanov7/GJets_HT-600ToInf_TuneCP5//GJets_HT-600ToInf_TuneCP5_24.err
+log = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/condor_jobs/GJets_2018_nanov7/GJets_HT-600ToInf_TuneCP5//GJets_HT-600ToInf_TuneCP5_24.log
++JobFlavour = "testmatch"
+queue

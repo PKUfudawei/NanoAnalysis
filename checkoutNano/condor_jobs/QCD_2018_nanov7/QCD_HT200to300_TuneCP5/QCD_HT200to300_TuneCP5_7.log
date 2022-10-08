@@ -1,0 +1,34 @@
+000 (154738.007.000) 2022-10-08 23:48:45 Job submitted from host: <192.168.1.1:9618?addrs=192.168.1.1-9618&alias=farm.phy.pku.edu.cn&noUDP&sock=schedd_2747_cabf>
+...
+040 (154738.007.000) 2022-10-08 23:49:04 Started transferring input files
+	Transferring to host: <192.168.1.106:9618?addrs=192.168.1.106-9618&alias=node06.phy.pku.edu.cn&noUDP&sock=slot45_3810_3d54_47>
+...
+040 (154738.007.000) 2022-10-08 23:49:04 Finished transferring input files
+...
+001 (154738.007.000) 2022-10-08 23:49:05 Job executing on host: <192.168.1.106:9618?addrs=192.168.1.106-9618&alias=node06.phy.pku.edu.cn&noUDP&sock=startd_3291_ee45>
+...
+006 (154738.007.000) 2022-10-08 23:49:13 Image size of job updated: 2004800
+	1  -  MemoryUsage of job (MB)
+	292  -  ResidentSetSize of job (KB)
+...
+040 (154738.007.000) 2022-10-09 00:01:03 Started transferring output files
+...
+040 (154738.007.000) 2022-10-09 00:01:03 Finished transferring output files
+...
+005 (154738.007.000) 2022-10-09 00:01:03 Job terminated.
+	(1) Normal termination (return value 1)
+		Usr 0 00:00:01, Sys 0 00:00:00  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:01, Sys 0 00:00:00  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	3394  -  Run Bytes Sent By Job
+	2915  -  Run Bytes Received By Job
+	3394  -  Total Bytes Sent By Job
+	2915  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :        0        1         1 
+	   Disk (KB)            :       21        3   5178274 
+	   Memory (MB)          :        1        1      2473 
+
+	Job terminated of its own accord at 2022-10-08T16:01:03Z with exit-code 1.
+...

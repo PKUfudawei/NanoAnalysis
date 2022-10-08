@@ -1,0 +1,26 @@
+Proxy not found: /home/pku/fudawei/.proxy (No such file or directory)
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+gfal-copy error: 1 (Operation not permitted) - Could not stat the source: HTTP 403 : Permission refused 
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+gfal-copy error: 13 (Permission denied) - Could not stat the source: Result HTTP 401 : Authentification Error  after 1 attempts
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+gfal-copy error: 13 (Permission denied) - Could not stat the source: Result HTTP 401 : Authentification Error  after 1 attempts
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+gfal-copy error: 13 (Permission denied) - Could not stat the source: Result HTTP 401 : Authentification Error  after 1 attempts
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+gfal-copy error: 13 (Permission denied) - Could not stat the source: Result HTTP 401 : Authentification Error  after 1 attempts
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+gfal-copy error: 1 (Operation not permitted) - Could not stat the source: HTTP 403 : Permission refused 
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+(Davix::OpenSSL) Error: impossible to open /home/pku/fudawei/.proxy:  : error:02001002:system library:fopen:No such file or directory
+gfal-copy error: 1 (Operation not permitted) - Could not stat the source: HTTP 403 : Permission refused 
+gfal-copy error: 19 (No such device) - Error on XrdCl::CopyProcess::Run(): [ERROR] Server responded with an error: [3005] Unable to open - no disk replica exists /eos/antares/prod/cms/store/mc/RunIIAutumn18NanoAODv7/QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/70000/2206A347-DB09-D84C-82F7-3F79F7E77D89.root; No such device (source)
+
+gfal-sum error: 2 (No such file or directory) - errno reported by local system call No such file or directory
+/var/lib/condor/execute/dir_27762/condor_exec.exe: line 28: [: =: unary operator expected
