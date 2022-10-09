@@ -55,4 +55,4 @@ node_modules
 
 .ipynb_checkpoints/
 output/
-logs/
+jobs/

@@ -1,2 +1,2 @@
-job_dir: /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/logs
+job_dir: /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/jobs
 out_dir: /data/pubfs/fudawei/samples/
