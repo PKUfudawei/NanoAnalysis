@@ -1,7 +1,0 @@
-executable = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/logs/mc/2018/QCD/nanov9/QCD_HT50to100_TuneCP5//QCD_HT50to100_TuneCP5_7.sh
-universe = vanilla
-output = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/logs/mc/2018/QCD/nanov9/QCD_HT50to100_TuneCP5//QCD_HT50to100_TuneCP5_7.out
-error = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/logs/mc/2018/QCD/nanov9/QCD_HT50to100_TuneCP5//QCD_HT50to100_TuneCP5_7.err
-log = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/logs/mc/2018/QCD/nanov9/QCD_HT50to100_TuneCP5//QCD_HT50to100_TuneCP5_7.log
-+JobFlavour = "testmatch"
-queue

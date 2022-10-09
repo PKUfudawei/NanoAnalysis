@@ -1,7 +1,0 @@
-executable = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/logs/mc/2018/GJets/nanov9/GJets_HT-600ToInf_TuneCP5//GJets_HT-600ToInf_TuneCP5_19.sh
-universe = vanilla
-output = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/logs/mc/2018/GJets/nanov9/GJets_HT-600ToInf_TuneCP5//GJets_HT-600ToInf_TuneCP5_19.out
-error = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/logs/mc/2018/GJets/nanov9/GJets_HT-600ToInf_TuneCP5//GJets_HT-600ToInf_TuneCP5_19.err
-log = /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/logs/mc/2018/GJets/nanov9/GJets_HT-600ToInf_TuneCP5//GJets_HT-600ToInf_TuneCP5_19.log
-+JobFlavour = "testmatch"
-queue
