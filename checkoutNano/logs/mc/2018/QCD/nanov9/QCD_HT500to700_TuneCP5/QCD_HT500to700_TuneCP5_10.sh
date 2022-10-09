@@ -1,0 +1,27 @@
+#!/bin/bash
+export X509_USER_PROXY=/home/pku/fudawei/.proxy
+voms-proxy-info
+TO_SLEEP=11.05m
+echo "===> Sleep How Long: ${TO_SLEEP}in"
+sleep ${TO_SLEEP}
+# Load data
+echo '===> PWD: '$PWD
+export WORK_PATH=$PWD
+export FILECHECKSUM=382d41b5
+FILE0="davs://cmsdcadisk.fnal.gov:2880/dcache/uscmsdisk/store/mc/RunIISummer20UL18NanoAODv9/QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2820000/2D9D3DF4-538C-D441-9D52-03120AA94C2C.root"
+FILE1="davs://cmswebdav-kit.gridka.de:2880/pnfs/gridka.de/cms/disk-only/store/mc/RunIISummer20UL18NanoAODv9/QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2820000/2D9D3DF4-538C-D441-9D52-03120AA94C2C.root"
+FILE2="davs://grid-webdav.physik.rwth-aachen.de:2889/store/mc/RunIISummer20UL18NanoAODv9/QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2820000/2D9D3DF4-538C-D441-9D52-03120AA94C2C.root"
+FILE3="davs://osg-se.sprace.org.br:1094/store/mc/RunIISummer20UL18NanoAODv9/QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2820000/2D9D3DF4-538C-D441-9D52-03120AA94C2C.root"
+FILE4="davs://sbgse1.in2p3.fr:443/dpm/in2p3.fr/home/cms/phedex/store/mc/RunIISummer20UL18NanoAODv9/QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2820000/2D9D3DF4-538C-D441-9D52-03120AA94C2C.root"
+FILE5="davs://se01.indiacms.res.in:443/dpm/indiacms.res.in/home/cms/store/mc/RunIISummer20UL18NanoAODv9/QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2820000/2D9D3DF4-538C-D441-9D52-03120AA94C2C.root"
+for ifile in $FILE0 $FILE1 $FILE2 $FILE3 $FILE4 $FILE5; do
+    sleep 2s
+    export X509_USER_PROXY=/home/pku/fudawei/.proxy
+    gfal-copy -t 86400 -T 86400 -f $ifile /data/pubfs/fudawei/samples//mc/2018/QCD/nanov9//QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM/
+    if [ $? -eq 0 ]; then break; fi
+done
+
+# Checksum
+check_file=`gfal-sum /data/pubfs/fudawei/samples//mc/2018/QCD/nanov9//QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM//2D9D3DF4-538C-D441-9D52-03120AA94C2C.root ADLER32`
+[ ${check_file#* } = ${FILECHECKSUM} ]
+[ $? -eq 0 ] && mv /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/logs/mc/2018/QCD/nanov9/QCD_HT500to700_TuneCP5//QCD_HT500to700_TuneCP5_10.jid /home/pku/fudawei/GitRepo/NanoAnalysis/checkoutNano/logs/mc/2018/QCD/nanov9/QCD_HT500to700_TuneCP5//QCD_HT500to700_TuneCP5_10.done

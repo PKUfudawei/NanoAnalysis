@@ -35,18 +35,7 @@ def get_cfg():
         'sample': args.sample,
         'jflavour': args.flavour,
     }
-    """
-    with open('./config/dataset_cfg.yaml', 'r') as f:
-        ds_cfg = yaml.load(f, Loader=yaml.FullLoader)
 
-    try: 
-        nano_verison = ds_cfg[cfg['channel']][cfg['nano_ver']]
-    except:
-        print("===> Wrong nanoAOD version, terminate!!!")
-        exit(1)
-    else:
-        pass
-    """
     with open('./config/condor_cfg.yaml', 'r') as f:
         condor_cfg = yaml.load(f, Loader=yaml.FullLoader)
     job_dir = condor_cfg['job_dir']

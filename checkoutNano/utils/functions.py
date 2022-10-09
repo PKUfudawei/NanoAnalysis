@@ -210,7 +210,7 @@ def submit_command(cfg, sample=None):
     use_gfal, file_dict = get_file_info(cfg['ds_yml'][sample]['dataset'])
     print("---", "sample:", sample, ", use_fal:", use_gfal, ", #file:", len(file_dict))
 
-    job_path = f"{cfg['job_dir']}/{cfg['channel']}_{cfg['year']}_{cfg['nano_ver']}/{sample}/"
+    job_path = f"{cfg['job_dir']}/{cfg['sample_type']}/{cfg['year']}/{cfg['channel']}/{cfg['nano_ver']}/{sample}/"
     # sample dataset name
     sname = cfg['ds_yml'][sample]['dataset']
     if sname.startswith("gsiftp://") or sname.startswith("local:"):
@@ -218,9 +218,9 @@ def submit_command(cfg, sample=None):
             sname = sname.split("/")[-2]
         else:
             sname = sname.split("/")[-1]
-        out_path = f"{cfg['out_dir']}/{cfg['nano_ver']}/private/{sname}/"
+        out_path = f"{cfg['out_dir']}/{cfg['sample_type']}/{cfg['year']}/{cfg['channel']}/private/{cfg['nano_ver']}/{sname}/"
     else:
-        out_path = f"{cfg['out_dir']}/{cfg['nano_ver']}/{sname}/"
+        out_path = f"{cfg['out_dir']}/{cfg['sample_type']}/{cfg['year']}/{cfg['channel']}/{cfg['nano_ver']}/{sname}/"
     
     base_out_path_list = cfg['out_dir'].split("/")
     base_out_path_list = [[i for i in base_out_path_list if not i==""]]
