@@ -22,50 +22,64 @@ class Processor(processor.ProcessorABC):
         self.triggers = triggers
         self.object = {'event': None}
         self.variables = {}
-        self.cutflow = {}
+        self.cutflow = {'raw': None}
         self.outdir = outdir
         self.cut = cut
-        self.oldCut = None
-        self.newCut = 'raw'
+        self.prevCut = None
+        self.nextCut = 'raw'
         self._accumulator = processor.defaultdict_accumulator()
     
-    def _passCut(self, cutName: str, cut: ak.Array):
-        self.oldCut, self.newCut = self.newCut, cutName
-        self.cutflow[self.newCut] = ak.fill_none(array=self.cutflow[self.oldCut] * cut, value=False)
-        self.object['event'] = ak.mask(array=self.object['event'], mask=self.cutflow[self.newCut])
+    def passCut(self, cutName: str, cut: ak.Array) -> None:
+        self.prevCut, self.nextCut = self.nextCut, cutName
+        self.cutflow[self.nextCut] = ak.fill_none(array=self.cutflow[self.prevCut] * cut, value=False)
+        self.object['event'] = ak.mask(array=self.object['event'], mask=self.cutflow[self.nextCut])
+        
+    def passTriggers(self, level: str='any') -> None:
+        if level not in ['any', 'all']:
+            raise ValueError("Processor.passTriggers(): level must be in ['any', 'all']")
+        elif level == 'any':
+            self.passCut(cutName='trigger',
+                cut=ak.sum([self.object['event'].HLT[t] for t in self.triggers if t in self.object['event'].HLT.fields], axis=0) > 0 
+            ) ## pass any trigger
+        elif level == 'all':
+            return ## not finished yet
+            self.passCut(cutName='trigger',
+                cut=ak.sum([self.object['event'].HLT[t] for t in self.triggers if t in self.object['event'].HLT.fields], axis=0) > 0 
+            ) ## pass all triggers
+            
+        
+    def b_veto(self, level: str='tight') -> None:
+        if level not in ['loose', 'medium', 'tight']:
+            raise ValueError("Processor.b_veto(): level must be in ['loose', 'medium', 'tight']")
+        
+        raw_AK4jet = self.object['event'].Jet
+        WP = {'loose': 0.0490, 'medium': 0.2783, 'tight': 0.7100} # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
+        # refer to https://gitlab.cern.ch/groups/cms-btv/-/wikis/SFCampaigns/UL2018
+        b_tagging = (raw_AK4jet.btagDeepFlavB > WP[level]) 
+        self.passCut(cutName='b-veto', cut=(ak.sum(b_tagging, axis=-1)==0)) ## b-veto
     
-    def _to_parquet(self, arrays: dict) -> None:
+    def to_parquet(self, arrays: dict) -> None:
         output_dir = os.path.abspath(self.outdir)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         tokens = self.object['event'].behavior["__events_factory__"]._partition_key.split('/')
         output_file = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens ])
         ak.to_parquet(arrays, where = output_dir+'/'+output_file+'.parq')
         
 
-    def __preselect_HGamma( ## _ in prefix means private method
-            self, events: NanoEventsArray,
+    def __preselect_HGamma(self, ## __ in prefix means private method
             variables: dict={
                 'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
                 'photon': {'pt', 'eta', 'phi', 'mass'},
                 'event': {'MET_pt'},
                 'photon-jet': {'pt', 'eta', 'phi', 'mass'},
             }
-        ) -> ak.Array:
-        ## initialize
-        self.object['event'] = events
-        self.cutflow['raw'] = ak.Array([True for _ in range(len(self.object['event']))])
-        
+        ) -> None:
         ## triggers
-        self._passCut(
-            cut=ak.sum(
-                [self.object['event'].HLT[trigger] for trigger in self.triggers if trigger in self.object['event'].HLT.fields], axis=0
-            ) > 0, cutName='trigger'
-        ) ## pass any trigger
+        self.passTriggers(level='any') ## at least pass one trigger
         
         ## b veto
-        raw_AK4jet = self.object['event'].Jet
-        b_tagging = (raw_AK4jet.btagDeepFlavB > 0.2783) # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
-        # refer to https://gitlab.cern.ch/groups/cms-btv/-/wikis/SFCampaigns/UL2018
-        self._passCut(cutName='b-veto', cut=(ak.sum(b_tagging, axis=-1)==0)) ## b-veto
+        self.b_veto(level='tight')
 
         ## Muon
         raw_muon = self.object['event'].Muon # (event, muon)
@@ -76,7 +90,9 @@ class Processor(processor.ProcessorABC):
             (abs(raw_muon.eta) < 2.4) & 
             (raw_muon.pt > 20) # I don't use `muon_corrected_pt` coming from ROOT.RoccoR
         )
-        self._passCut(cutName='muon', cut=(ak.sum(muon_cut, axis=-1)==0)) ## 0 muon
+        ## 0 muon requirement satisfied
+        self.passCut(cutName='muon', cut=(ak.sum(muon_cut, axis=-1)==0))
+        
 
         ## Electron
         raw_electron = self.object['event'].Electron # (event, electron)
@@ -85,7 +101,9 @@ class Processor(processor.ProcessorABC):
             (abs(raw_electron.eta) < 2.5) &
             (raw_electron.pt > 20)
         )
-        self._passCut(cutName='electron', cut=(ak.sum(electron_cut, axis=-1)==0)) ## 0 electron
+        ## 0 electron requirement satisfied
+        self.passCut(cutName='electron', cut=(ak.sum(electron_cut, axis=-1)==0)) 
+        
         
         ## Photon
         raw_photon = self.object['event'].Photon # (event, photon), >=1 photon per event
@@ -94,9 +112,11 @@ class Processor(processor.ProcessorABC):
             (raw_photon.pt > 200) &
             (abs(raw_photon.eta) < 2.4)
         )
+        ## the photons from events matching all above cuts
         self.object['photon'] = raw_photon[photon_cut]
-        self._passCut(cutName='photon', cut=(ak.sum(photon_cut, axis=-1)>0)) ## >=1 photon
-
+        ## >=1 photon requirement satisfied
+        self.passCut(cutName='photon', cut=(ak.num(self.object['photon'], axis=1)>0)) 
+        
         ## AK8 jet
         raw_AK8jet = self.object['event'].FatJet # (event, fatjet), >=1 AK8 jet per event
         AK8jet_cut = ( # (event, boolean)
@@ -106,8 +126,10 @@ class Processor(processor.ProcessorABC):
             (raw_AK8jet.jetId&2 > 0)
             # Jet ID flags bit1 is loose (always false in 2017 since it does not exist), bit2 is tight, bit3 is tightLepVeto
         )
+        ## the AK8jets from events matching all above cuts
         self.object['AK8jet'] = raw_AK8jet[AK8jet_cut]
-        self._passCut(cutName='AK8jet', cut=(ak.sum(AK8jet_cut, axis=-1)>0)) ## >=1 AK8 jet
+        ## >=1 AK8 jet requirement satisfied
+        self.passCut(cutName='AK8jet', cut=(ak.num(self.object['AK8jet'], axis=1)>0)) 
         
         ## Photon-Jet cleaning
         pj_pair = ak.cartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
@@ -115,10 +137,12 @@ class Processor(processor.ProcessorABC):
         pj_dr = pj_pair.photon.delta_r(pj_pair.jet)
         pj_clean = (pj_dr > self.cut['deltaR']['min'])
         photon_index, jet_index = pj_index_pair.photon[pj_clean], pj_index_pair.jet[pj_clean]
-        self._passCut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1)) ## exactly 1 pair photon-jet
+        ## exactly 1 pair of photon-jet passed jet-cleaning requirement
+        self.passCut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1)) 
         
         ## final event-cut
         final_cut = self.cutflow['photon-jet_cleaning']
+        ## drop unwanted objects by projection
         self.object['event'] = self.object['event'][final_cut]
         self.object['photon'] = self.object['photon'][photon_index][final_cut] ## shape=(event, photon), 1 photon per event
         self.object['AK8jet'] = self.object['AK8jet'][jet_index][final_cut] ## shape=(event, AK8jet), 1 AK8jet per event
@@ -135,18 +159,32 @@ class Processor(processor.ProcessorABC):
 
         ## Additional vars by specific computing
         self.variables['photon-jet_deltaR'] = ak.flatten(self.object['photon'].delta_r(self.object['AK8jet']), axis=-1)
-        
+
         return final_cut
 
     def process(self, events: NanoEventsArray):
-        event_cut = self.__preselect_HGamma(events=events)
+        ## preprocessing
+        self.object['event'] = events
+        self.cutflow['raw'] = ak.Array([True for _ in range(len(self.object['event']))])
+        self.passCut(
+            cut=ak.sum(
+                [self.object['event'].HLT[trigger] for trigger in self.triggers if trigger in self.object['event'].HLT.fields], axis=0
+            ) > 0, cutName='trigger'
+        ) ## pass any trigger
+        
+        ## processing
+        event_cut = self.__preselect_HGamma()
         cutflow = {k: int(ak.sum(v)) for (k,v) in self.cutflow.items()}
         if all(event_cut==False):
             return cutflow
-        events = events[event_cut]
+        
+        ## gen-macthing
         gen_match = GenMatch()
-        self.variables.update(gen_match.HGamma(events))
-        self._to_parquet(arrays=self.variables)
+        self.variables.update(gen_match.HGamma(self.object['event']))
+        
+        ## storing output
+        self.to_parquet(arrays=self.variables)
+        
         return cutflow
     
     @property ## transform method into attribute and make it unchangable to hide _accumulator
