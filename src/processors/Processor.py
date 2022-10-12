@@ -138,10 +138,10 @@ class Processor(processor.ProcessorABC):
         pj_clean = (pj_dr > self.cut['deltaR']['min'])
         photon_index, jet_index = pj_index_pair.photon[pj_clean], pj_index_pair.jet[pj_clean]
         ## exactly 1 pair of photon-jet passed jet-cleaning requirement
-        self.passCut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1)) 
+        # self.passCut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1)) 
         
         ## final event-cut
-        final_cut = self.cutflow['photon-jet_cleaning']
+        final_cut = self.cutflow[self.nextCut]
         ## drop unwanted objects by projection
         self.object['event'] = self.object['event'][final_cut]
         self.object['photon'] = self.object['photon'][photon_index][final_cut] ## shape=(event, photon), 1 photon per event
@@ -158,7 +158,7 @@ class Processor(processor.ProcessorABC):
                 self.variables.update({ obj+'_'+var: getattr(self.object[obj], var) for var in variables[obj] })
 
         ## Additional vars by specific computing
-        self.variables['photon-jet_deltaR'] = ak.flatten(self.object['photon'].delta_r(self.object['AK8jet']), axis=-1)
+        # self.variables['photon-jet_deltaR'] = ak.flatten(self.object['photon'].delta_r(self.object['AK8jet']), axis=-1)
 
         return final_cut
 

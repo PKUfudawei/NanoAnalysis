@@ -17,25 +17,22 @@ samples = {
     'HGamma': {},
     'GJets': {}
 }
-for (current_path, dirs, files) in os.walk(top='/data/pubfs/fudawei/samples/HGamma', topdown=True):
-    ## topdown = True/False mean breadth/depth first
-    ## current_path is the absolute path
-    description = current_path.split('/')[-1]
-    if description.endswith('GeV'):
-        samples['HGamma'][description] = [os.path.join(current_path, f) for f in files if f.endswith('.root')]
-        
-for (current_path, dirs, files) in os.walk(top='/data/pubfs/fudawei/samples/GJets', topdown=True):
-    ## topdown = True/False mean breadth/depth first
-    ## current_path is the absolute path
-    description = current_path.split('/')[-1]
-    if description.startswith('HT'):
-        samples['GJets'][description] = [os.path.join(current_path, f) for f in files if f.endswith('.root')] 
+
+base = '/data/pubfs/fudawei/samples/mc/2018'
+basedir = {d: os.path.join(base, d) for d in os.listdir(base)}
+samples = {s: [] for s in basedir}
+for s in basedir:
+    for (current_path, dirs, files) in os.walk(basedir[s]):
+        for f in files:
+            if f.endswith('.root'):
+                samples[s].append(os.path.join(current_path, f))
+                                        
 
 cutflow={}
 
 t0 = time.time()
-cutflow['HGamma'] = processor.run_uproot_job(
-    fileset=samples['HGamma'],
+cutflow['ZpToHGamma'] = processor.run_uproot_job(
+    fileset={'ZpToHGamma': samples['HGamma']},
     treename="Events",
     processor_instance=Processor(outdir=os.path.join('..', 'output', 'HGamma')),
     executor=processor.futures_executor,
@@ -44,7 +41,7 @@ cutflow['HGamma'] = processor.run_uproot_job(
 t1 = time.time()
 
 cutflow['GJets'] = processor.run_uproot_job(
-    fileset=samples['GJets'],
+    fileset={'GJets': samples['GJets']},
     treename="Events",
     processor_instance=Processor(outdir=os.path.join('..', 'output', 'GJets')),
     executor=processor.futures_executor,
