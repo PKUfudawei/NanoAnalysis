@@ -18,3 +18,5 @@ condor_resubmit = set(i.replace('jid', 'sub') for i in condor_undone)
 if condor_undone:
     for i in condor_resubmit:
         os.system(f'condor_submit {i}')
+else:
+    print("All condor jobs are done!")
