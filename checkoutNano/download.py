@@ -22,7 +22,7 @@ def download_from_dataset_card(card_path: str, out_basedir: str):
         dataset = yaml.load(f, Loader=yaml.FullLoader)
 
     for (k, v) in dataset.items():
-        out_dir = os.path.join(out_basedir, k) + v['dataset']
+        out_dir = out_basedir + v['dataset'] if v['dataset'].startswith('/') else os.path.join(out_basedir, v['dataset'])
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
         query_str = f"\"file dataset={v['dataset']} system=rucio\""
