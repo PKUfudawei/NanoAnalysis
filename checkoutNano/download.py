@@ -16,13 +16,15 @@ def parse_commanline():
     return args
 
 def download_from_dataset_card(card_path: str, out_basedir: str):
-    channel, type, year = card_path.split('/')[-2], card_path.split('/')[-3], card_path.split('/')[-4]
+    channel, year, type = card_path.split('/')[-2], card_path.split('/')[-3], card_path.split('/')[-4]
     out_basedir = os.path.join(out_basedir, type, year, channel)
     with open(card_path, 'r') as f:
         dataset = yaml.load(f, Loader=yaml.FullLoader)
 
     for (k, v) in dataset.items():
         out_dir = os.path.join(out_basedir, k) + v['dataset']
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
         query_str = f"\"file dataset={v['dataset']} system=rucio\""
         output = subprocess.check_output(f"/cvmfs/cms.cern.ch/common/dasgoclient -query={query_str} -json", shell=True, encoding='utf-8')
         output = json.loads(output)
