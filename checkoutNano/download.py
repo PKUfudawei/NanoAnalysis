@@ -15,23 +15,33 @@ def parse_commanline():
     args = parser.parse_args()
     return args
 
-def download_from_dataset_card(card_path: str):
+def download_from_dataset_card(card_path: str, out_dir: str):
     with open(card_path, 'r') as f:
         dataset = yaml.load(f, Loader=yaml.FullLoader)
         
     for (k, v) in dataset.items():
-        out_dir = os.path.join(config['out_dir'], k)+v['dataset']
+        out_dir = os.path.join(out_dir, k)+v['dataset']
         query_str = f"\"file dataset={v['dataset']} system=rucio\""
         output = subprocess.check_output(f"/cvmfs/cms.cern.ch/common/dasgoclient -query={query_str} -json", shell=True, encoding='utf-8')
         file = 'root://cms-xrd-global.cern.ch/'+json.loads(output)[0]['file'][0]['name']
         os.system(f'xrdcp {file} {out_dir}')
 
-if __name__ == "__main__":
+    return True
+    
+def main():
     args = parse_commanline()
     dataset_cards = '/'.join([args.directory, args.type, args.year, args.channel, args.version])+'.yaml'
     dataset_cards = set(glob.glob(dataset_cards))
+    total = len(dataset_cards)
+    
     with open('./config/condor_cfg.yaml', 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
-    
+    finished = 0
     for dataset_card in dataset_cards:
-        download_from_dataset_card
+        finished += download_from_dataset_card(card_path=dataset_card, out_dir=config['out_dir'])
+        print('====================================================================')
+        print('==> Downloading process:\t%.1f'%(100*finished/total))
+        print('====================================================================')
+        
+if __name__ == "__main__":
+    main()
