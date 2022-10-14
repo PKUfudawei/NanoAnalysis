@@ -15,7 +15,7 @@ class Processor(processor.ProcessorABC):
     def __init__(
         self, triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
         cut: dict={
-            'deltaR': {'min': 0},
+            'deltaR': {'min': 1.1},
         }, outdir: str=os.path.join('..', 'output')
     ) -> None:
         super().__init__()
