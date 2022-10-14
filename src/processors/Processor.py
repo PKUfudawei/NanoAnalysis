@@ -165,7 +165,6 @@ class Processor(processor.ProcessorABC):
         ## preprocessing
         self.object['event'] = events
         self.cutflow['raw'] = ak.Array([True for _ in range(len(self.object['event']))])
-        self.passTriggers(level='any') ## pass any trigger
         
         ## processing
         event_cut = self.__preselect_HGamma()
