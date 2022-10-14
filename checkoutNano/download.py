@@ -37,8 +37,8 @@ def download_from_dataset_card(card_path: str, out_basedir: str):
         print()
 
     return True
-    
-def main():
+
+def main() -> None:
     args = parse_commanline()
     dataset_cards = '/'.join([args.directory, args.type, args.year, args.channel, args.version])+'.yaml'
     dataset_cards = set(glob.glob(dataset_cards))

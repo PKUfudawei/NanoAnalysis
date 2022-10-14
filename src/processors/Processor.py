@@ -137,7 +137,7 @@ class Processor(processor.ProcessorABC):
         pj_clean = (pj_dr > self.cut['deltaR']['min'])
         photon_index, jet_index = pj_index_pair.photon[pj_clean], pj_index_pair.jet[pj_clean]
         ## exactly 1 pair of photon-jet passed jet-cleaning requirement
-        # self.passCut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1)) 
+        self.passCut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1)) 
         
         ## final event-cut
         final_cut = self.cutflow[self.nextCut]
