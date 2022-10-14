@@ -13,12 +13,7 @@ import sys
 sys.path.append("..")
 from src.processors.Processor import Processor
 
-samples = {
-    'HGamma': {},
-    'GJets': {}
-}
-
-base = '/data/pubfs/fudawei/samples/mc/2018'
+base = '/stash/user/fudawei/samples/mc/2018'
 basedir = {d: os.path.join(base, d) for d in os.listdir(base)}
 samples = {s: [] for s in basedir}
 for s in basedir:
@@ -26,32 +21,27 @@ for s in basedir:
         for f in files:
             if f.endswith('.root'):
                 samples[s].append(os.path.join(current_path, f))
-                                        
+print(samples)
 
-cutflow={}
-
+cutflow = {}
 t0 = time.time()
-cutflow['ZpToHGamma'] = processor.run_uproot_job(
-    fileset={'ZpToHGamma': samples['HGamma']},
-    treename="Events",
-    processor_instance=Processor(outdir=os.path.join('..', 'output', 'HGamma')),
-    executor=processor.futures_executor,
-    executor_args={"schema": NanoAODSchema, "workers": 36}, # running on $workers cpu cores
-)
-t1 = time.time()
+                  
+def parallelProcess(samples, name):
+    global cutflow, t
+    cutflow[name] = processor.run_uproot_job(
+        fileset={name: samples[name]},
+        treename="Events",
+        processor_instance=Processor(outdir=f'../out/{name}'),
+        executor=processor.futures_executor,
+        executor_args={"schema": NanoAODSchema, "workers": 24}, # running on $workers cpu cores
+    )
+    cutflow['time_'+name] = (time.time() - t[0])/60
 
-cutflow['GJets'] = processor.run_uproot_job(
-    fileset={'GJets': samples['GJets']},
-    treename="Events",
-    processor_instance=Processor(outdir=os.path.join('..', 'output', 'GJets')),
-    executor=processor.futures_executor,
-    executor_args={"schema": NanoAODSchema, "workers": 36}, # running on $workers cpu cores
-)
-
-t2 = time.time()
-
-cutflow['HGamma time'] = '%.2f mins'%((t1-t0)/60)
-cutflow['GJets time'] = '%.2f mins'%((t2-t1)/60)
+parallelProcess(samples=samples, name='ZpToHGamma')
+parallelProcess(samples=samples, name='GJets')
+parallelProcess(samples=samples, name='WJetsToQQ')
+parallelProcess(samples=samples, name='ZJetsToQQ')
+parallelProcess(samples=samples, name='QCD')
 
 with open('../output/cutflow.txt', 'w') as file:
     json.dump(cutflow, file)
