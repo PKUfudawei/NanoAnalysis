@@ -165,11 +165,7 @@ class Processor(processor.ProcessorABC):
         ## preprocessing
         self.object['event'] = events
         self.cutflow['raw'] = ak.Array([True for _ in range(len(self.object['event']))])
-        self.passCut(
-            cut=ak.sum(
-                [self.object['event'].HLT[trigger] for trigger in self.triggers if trigger in self.object['event'].HLT.fields], axis=0
-            ) > 0, cutName='trigger'
-        ) ## pass any trigger
+        self.passTriggers(level='any') ## pass any trigger
         
         ## processing
         event_cut = self.__preselect_HGamma()
