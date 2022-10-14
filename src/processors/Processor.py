@@ -23,7 +23,8 @@ class Processor(processor.ProcessorABC):
         self.object = {'event': None}
         self.variables = {}
         self.cutflow = {'raw': None}
-        self.outdir = outdir
+        self.outdir = os.path.abspath(outdir)
+        self.mode = self.outdir.split('/')[-1]
         self.cut = cut
         self.prevCut = None
         self.nextCut = 'raw'
@@ -43,9 +44,7 @@ class Processor(processor.ProcessorABC):
             ) ## pass any trigger
         elif level == 'all':
             return ## not finished yet
-            self.passCut(cutName='trigger',
-                cut=ak.sum([self.object['event'].HLT[t] for t in self.triggers if t in self.object['event'].HLT.fields], axis=0) > 0 
-            ) ## pass all triggers
+            ## pass all triggers
             
         
     def b_veto(self, level: str='tight') -> None:
@@ -158,11 +157,11 @@ class Processor(processor.ProcessorABC):
                 self.variables.update({ obj+'_'+var: getattr(self.object[obj], var) for var in variables[obj] })
 
         ## Additional vars by specific computing
-        # self.variables['photon-jet_deltaR'] = ak.flatten(self.object['photon'].delta_r(self.object['AK8jet']), axis=-1)
+        self.variables['photon-jet_deltaR'] = ak.flatten(self.object['photon'].delta_r(self.object['AK8jet']), axis=-1)
 
         return final_cut
 
-    def process(self, events: NanoEventsArray):
+    def process(self, events: NanoEventsArray) -> dict:
         ## preprocessing
         self.object['event'] = events
         self.cutflow['raw'] = ak.Array([True for _ in range(len(self.object['event']))])
@@ -179,8 +178,9 @@ class Processor(processor.ProcessorABC):
             return cutflow
         
         ## gen-macthing
-        gen_match = GenMatch()
-        self.variables.update(gen_match.HGamma(self.object['event']))
+        if self.mode == 'ZpToHGamma':
+            gen_match = GenMatch()
+            self.variables.update(gen_match.HGamma(self.object['event']))
         
         ## storing output
         self.to_parquet(arrays=self.variables)

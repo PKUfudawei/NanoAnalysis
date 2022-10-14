@@ -31,7 +31,7 @@ class GenMatch():
             "H": 25,
             "Z'": 9906663
         }
-        self.particle = {}
+        self.object = {}
         self.childs_of = {} ## childs shorter than children
         self.genVars = {}
         "statusFlags().isLastCopyBeforeFSR()                  * 16384 +"
@@ -55,13 +55,13 @@ class GenMatch():
                 variables: set={'pt', 'eta', 'phi', 'mass', 'pdgId'},
                 maxNum: int=1, axis: int=-1, clip: bool=False) -> dict: ## default genPart shape: (event, particle)
         
-        self.particle[name] = genPart  ## shape: (event, particle) 
-        self.childs_of[name] = ak.flatten(genPart.children, axis=2) if flatten else genPart.children 
+        self.object[name] = genPart  ## shape: (event, particle) 
+        self.childs_of[name] = ak.flatten(self.object[name].children, axis=2) if flatten else self.object[name].children 
         ## shape: (event, child_particle) if flatten else (event, particle, child_particle) 
         
         return {
             f'gen_{name}_{var}': ak.pad_none(
-                array=genPart[var], target=maxNum, axis=axis, clip=clip
+                array=self.object[name][var], target=maxNum, axis=axis, clip=clip
             ) for var in variables
         }
         
@@ -111,17 +111,18 @@ class GenMatch():
             4 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==15, axis=-1) + # num. of tauons in WW_childs
             8 * ak.num(abs(self.childs_of['WW_childs'].pdgId)<=6, axis=-1)    # num. of quarks in WW_childs 
         )
-        H_a_pair = ak.cartesian({'H': self.particle['H'], 'a': self.particle['a']}, axis=1, nested=False)
+        H_a_pair = ak.cartesian({'H': self.object['H'], 'a': self.object['a']}, axis=1, nested=False)
         self.genVars['event'] = {
             'gen_H_a': ak.flatten(ak.num(H_a_pair, axis=1)==1, axis=-1),
             'gen_deltaR_H_a': ak.flatten(ak.pad_none(H_a_pair.H.delta_r(H_a_pair.a), target=1, axis=1), axis=-1),
             'gen_HWW_decay_mode': HWW_decay_mode,
-            'gen_HWW_a': ak.flatten((HWW_decay_mode>0) * ak.num(H_a_pair, axis=1) == 1, axis=-1)
+            'gen_HWW_a': ak.flatten((HWW_decay_mode>0) * ak.num(H_a_pair, axis=1) == 1, axis=-1),
+            'gen_MET_pt': events.GenMET.pt,
         }
  
         
         return {
             **self.genVars["Z'"], **self.genVars["H"], **self.genVars["a"], **self.genVars["WW"], 
-            **self.genVars["WW_childs"], **self.genVars['event']
+            **self.genVars["WW_childs"], **self.genVars['event'],
         }
         
