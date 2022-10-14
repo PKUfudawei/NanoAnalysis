@@ -27,15 +27,17 @@ cutflow = {}
 t0 = time.time()
                   
 def parallelProcess(samples, name):
-    global cutflow, t
+    global cutflow, t0
     cutflow[name] = processor.run_uproot_job(
         fileset={name: samples[name]},
         treename="Events",
-        processor_instance=Processor(outdir=f'../out/{name}'),
+        processor_instance=Processor(outdir=f'../output/{name}'),
         executor=processor.futures_executor,
         executor_args={"schema": NanoAODSchema, "workers": 24}, # running on $workers cpu cores
     )
-    cutflow['time_'+name] = (time.time() - t[0])/60
+    cutflow['time_'+name] = (time.time() - t0)/60
+    with open('../output/cutflow.txt', 'w') as file:
+        json.dump(cutflow, file)
 
 parallelProcess(samples=samples, name='ZpToHGamma')
 parallelProcess(samples=samples, name='GJets')
@@ -43,5 +45,3 @@ parallelProcess(samples=samples, name='WJetsToQQ')
 parallelProcess(samples=samples, name='ZJetsToQQ')
 parallelProcess(samples=samples, name='QCD')
 
-with open('../output/cutflow.txt', 'w') as file:
-    json.dump(cutflow, file)
