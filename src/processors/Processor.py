@@ -1,6 +1,5 @@
 import numpy as np
 import awkward as ak
-import uproot
 import os
 
 from coffea import processor
@@ -13,10 +12,10 @@ from .GenMatch import GenMatch
 
 class Processor(processor.ProcessorABC):
     def __init__(
-        self, triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
+        self, machine: str, outdir: str, 
         cut: dict={
             'deltaR': {'min': 1.1},
-        }, outdir: str=os.path.join('..', 'output')
+        }, triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
     ) -> None:
         super().__init__()
         self.triggers = triggers
@@ -24,6 +23,9 @@ class Processor(processor.ProcessorABC):
         self.variables = {}
         self.cutflow = {'raw': None}
         self.outdir = os.path.abspath(outdir)
+        if machine not in ['local', 'condor']:
+            raise ValueError("Processor.__init__(): machine must be in ['local', 'condor']")
+        self.machine = machine
         self.mode = self.outdir.split('/')[-1]
         self.cut = cut
         self.prevCut = None
@@ -58,14 +60,20 @@ class Processor(processor.ProcessorABC):
         self.passCut(cutName='b-veto', cut=(ak.sum(b_tagging, axis=-1)==0)) ## b-veto
     
     def to_parquet(self, arrays: dict) -> None:
+        if self.machine not in ['local', 'condor']:
+            raise ValueError("Processor.__init__(): machine must be in ['local', 'condor']")
+
         output_dir = os.path.abspath(self.outdir)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        tokens = self.object['event'].behavior["__events_factory__"]._partition_key.split('/')
-        output_file = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens ])
-        ak.to_parquet(arrays, where = output_dir+'/'+output_file+'.parq')
+        if self.machine=='local':
+            tokens = self.object['event'].behavior["__events_factory__"]._partition_key.split('/')
+            name = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens ])
+        elif self.machine=='condor':
+            name = 'output'
         
-
+        ak.to_parquet(arrays, where = os.path.join(output_dir, f'{name}.parq'))
+        
     def __preselect_HGamma(self, ## __ in prefix means private method
             variables: dict={
                 'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
