@@ -75,7 +75,7 @@ def main() -> None:
     succeeded = 0
     for filelist in filelists:         
         succeeded += filelist_to_submit(filelist=filelist, template=template)
-    print(f'==> Successfully generated {succeeded} condor-submit job(s) in total')
+    print(f'==> Successfully generated {succeeded} condor-submit file(s) in total')
     
     
 if __name__ == "__main__":

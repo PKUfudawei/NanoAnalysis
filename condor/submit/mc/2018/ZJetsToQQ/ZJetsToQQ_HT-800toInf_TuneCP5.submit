@@ -12,13 +12,18 @@ Universe = vanilla
 Executable = ./Processor.sh
 Arguments = $(file) condor ./
 
+# Setting the should_transfer_files command explicitly enables 
+# or disables the file transfer mechanism
 should_transfer_files   = YES
 transfer_input_files    = ../src
 when_to_transfer_output = ON_EXIT_OR_EVICT
 transfer_output_files   = output.parq
 transfer_output_remaps  = "output.parq = output/mc/2018/ZJetsToQQ/ZJetsToQQ_HT-800toInf_TuneCP5/$(Cluster)-$(Process).parq"
 
+# If one wants to use local condor batch to analyze user/group skims 
+# located at remote sites. The only modification needed is adding
 use_x509userproxy       = true
+# For OLDER versions of HTCondor (before 8.0.0), you need
 # x509userproxy           = /afs/cern.ch/user/d/dfu/.proxy
 
 # ERROR and OUTPUT are the error and output channels from your job
