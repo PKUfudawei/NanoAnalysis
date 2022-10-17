@@ -13,23 +13,25 @@ def parse_commanline():
     parser.add_argument('-f', '--file', help='To specify file path',)
     parser.add_argument('-m', '--machine', help='To specify running on which machine', choices=('local', 'condor'))
     parser.add_argument('-o', '--outdir', help='To specify output directory', default='./output')
+    parser.add_argument('-c', '--channel', help='To specify output directory', default='./output')
     args = parser.parse_args()
     return args
 
 def main():
-    if len(sys.argv)<3:
-        raise ValueError('main() needs three arguments as file, machine and outdir by -f, -m and -o respectively')
+    if len(sys.argv)<4:
+        raise ValueError('main() needs three arguments as file, machine, outdir, channel by -f, -m, -o, -c respectively')
     args = parse_commanline()
     
     t0 = time.time()
     cutflow = processor.run_uproot_job(
         fileset={'input': [args.file]},
         treename="Events",
-        processor_instance=Processor(outdir=args.outdir, machine=args.machine),
+        processor_instance=Processor(outdir=args.outdir, machine=args.machine, channel=args.channel),
         executor=processor.futures_executor,
         executor_args={"schema": NanoAODSchema, "workers": 1}, # running on $workers cpu cores
     )
     cutflow['time'] = (time.time() - t0)/60
+    print()
     print(cutflow)
         
 if __name__ == "__main__":

@@ -65,7 +65,7 @@ class GenMatch():
             ) for var in variables
         }
         
-    def HGamma(self, events: NanoEventsArray) -> dict:  
+    def ZpToHGamma(self, events: NanoEventsArray) -> dict:  
         """Get gen-info. and the wanted variables of H, WW, W_children and gamma"""
         
         self.genVars["Z'"] = self._updateParticle( ## shape: (event, particle)

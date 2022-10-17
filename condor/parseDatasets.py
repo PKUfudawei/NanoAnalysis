@@ -8,7 +8,10 @@ import subprocess
 
 def parse_commanline():
     parser = argparse.ArgumentParser(description='Script to check if each condor job is done')
+    parser.add_argument('-rm', '--remove', help='Whether to remove previous filelists/ and submit/', choices=('True', 'False', 'ture', 'false'), default='True')
     parser.add_argument('-d', '--directory', help='To specify base directory', default=os.path.abspath('./datasets'))
+    parser.add_argument('-m', '--machine', help='Where to execute jobs', choices=('machine', 'condor'), default='condor')
+    parser.add_argument('-o', '--outdir', help='Which directory to stroe output', default='./')
     parser.add_argument('-t', '--type', help='To specify jobs in mc/ or data/', choices=('data', 'mc'), default='*')
     parser.add_argument('-y', '--year', help='To specify jobs in which year', default='*')
     parser.add_argument('-c', '--channel', help='To specify jobs in which channel', default='*')
@@ -37,17 +40,20 @@ def dataset_to_filelist(card_path: str):
             os.makedirs(f'./output/{name}/{k}')
         if not os.path.exists(f'./log/{name}/{k}'):
             os.makedirs(f'./log/{name}/{k}')
-            
-    print(f'==> Generated filelists/{name}/{k}.txt from {card_path}')
-    return True
+        print(f'==> Generated filelists/{name}/{k}.txt from {card_path}')
+    
+    return len(dataset)
 
-def filelist_to_submit(filelist: str, template: str):
+def filelist_to_submit(filelist: str, template: str, args: argparse.Namespace):
     name = os.path.join(*filelist.split('.')[-2].split('/')[-4:])
     path = os.path.join('./submit', *name.split('/')[:-1])
     if not os.path.exists(path):
         os.makedirs(path)
     with open(f'./submit/{name}.submit', 'w') as f:
-        f.write(template.replace('$template', name))
+        f.write(
+            template.replace('$template', name).replace('$machine', args.machine)
+            .replace('$outdir', args.outdir).replace('$channel', args.channel)
+        )
         
     print(f'==> Generated submit/{name}.submit from {filelist}')
     return True
@@ -55,27 +61,35 @@ def filelist_to_submit(filelist: str, template: str):
 
 def main() -> None:
     args = parse_commanline()
+    if args.remove.capitalize() == 'True':
+        print('!!! Removing previous ./filelists and ./submit !!!')
+        os.system("rm -rf ./filelists ./submit")
+    print('################################################'*3)
     dataset_cards = os.path.join(args.directory, args.type, args.year, args.channel, args.version+'.yaml')
     dataset_cards = set(glob.glob(dataset_cards))
-    print(f'==> Start generating filelist(s) from {len(dataset_cards)} dataset cards')
+    print(f'==> Start generating filelist(s) from {len(dataset_cards)} dataset-cards')
     
     succeeded = 0
     for dataset_card in dataset_cards:            
         succeeded += dataset_to_filelist(card_path=dataset_card)
     print(f'==> Successfully generated {succeeded} filelist(s) in total')
     
-    print('################################################'*3)    
+    print('################################################'*3)
     filelists = os.path.join('filelists', args.type, args.year, args.channel, args.version+'.txt')
     filelists = set(glob.glob(filelists))
-    print(f'==> Start generating condor-submit job(s) from   {len(filelists)} filelists')
+    print(f'==> Start generating condor-submit job(s) from {len(filelists)} filelists')
     
     with open('./template.submit', 'r') as f:
         template = f.read()
         
     succeeded = 0
-    for filelist in filelists:         
-        succeeded += filelist_to_submit(filelist=filelist, template=template)
+    for filelist in filelists:
+        args.channel = filelist.split('/')[-2]
+        succeeded += filelist_to_submit(filelist=filelist, template=template, args=args)
     print(f'==> Successfully generated {succeeded} condor-submit file(s) in total')
+    print('################################################'*3)
+    print('Having generated empty corresponding log/ and output/ directories')
+        
     
     
 if __name__ == "__main__":

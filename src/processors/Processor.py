@@ -12,7 +12,7 @@ from .GenMatch import GenMatch
 
 class Processor(processor.ProcessorABC):
     def __init__(
-        self, machine: str, outdir: str, 
+        self, machine: str, outdir: str, channel: str,
         cut: dict={
             'deltaR': {'min': 1.1},
         }, triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
@@ -26,7 +26,7 @@ class Processor(processor.ProcessorABC):
         if machine not in ['local', 'condor']:
             raise ValueError("Processor.__init__(): machine must be in ['local', 'condor']")
         self.machine = machine
-        self.mode = self.outdir.split('/')[-1]
+        self.channel = channel
         self.cut = cut
         self.prevCut = None
         self.nextCut = 'raw'
@@ -178,16 +178,16 @@ class Processor(processor.ProcessorABC):
         event_cut = self.__preselect_HGamma()
         cutflow = {k: int(ak.sum(v)) for (k,v) in self.cutflow.items()}
         if all(event_cut==False):
+            self.to_parquet(arrays={})
             return cutflow
         
         ## gen-macthing
-        if self.mode == 'ZpToHGamma':
+        if self.channel == 'ZpToHGamma':
             gen_match = GenMatch()
-            self.variables.update(gen_match.HGamma(self.object['event']))
+            self.variables.update(gen_match.ZpToHGamma(self.object['event']))
         
         ## storing output
         self.to_parquet(arrays=self.variables)
-        
         return cutflow
     
     @property ## transform method into attribute and make it unchangable to hide _accumulator
