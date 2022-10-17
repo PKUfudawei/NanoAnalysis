@@ -1,4 +1,4 @@
-# #To submit condor jobs
+## To submit condor jobs
 ```bash
 myschedd bump
 type=
