@@ -13,7 +13,7 @@ def parse_commanline():
     parser.add_argument('-f', '--file', help='To specify file path',)
     parser.add_argument('-m', '--machine', help='To specify running on which machine', choices=('local', 'condor'))
     parser.add_argument('-o', '--outdir', help='To specify output directory', default='./output')
-    parser.add_argument('-c', '--channel', help='To specify output directory', default='./output')
+    parser.add_argument('-c', '--channel', help='To specify gen-matching mode', default='ZpToHGamma')
     args = parser.parse_args()
     return args
 
@@ -23,16 +23,22 @@ def main():
     args = parse_commanline()
     
     t0 = time.time()
-    cutflow = processor.run_uproot_job(
-        fileset={'input': [args.file]},
-        treename="Events",
-        processor_instance=Processor(outdir=args.outdir, machine=args.machine, channel=args.channel),
-        executor=processor.futures_executor,
-        executor_args={"schema": NanoAODSchema, "workers": 1}, # running on $workers cpu cores
+    run = processor.Runner(
+        executor = processor.FuturesExecutor(compression=None, workers=1),
+        schema = NanoAODSchema,
+        savemetrics = True,
+        xrootdtimeout = 600,
+        #chunksize = 100_000,
+        #maxchunks = None,
     )
-    cutflow['time'] = (time.time() - t0)/60
-    print()
-    print(cutflow)
+    cutflow, metrics = run(
+        fileset = {'input': [args.file]},
+        treename = 'Events',
+        processor_instance = Processor(outdir=args.outdir, machine=args.machine, channel=args.channel),
+    )
+    print('===> Time for processing: %.2f mins'%(time.time() - t0)/60)
+    print('===> Metrics:\n', metrics)
+    print('===> Cutflow:\n', cutflow)
         
 if __name__ == "__main__":
     main()

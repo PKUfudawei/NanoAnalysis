@@ -17,4 +17,4 @@ voms-proxy-info
 printf "===> Job is running in directory: "; /bin/pwd
 
 ## execute main.py
-echo "`python3 src/main.py -f $1 -m $2 -o $3 -c $4`"
+echo "`python3 src/main.py -f $1 -m $2 -c $3 -o $4`"
