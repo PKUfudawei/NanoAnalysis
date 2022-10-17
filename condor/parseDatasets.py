@@ -9,10 +9,10 @@ import subprocess
 def parse_commanline():
     parser = argparse.ArgumentParser(description='Script to check if each condor job is done')
     parser.add_argument('-rm', '--remove', help='Whether to remove previous filelists/ and submit/', choices=('True', 'False', 'ture', 'false'), default='True')
-    parser.add_argument('-d', '--directory', help='To specify base directory', default=os.path.abspath('./datasets'))
+    parser.add_argument('-d', '--directory', help='To specify base directory', default=os.path.abspath('../datasets'))
     parser.add_argument('-m', '--machine', help='Where to execute jobs', choices=('machine', 'condor'), default='condor')
     parser.add_argument('-o', '--outdir', help='Which directory to stroe output', default='./')
-    parser.add_argument('-t', '--type', help='To specify jobs in mc/ or data/', choices=('data', 'mc'), default='*')
+    parser.add_argument('-t', '--type', help='To specify jobs in mc/ or data/', choices=('data', 'mc', '*'), default='*')
     parser.add_argument('-y', '--year', help='To specify jobs in which year', default='*')
     parser.add_argument('-c', '--channel', help='To specify jobs in which channel', default='*')
     parser.add_argument('-v', '--version', help='To specify jobs in which nanoAOD version', default='*')
@@ -36,19 +36,20 @@ def dataset_to_filelist(card_path: str):
             os.makedirs(f'./filelists/{name}')
         with open(f'./filelists/{name}/{k}.txt', 'w') as f:
             f.write('\n'.join(filelist))
-        if not os.path.exists(f'./output/{name}/{k}'):
-            os.makedirs(f'./output/{name}/{k}')
-        if not os.path.exists(f'./log/{name}/{k}'):
-            os.makedirs(f'./log/{name}/{k}')
         print(f'==> Generated filelists/{name}/{k}.txt from {card_path}')
     
     return len(dataset)
 
 def filelist_to_submit(filelist: str, template: str, args: argparse.Namespace):
     name = os.path.join(*filelist.split('.')[-2].split('/')[-4:])
-    path = os.path.join('./submit', *name.split('/')[:-1])
-    if not os.path.exists(path):
-        os.makedirs(path)
+    if not os.path.exists(f'./output/{name}'):
+        os.makedirs(f'./output/{name}')
+    if not os.path.exists(f'./log/{name}'):
+        os.makedirs(f'./log/{name}')
+        
+    folder = os.path.join('./submit', *name.split('/')[:-1])
+    if not os.path.exists(folder):
+        os.makedirs(folder)
     with open(f'./submit/{name}.submit', 'w') as f:
         f.write(
             template.replace('$template', name).replace('$machine', args.machine)
@@ -75,11 +76,11 @@ def main() -> None:
     print(f'==> Successfully generated {succeeded} filelist(s) in total')
     
     print('################################################'*3)
-    filelists = os.path.join('filelists', args.type, args.year, args.channel, args.version+'.txt')
+    filelists = os.path.join('filelists', args.type, args.year, args.channel, '*.txt')
     filelists = set(glob.glob(filelists))
     print(f'==> Start generating condor-submit job(s) from {len(filelists)} filelists')
     
-    with open('./template.submit', 'r') as f:
+    with open('./.template.submit', 'r') as f:
         template = f.read()
         
     succeeded = 0
@@ -88,7 +89,7 @@ def main() -> None:
         succeeded += filelist_to_submit(filelist=filelist, template=template, args=args)
     print(f'==> Successfully generated {succeeded} condor-submit file(s) in total')
     print('################################################'*3)
-    print('Having generated empty corresponding log/ and output/ directories')
+    print('Having generated corresponding empty log/ and output/ directories')
         
     
     

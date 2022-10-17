@@ -27,7 +27,7 @@ def main():
         executor = processor.FuturesExecutor(compression=None, workers=1),
         schema = NanoAODSchema,
         savemetrics = True,
-        xrootdtimeout = 600,
+        xrootdtimeout = 1200,
         #chunksize = 100_000,
         #maxchunks = None,
     )
@@ -36,7 +36,7 @@ def main():
         treename = 'Events',
         processor_instance = Processor(outdir=args.outdir, machine=args.machine, channel=args.channel),
     )
-    print('===> Time for processing: %.2f mins'%(time.time() - t0)/60)
+    print(f'===> Time for processing: {(time.time() - t0)/60} mins')
     print('===> Metrics:\n', metrics)
     print('===> Cutflow:\n', cutflow)
         
