@@ -9,16 +9,19 @@ def parse_commanline():
     parser.add_argument('-y', '--year', help='To specify jobs in which year', default='*')
     parser.add_argument('-c', '--channel', help='To specify jobs in which channel', default='*')
     parser.add_argument('-j', '--job', help='Specify which job to be submitted', default='*')
+    parser.add_argument('-b', '--bump', help='Determine whether to change myschedd', choices=('True', 'False', 'true', 'false'), default='true')
     args = parser.parse_args()
     return args
 
 def main() -> None:
     args = parse_commanline()
-    schedd = subprocess.check_output(f"myschedd bump", shell=True, encoding='utf-8').split("'")[1]
+    if args.bump.capitalize()=='True':
+        print("====> Jump to the best schedd")
+        schedd = subprocess.check_output(f"myschedd bump", shell=True, encoding='utf-8').split("'")[1]
+    else:
+        schedd = ''
     ## myschedd set $schedd
     os.system(f"""
-        echo "###########################################################################"
-        echo "====> Jump to the best schedd"
         myschedd show
         echo "###########################################################################"
         echo "====> Status fo current schedd"

@@ -127,7 +127,7 @@ class Processor(processor.ProcessorABC):
         ## AK8 jet
         raw_AK8jet = self.object['event'].FatJet # (event, fatjet), >=1 AK8 jet per event
         AK8jet_cut = ( # (event, boolean)
-            (raw_AK8jet.msoftdrop > 30) & # Corrected soft drop mass with PUPPI
+            (raw_AK8jet.msoftdrop > 40) & # Corrected soft drop mass with PUPPI
             (raw_AK8jet.pt > 250) & 
             (abs(raw_AK8jet.eta) < 2.4) & 
             (raw_AK8jet.jetId&2 > 0)
@@ -178,7 +178,7 @@ class Processor(processor.ProcessorABC):
         event_cut = self.__preselect_HGamma()
         cutflow = {k: int(ak.sum(v)) for (k,v) in self.cutflow.items()}
         if all(event_cut==False):
-            self.to_parquet(arrays={})
+            self.to_parquet(array=ak.Array({}))
             return cutflow
         
         ## gen-macthing

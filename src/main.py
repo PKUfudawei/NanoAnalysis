@@ -27,7 +27,7 @@ def main():
         executor = processor.FuturesExecutor(compression=None, workers=1),
         schema = NanoAODSchema,
         savemetrics = True,
-        xrootdtimeout = 1200,
+        xrootdtimeout = 60*30,
         #chunksize = 100_000,
         #maxchunks = None,
     )
