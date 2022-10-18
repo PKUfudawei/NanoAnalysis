@@ -1,7 +1,7 @@
 # NanoAnalysis
 [HEP-EX](https://inspirehep.net/) analyzing framework for [NanoAOD](https://cms-opendata-workshop.github.io/workshop-lesson-root/08-analysis-physics/index.html) data in [CMS](https://cms.cern/) experiment  
-*Coffea (uproot) rather than C++ and ROOT*
-*Vectorization rather than for-loop*
+>Python and coffea/uproot rather than C++ and ROOT  
+>Vectorization rather than for-loop
 
 ## Brief introduction
 - ### datasets/
