@@ -5,7 +5,8 @@ Universe = vanilla
 +ProjectName="cms.org.cern"
 
 # Jobs which exceed the maximum runtime will be terminated
-+JobFlavour = "testmatch" ## 3 days
+## 'testmatch' = 3 days
++JobFlavour = "testmatch"
 JobBatchName = mc/2018/ZJetsToQQ/ZJetsToQQ_HT-600to800_TuneCP5
 
 # EXECUTABLE is the program your job will run It's often useful 
