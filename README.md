@@ -1,8 +1,11 @@
 # NanoAnalysis
-[HEP-EX](https://inspirehep.net/) analyzing framework for [NanoAOD](https://cms-opendata-workshop.github.io/workshop-lesson-root/08-analysis-physics/index.html) data in [CMS](https://cms.cern/) experiment
+[HEP-EX](https://inspirehep.net/) analyzing framework for [NanoAOD](https://cms-opendata-workshop.github.io/workshop-lesson-root/08-analysis-physics/index.html) data in [CMS](https://cms.cern/) experiment  
+*Coffea (uproot) rather than C++ and ROOT*
+*Vectorization rather than for-loop*
 
 ## Brief introduction
 - ### datasets/
+---
 Hierarchically stores dataset info in the structure of  `datasets/$type/$year/$channel/$division/$version.yaml`  
 - ### src/
 Containing all source code to process NanoAOD into slimmed files (e.g., `*.parq`) and to calculate correction and uncertainty by [coffea](https://coffeateam.github.io/coffea/) (read `*.root` files into vector-like structure, e.g., [NanoEvents](https://coffeateam.github.io/coffea/modules/coffea.nanoevents.html#module-coffea.nanoevents)) and [awkward](https://awkward-array.org/quickstart.html) (a numpy-like library but more capable to process nested and variable-sized data in json-like format)  
@@ -14,6 +17,6 @@ Jupyter-notebboks to analyze/postprocess `*.parquet` coming from processed NanoA
 It is deprecated but codes in it may be reused  
 
 ## *References*
-[NanoAOD data tier](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookNanoAOD)
-[HTCondor User Manual](https://htcondor.readthedocs.io/en/latest/users-manual/index.html)
-[CERN Batch Service User Guide](https://batchdocs.web.cern.ch/index.html)
+[NanoAOD data tier](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookNanoAOD)  
+[HTCondor User Manual](https://htcondor.readthedocs.io/en/latest/users-manual/index.html)  
+[CERN Batch Service User Guide](https://batchdocs.web.cern.ch/index.html)  
