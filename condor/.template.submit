@@ -6,6 +6,7 @@ Universe = vanilla
 
 # Jobs which exceed the maximum runtime will be terminated
 +JobFlavour = "testmatch"
+JobBatchName = $template
 
 # EXECUTABLE is the program your job will run It's often useful 
 # to create a shell script to "wrap" your actual work. 
