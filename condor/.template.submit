@@ -5,7 +5,7 @@ Universe = vanilla
 +ProjectName="cms.org.cern"
 
 # Jobs which exceed the maximum runtime will be terminated
-+JobFlavour = "testmatch"
++JobFlavour = "testmatch" ## 3 days
 JobBatchName = $template
 
 # EXECUTABLE is the program your job will run It's often useful 
