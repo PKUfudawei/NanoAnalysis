@@ -10,7 +10,7 @@ def parse_commanline():
     parser = argparse.ArgumentParser(description='Script to check if each condor job is done')
     parser.add_argument('-rm', '--remove', help='Whether to remove previous filelists/ and submit/', choices=('True', 'False', 'ture', 'false'), default='True')
     parser.add_argument('-d', '--directory', help='To specify base directory', default=os.path.abspath('../datasets'))
-    parser.add_argument('-m', '--machine', help='Where to execute jobs', choices=('machine', 'condor'), default='condor')
+    parser.add_argument('-m', '--machine', help='Where to execute jobs', choices=('local', 'condor'), default='condor')
     parser.add_argument('-o', '--outdir', help='Which directory to stroe output', default='./')
     parser.add_argument('-t', '--type', help='To specify jobs in mc/ or data/', choices=('data', 'mc', '*'), default='*')
     parser.add_argument('-y', '--year', help='To specify jobs in which year', default='*')
@@ -42,8 +42,8 @@ def dataset_to_filelist(card_path: str):
 
 def filelist_to_submit(filelist: str, template: str, args: argparse.Namespace):
     name = os.path.join(*filelist.split('.')[-2].split('/')[-4:])
-    if not os.path.exists(f'./output/{name}'):
-        os.makedirs(f'./output/{name}')
+    if not os.path.exists(f'./output_test/{name}'):
+        os.makedirs(f'./output_test/{name}')
     if not os.path.exists(f'./log/{name}'):
         os.makedirs(f'./log/{name}')
         
