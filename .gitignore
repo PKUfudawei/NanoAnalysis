@@ -54,5 +54,4 @@ node_modules
 .vscode
 
 .ipynb_checkpoints/
-output/
 log/

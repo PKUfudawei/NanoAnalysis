@@ -45,7 +45,7 @@ class Processor(processor.ProcessorABC):
                 cut=ak.sum([self.object['event'].HLT[t] for t in self.triggers if t in self.object['event'].HLT.fields], axis=0) > 0 
             ) ## pass any trigger
         elif level == 'all':
-            return ## not finished yet
+            return  ValueError("Processor.passTriggers(level='all') not finished yet")## not finished yet
             ## pass all triggers
             
         

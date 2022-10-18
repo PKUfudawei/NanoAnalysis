@@ -14,8 +14,6 @@ def parse_commanline():
 
 def main() -> None:
     args = parse_commanline()
-    ## 4506743.36 from QCD_HT1000to1500_TuneCP5
-    ## 4506748.45 from QCD_HT300to500_TuneCP5
     schedd = subprocess.check_output(f"myschedd bump", shell=True, encoding='utf-8').split("'")[1]
     ## myschedd set $schedd
     os.system(f"""
