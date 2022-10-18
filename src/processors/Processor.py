@@ -59,7 +59,7 @@ class Processor(processor.ProcessorABC):
         b_tagging = (raw_AK4jet.btagDeepFlavB > WP[level]) 
         self.passCut(cutName='b-veto', cut=(ak.sum(b_tagging, axis=-1)==0)) ## b-veto
     
-    def to_parquet(self, arrays: dict) -> None:
+    def to_parquet(self, array: ak.Array) -> None:
         if self.machine not in ['local', 'condor']:
             raise ValueError("Processor.__init__(): machine must be in ['local', 'condor']")
 
@@ -72,10 +72,10 @@ class Processor(processor.ProcessorABC):
         elif self.machine=='condor':
             name = 'output'
         
-        ak.to_parquet(arrays, where = os.path.join(output_dir, f'{name}.parq'))
+        ak.to_parquet(array=array, where=os.path.join(output_dir, f'{name}.parq'))
         
     def __preselect_HGamma(self, ## __ in prefix means private method
-            variables: dict={
+            obj_vars: dict={
                 'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
                 'photon': {'pt', 'eta', 'phi', 'mass'},
                 'event': {'MET_pt'},
@@ -156,13 +156,13 @@ class Processor(processor.ProcessorABC):
         self.object['photon-jet'] = self.object['photon'][:, 0] + self.object['AK8jet'][:, 0] ## shape=(event, )
         
         ## Return vars of objects after pre-selection
-        for obj in variables.keys():
+        for obj in obj_vars.keys():
             if obj=='event':
                 self.variables.update({
-                    obj+'_'+var: self.object[obj][var.split('_')[0]]['_'.join(var.split('_')[1:])] for var in variables[obj]
+                    obj+'_'+var: self.object[obj][var.split('_')[0]]['_'.join(var.split('_')[1:])] for var in obj_vars[obj]
                 })
             else:
-                self.variables.update({ obj+'_'+var: getattr(self.object[obj], var) for var in variables[obj] })
+                self.variables.update({ obj+'_'+var: getattr(self.object[obj], var) for var in obj_vars[obj] })
 
         ## Additional vars by specific computing
         self.variables['photon-jet_deltaR'] = ak.flatten(self.object['photon'].delta_r(self.object['AK8jet']), axis=-1)
@@ -187,7 +187,7 @@ class Processor(processor.ProcessorABC):
             self.variables.update(gen_match.ZpToHGamma(self.object['event']))
         
         ## storing output
-        self.to_parquet(arrays=self.variables)
+        self.to_parquet(array=ak.Array(self.variables))
         return cutflow
     
     @property ## transform method into attribute and make it unchangable to hide _accumulator
