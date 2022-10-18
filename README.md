@@ -1,5 +1,5 @@
 # NanoAnalysis
-[HEP-EX](https://inspirehep.net/) analyzing framework for NanoAOD-like data in [CMS](https://cms.cern/) experiment
+[HEP-EX](https://inspirehep.net/) analyzing framework for [NanoAOD](https://cms-opendata-workshop.github.io/workshop-lesson-root/08-analysis-physics/index.html) data in [CMS](https://cms.cern/) experiment
 
 ## Brief introduction
 - ### datasets/
@@ -12,3 +12,8 @@ Use `parseDatasets.py` to parse filelists from `*.yaml` and generate correspondi
 Jupyter-notebboks to analyze/postprocess `*.parquet` coming from processed NanoAOD data. Produce the final plots here!  
 - ### .checkoutNano/
 It is deprecated but codes in it may be reused  
+
+## *References*
+[NanoAOD data tier](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookNanoAOD)
+[HTCondor User Manual](https://htcondor.readthedocs.io/en/latest/users-manual/index.html)
+[CERN Batch Service User Guide](https://batchdocs.web.cern.ch/index.html)
