@@ -1,12 +1,8 @@
 ## To submit condor jobs
 ```bash
-myschedd bump
-type=
-year=
-channel=
-for i in submit/$type/$year/$channel/*.submit; do condor_submit $i; done
+./condor_submit.py (-t $type -y $year -c $channel -b $bool -j $job)
 ```
 
 ## *References*
-[CERN Batch Docs](https://batchdocs.web.cern.ch/index.html)
+[CERN Batch Docs](https://batchdocs.web.cern.ch/index.html)  
 [HTCondor Manual](https://htcondor.readthedocs.io/en/latest/index.html)
