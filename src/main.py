@@ -14,6 +14,7 @@ def parse_commanline():
     parser.add_argument('-m', '--machine', help='To specify running on which machine', choices=('local', 'condor'))
     parser.add_argument('-o', '--outdir', help='To specify output directory', default='./output')
     parser.add_argument('-c', '--channel', help='To specify gen-matching mode', default='ZpToHGamma')
+    parser.add_argument('-n', '--ncpu', help='To specify the number of CPUs', default=1)
     args = parser.parse_args()
     return args
 
@@ -24,7 +25,7 @@ def main():
     
     t0 = time.time()
     run = processor.Runner(
-        executor = processor.FuturesExecutor(compression=None, workers=1),
+        executor = processor.FuturesExecutor(compression=None, workers=args.ncpu),
         schema = NanoAODSchema,
         savemetrics = True,
         xrootdtimeout = 60*30,
