@@ -4,5 +4,5 @@
 ```
 
 ## *References*
-[cffea](https://coffeateam.github.io/coffea/index.html)  
+[coffea](https://coffeateam.github.io/coffea/index.html)  
 [Awkward Array](https://awkward-array.readthedocs.io/en/latest/index.htmlhttps://awkward-array.readthedocs.io/en/latest/index.html)
