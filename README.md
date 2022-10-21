@@ -1,9 +1,9 @@
 # NanoAnalysis
 [HEP-EX](https://inspirehep.net/) analyzing framework for [NanoAOD](https://cms-opendata-workshop.github.io/workshop-lesson-root/08-analysis-physics/index.html) data in [CMS](https://cms.cern/) experiment  
 
->*Python & coffea/uproot rather than C++ & ROOT*  
+>*Python & coffea/uproot instead of C++ & ROOT*  
 >  
->*Vectorization rather than for-loop*  
+>*Vectorization instead of for-loop*  
 
 ## Brief introduction
 - ### datasets/
@@ -19,5 +19,3 @@ It is deprecated but codes in it may be reused
 
 ## *References*
 [NanoAOD data tier](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookNanoAOD)  
-[HTCondor User Manual](https://htcondor.readthedocs.io/en/latest/users-manual/index.html)  
-[CERN Batch Service User Guide](https://batchdocs.web.cern.ch/index.html)  

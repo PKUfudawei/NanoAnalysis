@@ -29,7 +29,7 @@ class GenMatch():
             "Z": 23,
             "W+": 24,   "W-":-24,
             "H": 25,
-            "Z'": 9906663
+            "Zp": 9906663
         }
         self.object = {}
         self.childs_of = {} ## childs shorter than children
@@ -51,7 +51,7 @@ class GenMatch():
         "statusFlags().isPrompt()                             * 1      "
         self.GEN_FLAGS = ["fromHardProcess", "isLastCopy"]
         
-    def _updateParticle(self, name: str, genPart: GenParticleArray, flatten: bool=True,
+    def updateParticle(self, name: str, genPart: GenParticleArray, flatten: bool=True,
                 variables: set={'pt', 'eta', 'phi', 'mass', 'pdgId'},
                 maxNum: int=1, axis: int=-1, clip: bool=False) -> dict: ## default genPart shape: (event, particle)
         
@@ -68,28 +68,28 @@ class GenMatch():
     def ZpToHGamma(self, events: NanoEventsArray) -> dict:  
         """Get gen-info. and the wanted variables of H, WW, W_children and gamma"""
         
-        self.genVars["Z'"] = self._updateParticle( ## shape: (event, particle)
+        self.genVars["Zp"] = self.updateParticle( ## shape: (event, particle)
             genPart = events.GenPart[
-                (events.GenPart.pdgId == self.PDGID["Z'"]) &
+                (events.GenPart.pdgId == self.PDGID["Zp"]) &
                 events.GenPart.hasFlags(self.GEN_FLAGS)
-            ], name="Z'", flatten=True, maxNum=1
+            ], name="Zp", flatten=True, maxNum=1
         )
         
-        self.genVars["H"] = self._updateParticle( ## shape: (event, H)
-            genPart = self.childs_of["Z'"][
-                (self.childs_of["Z'"].pdgId == self.PDGID["H"]) &
-                self.childs_of["Z'"].hasFlags(self.GEN_FLAGS)
+        self.genVars["H"] = self.updateParticle( ## shape: (event, H)
+            genPart = self.childs_of["Zp"][
+                (self.childs_of["Zp"].pdgId == self.PDGID["H"]) &
+                self.childs_of["Zp"].hasFlags(self.GEN_FLAGS)
             ], name="H", flatten=True, maxNum=1
         )
         
-        self.genVars["a"] = self._updateParticle( ## shape: (event, gamma)
-            genPart = self.childs_of["Z'"][
-                (self.childs_of["Z'"].pdgId == self.PDGID["a"]) &
-                self.childs_of["Z'"].hasFlags(self.GEN_FLAGS)
+        self.genVars["a"] = self.updateParticle( ## shape: (event, gamma)
+            genPart = self.childs_of["Zp"][
+                (self.childs_of["Zp"].pdgId == self.PDGID["a"]) &
+                self.childs_of["Zp"].hasFlags(self.GEN_FLAGS)
             ], name="a", flatten=True, maxNum=1
         )
         
-        self.genVars["WW"] = self._updateParticle( ## shape: (event, WW)
+        self.genVars["WW"] = self.updateParticle( ## shape: (event, WW)
             genPart = self.childs_of["H"][ ## shape: (event, H_childs)
                 (ak.num(self.childs_of['H'].pdgId, axis=-1) == 2) &
                 ak.all(abs(self.childs_of['H'].pdgId) == self.PDGID["W+"], axis=-1) &
@@ -97,7 +97,7 @@ class GenMatch():
             ], name="WW", flatten=True, maxNum=2
         )
         
-        self.genVars["WW_childs"] = self._updateParticle( ## shape: (event, WW_childs)
+        self.genVars["WW_childs"] = self.updateParticle( ## shape: (event, WW_childs)
             genPart = self.childs_of["WW"][ ## shape: (event, WW)
                 (ak.num(self.childs_of["WW"].pdgId, axis=-1) == 4) &
                 self.childs_of["WW"].hasFlags(self.GEN_FLAGS)
@@ -122,7 +122,7 @@ class GenMatch():
  
         
         return {
-            **self.genVars["Z'"], **self.genVars["H"], **self.genVars["a"], **self.genVars["WW"], 
+            **self.genVars["Zp"], **self.genVars["H"], **self.genVars["a"], **self.genVars["WW"], 
             **self.genVars["WW_childs"], **self.genVars['event'],
         }
         
