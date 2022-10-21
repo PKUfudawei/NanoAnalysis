@@ -26,8 +26,8 @@ def dataset_to_filelist(card_path: str):
 
     for (k, v) in dataset.items():
         filelist = []
-        query_str = f"\"file dataset={v} system=rucio\""
-        output = subprocess.check_output(f"/cvmfs/cms.cern.ch/common/dasgoclient -query={query_str} -json", shell=True, encoding='utf-8')
+        query = f"\"file dataset={v} system=rucio\""
+        output = subprocess.check_output(f"/cvmfs/cms.cern.ch/common/dasgoclient -query={query} -json", shell=True, encoding='utf-8')
         output = json.loads(output)
         for file_info in output:
             filelist.append('root://cms-xrd-global.cern.ch/'+file_info['file'][0]['name'])
