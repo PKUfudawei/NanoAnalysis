@@ -2,7 +2,7 @@ import numpy as np
 import awkward as ak
 import os
 
-from coffea import processor
+from coffea import processor, lumi_tools
 from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoEventsFactory, NanoAODSchema
 from coffea.analysis_tools import PackedSelection
@@ -12,7 +12,7 @@ from .GenMatch import GenMatch
 
 class Processor(processor.ProcessorABC):
     def __init__(
-        self, machine: str, outdir: str, channel: str,
+        self, environment: str, outdir: str, mode: str,
         cutValue: dict={
             'deltaR': {'min': 1.1},
         }, triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
@@ -25,14 +25,31 @@ class Processor(processor.ProcessorABC):
         self.variables = {}
         self.cutflow = {}
         self.outdir = os.path.abspath(outdir)
-        if machine not in ['local', 'condor']:
-            raise ValueError("Processor.__init__(): machine must be in ['local', 'condor']")
-        self.machine = machine
-        self.channel = channel
+        if environment not in ['local', 'condor']:
+            raise ValueError("Processor.__init__(): environment must be in ['local', 'condor']")
+        self.environment = environment ## 'local' or 'condor'
+        self.mode = mode ## = '$type_$year(_$channel)'
         self.cutValue = cutValue
         self.cuts = PackedSelection()
         self._accumulator = processor.defaultdict_accumulator()
     
+    
+    def lumi_mask(self, events: NanoEventsArray) -> NanoEventsArray: ## only applied on data
+        golden_JSON = {
+            '2018': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt',
+            '2017': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt',
+            '2016': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt', 
+        }
+        sample_type, year = self.mode.split('_')[0], self.mode.split('_')[1]
+        if sample_type=='mc': ## usually skipped cuz type is restricted to data before executing this function
+            return events
+        elif sample_type=='data':
+            lumi_mask = lumi_tools.LumiMask(golden_JSON[year])
+            data_mask = lumi_mask(events.run, events.luminosityBlock)
+            return events[data_mask]
+        else:
+            raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
+        
     
     def pass_cut(self, cutName: str, cut: ak.Array, mask: bool=True) -> None:
         self.cuts.add(cutName, cut)
@@ -50,11 +67,10 @@ class Processor(processor.ProcessorABC):
     def triggered(self, level: str='any') -> ak.Array:
         if level not in ['any', 'all']:
             raise ValueError("Processor.passTriggers(): level must be in ['any', 'all']")
-        elif level == 'any':
-            return ak.sum([self.event.HLT[t] for t in self.triggers if t in self.event.HLT.fields], axis=0) > 0 
-        elif level == 'all':
-            raise ValueError("Processor.passTriggers(level='all') not finished yet")## not finished yet
-            ## pass all triggers
+        elif level == 'any': ## pass any trigger
+            return ak.any([self.event.HLT[t] for t in self.triggers if t in self.event.HLT.fields], axis=0)
+        elif level == 'all': ## pass all triggers
+            return ak.all([self.event.HLT[t] for t in self.triggers if t in self.event.HLT.fields], axis=0)
             
         
     def b_tag(self, level: str='tight', reco: bool=False) -> ak.Array:
@@ -126,26 +142,27 @@ class Processor(processor.ProcessorABC):
     
     def store_variables(self, vars: dict):
         for obj in vars.keys():
-            if obj!='event':
-                self.variables.update({obj+'_'+var: getattr(self.object[obj], var) for var in vars[obj]})
-            else:
-                self.variables.update({
-                    'event_'+var: self.event[var.split('_')[0]]['_'.join(var.split('_')[1:])] 
-                    for var in vars['event']
-                })
+            for var in vars[obj]:
+                if obj!='event':
+                    array = getattr(self.object[obj], var)
+                elif obj=='event' and '_' in var:
+                    array = self.event[var.split('_')[0]]['_'.join(var.split('_')[1:])]
+                elif obj=='event' and '_' not in var:
+                    array = getattr(self.event, var)
+                self.variables[obj+'_'+var] = array
     
     
     def to_parquet(self, array: ak.Array) -> None:
-        if self.machine not in ['local', 'condor']:
-            raise ValueError("Processor.__init__(): machine must be in ['local', 'condor']")
+        if self.environment not in ['local', 'condor']:
+            raise ValueError("Processor.__init__(): environment must be in ['local', 'condor']")
 
         output_dir = os.path.abspath(self.outdir)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        if self.machine=='local':
+        if self.environment=='local':
             tokens = self.event.behavior["__events_factory__"]._partition_key.split('/')
             name = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens ])
-        elif self.machine=='condor':
+        elif self.environment=='condor':
             name = 'output'
         
         ak.to_parquet(array=array, where=os.path.join(output_dir, f'{name}.parq'))
@@ -180,13 +197,14 @@ class Processor(processor.ProcessorABC):
         self.object['photon'] = self.object['photon'][photon_index]
         self.object['AK8jet'] = self.object['AK8jet'][jet_index]
         self.object['photon-jet'] = self.object['photon'] + self.object['AK8jet']
+        ## mask=False means to drop events not passing all selections
         self.pass_cut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1), mask=False) 
         
         ## Return vars of objects after pre-selection
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
             'photon': {'pt', 'eta', 'phi', 'mass'},
-            'event': {'MET_pt'},
+            'event': {'MET_pt', 'genWeight'},
             'photon-jet': {'pt', 'eta', 'phi', 'mass'},
         })
 
@@ -198,8 +216,13 @@ class Processor(processor.ProcessorABC):
 
     def process(self, events: NanoEventsArray) -> dict:
         ## initialize
-        self.event = events
-        
+        if self.mode.startswith('data'):
+            self.event = self.lumi_mask(events)
+        elif self.mode.startswith('mc'):
+            self.event = events
+        else:
+            raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
+
         ## process
         event_cut = self.preselect_HGamma()
         cutflow = {k: int(ak.sum(v)) for (k,v) in self.cutflow.items()}
@@ -208,7 +231,7 @@ class Processor(processor.ProcessorABC):
             return cutflow
         
         ## gen-macthing
-        if self.channel == 'ZpToHGamma':
+        if 'ZpToHGamma' in self.mode:
             gen_match = GenMatch()
             self.variables.update(gen_match.ZpToHGamma(self.event))
         
