@@ -165,7 +165,7 @@ class Processor(processor.ProcessorABC):
         elif self.environment=='condor':
             name = 'output'
         
-        ak.to_parquet(array=array, where=os.path.join(output_dir, f'{name}.parq'))
+        ak.to_parquet(array=ak.Array(array), where=os.path.join(output_dir, f'{name}.parq'))
     
       
     def preselect_HGamma(self) -> ak.Array: ## __ in prefix means private method
@@ -227,7 +227,7 @@ class Processor(processor.ProcessorABC):
         event_cut = self.preselect_HGamma()
         cutflow = {k: int(ak.sum(v)) for (k,v) in self.cutflow.items()}
         if all(event_cut==False):
-            self.to_parquet(array=ak.Array({}))
+            self.to_parquet(array={})
             return cutflow
         
         ## gen-macthing
@@ -236,7 +236,7 @@ class Processor(processor.ProcessorABC):
             self.variables.update(gen_match.ZpToHGamma(self.event))
         
         ## store output
-        self.to_parquet(array=ak.Array(self.variables))
+        self.to_parquet(array=self.variables)
         return cutflow
     
     
