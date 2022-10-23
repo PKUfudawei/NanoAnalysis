@@ -53,10 +53,8 @@ def filelist_to_submit(filelist: str, template: str, args: argparse.Namespace):
     folder = os.path.join('./submit', *name.split('/')[:-1])
     if not os.path.exists(folder):
         os.makedirs(folder)
-    if args.type=='data':
-        mode = '_'.join([args.type, args.year])
-    elif args.type=='mc':
-        mode = '_'.join([args.type, args.year, args.channel])
+
+    mode = '_'.join([args.type, args.year, args.channel])
     with open(f'./submit/{name}.submit', 'w') as f:
         f.write(
             template.replace('$template', name).replace('$mode', mode)
@@ -71,11 +69,9 @@ def main() -> None:
     if args.remove.capitalize() == 'True':
         print('!!! Removing previous ./filelists and ./submit !!!')
         os.system("rm -rf ./filelists ./submit")
+        
     print('#' * 150)
-    if args.type=='data':
-        dataset_cards = os.path.join(args.directory, args.type, args.year, args.version + '.yaml')
-    elif args.type=='mc':
-        dataset_cards = os.path.join(args.directory, args.type, args.year, args.channel, args.version + '.yaml')
+    dataset_cards = os.path.join(args.directory, args.type, args.year, args.channel, args.version + '.yaml')
     dataset_cards = set(glob.glob(dataset_cards))
     print(f'==> Start generating filelist(s) from {len(dataset_cards)} dataset-cards')
     
@@ -85,10 +81,7 @@ def main() -> None:
     print(f'==> Successfully generated {succeeded} filelist(s) in total')
     
     print('#' * 150)
-    if args.type=='data':
-        filelists = os.path.join('filelists', args.type, args.year, '*.txt')
-    elif args.type=='mc':
-        filelists = os.path.join('filelists', args.type, args.year, args.channel, '*.txt')
+    filelists = os.path.join('filelists', args.type, args.year, args.channel, '*.txt')
     filelists = set(glob.glob(filelists))
     print(f'==> Start generating condor-submit job(s) from {len(filelists)} filelists')
     

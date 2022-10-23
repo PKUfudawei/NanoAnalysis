@@ -22,6 +22,8 @@ class Processor(processor.ProcessorABC):
         self.variables = {}
         self.cutflow = {}
         self.outdir = os.path.abspath(outdir)
+        if mode.split('_')[0] not in ['data', 'mc']:
+            raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
         self.mode = mode  # = '$type_$year(_$channel)'
         self.cutValue = cutValue
         self.cuts = PackedSelection()
@@ -31,7 +33,7 @@ class Processor(processor.ProcessorABC):
         golden_JSON = {
             '2018': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt',
             '2017': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt',
-            '2016': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt', 
+            '2016': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt',
         }
         sample_type, year = self.mode.split('_')[0], self.mode.split('_')[1]
         if sample_type=='mc':  # usually skipped cuz type is restricted to data before executing this function
@@ -40,20 +42,26 @@ class Processor(processor.ProcessorABC):
             lumi_mask = lumi_tools.LumiMask(golden_JSON[year])
             data_mask = lumi_mask(events.run, events.luminosityBlock)
             return events[data_mask]
-        else:
-            raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
         
-    def pass_cut(self, cutName: str, cut: ak.Array, mask: bool = True) -> None:
+    def pass_cut(self, cutName: str, cut: ak.Array, final: bool = False) -> None:
         self.cuts.add(cutName, cut)
-        self.cutflow[cutName] = self.cuts.all(*self.cuts.names)
-        if mask:  # update all objects after passing cut
-            self.event = ak.mask(array=self.event, mask=self.cutflow[cutName])
-            for obj in self.object:  # keep size: (event, object) in intermediate process
-                self.object[obj] = ak.mask(self.object[obj], mask=self.cutflow[cutName])
-        else:  # make projection after all cuts to reduce event size
-            self.event = self.event[self.cutflow[cutName]]
+        
+        # calculate cutflow
+        event_flag = self.cuts.all(*self.cuts.names)
+        if self.mode.startswith('data'):
+            self.cutflow[cutName] = ak.sum(event_flag)
+        elif self.mode.startswith('mc'):
+            self.cutflow[cutName] = ak.sum(self.event.genWeight[event_flag])
+        
+        # update events and all objects after passing cut
+        if final:  # if it is final cut, let's make projection to drop unwanted events and objects
+            self.event = self.event[event_flag]
             for obj in self.object:
-                self.object[obj] = ak.flatten(self.object[obj][self.cutflow[cutName]], axis=1)
+                self.object[obj] = ak.flatten(self.object[obj][event_flag], axis = 1)
+        else:  # if it is intermediate cut, keep event size but fill unwanted events and objects with None
+            self.event = ak.mask(array=self.event, mask = event_flag)
+            for obj in self.object:  # keep size: (event, object) in intermediate process
+                self.object[obj] = ak.mask(self.object[obj], mask = event_flag)
     
     def triggered(self, level: str = 'any') -> ak.Array:
         if level not in ['any', 'all']:
@@ -70,8 +78,8 @@ class Processor(processor.ProcessorABC):
         raw_AK4jet = self.event.Jet
         # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
         # refer to https://gitlab.cern.ch/groups/cms-btv/-/wikis/SFCampaigns/UL2018
-        WP = {'loose': 0.0490, 'medium': 0.2783, 'tight': 0.7100} 
-        self.tag['b'] = (raw_AK4jet.btagDeepFlavB > WP[level]) 
+        WP = {'loose': 0.0490, 'medium': 0.2783, 'tight': 0.7100}
+        self.tag['b'] = (raw_AK4jet.btagDeepFlavB > WP[level])
         if reco:
             self.object['b'] = self.event.Jet[self.tag['b']]
         return self.tag['b']
@@ -118,7 +126,7 @@ class Processor(processor.ProcessorABC):
             (raw_AK8jet.pt > 250) &
             (abs(raw_AK8jet.eta) < 2.4) &
             (raw_AK8jet.jetId & 2 > 0)
-            # Jet ID flags bit1 is loose (always false in 2017 since it does not exist), 
+            # Jet ID flags bit1 is loose (always false in 2017 since it does not exist),
             # bit2 is tight, bit3 is tightLepVeto
         )
         if reco:
@@ -133,7 +141,8 @@ class Processor(processor.ProcessorABC):
                 elif obj=='event' and '_' in var:
                     array = self.event[var.split('_')[0]]['_'.join(var.split('_')[1:])]
                 elif obj=='event' and '_' not in var:
-                    array = getattr(self.event, var)
+                    array = getattr(self.event, var, ak.ones_like(self.event.run))
+                    
                 self.variables[f'{obj}_{var}'] = array
     
     def to_parquet(self, array: ak.Array) -> None:
@@ -174,8 +183,8 @@ class Processor(processor.ProcessorABC):
         self.object['photon'] = self.object['photon'][photon_index]
         self.object['AK8jet'] = self.object['AK8jet'][jet_index]
         self.object['photon-jet'] = self.object['photon'] + self.object['AK8jet']
-        # mask=False means to drop events not passing all selections
-        self.pass_cut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1), mask=False)
+        # final=True means to drop events not passing all selections
+        self.pass_cut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1), final=True)
         
         # Return vars of objects after pre-selection
         self.store_variables(vars={
@@ -194,25 +203,23 @@ class Processor(processor.ProcessorABC):
         # initialize
         if self.mode.startswith('data'):
             self.event = self.lumi_mask(events)
+            self.cutflow['n_events'] = len(self.event)
         elif self.mode.startswith('mc'):
             self.event = events
-        else:
-            raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
+            self.cutflow['n_events'] = ak.sum(self.event.genWeight)
 
         # process
         event_cut = self.preselect_HGamma()
-        cutflow = {k: int(ak.sum(v)) for (k, v) in self.cutflow.items()}
-        if all(event_cut==False):
-            return cutflow
         
         # gen-macthing
-        if 'ZpToHGamma' in self.mode:
+        if 'ZpToHGamma' in self.mode and any(event_cut):
             gen_match = GenMatch()
             self.variables.update(gen_match.ZpToHGamma(self.event))
         
         # store output
-        self.to_parquet(array=self.variables)
-        return cutflow
+        if any(event_cut):
+            self.to_parquet(array=self.variables)
+        return {self.mode: {k: float(v) for (k, v) in self.cutflow.items()}}
     
     @property  # transform method into attribute and make it unchangable to hide _accumulator
     def accumulator(self):
