@@ -17,7 +17,7 @@ voms-proxy-info
 printf "===> Job is running in directory: "; /bin/pwd
 
 ## execute main.py
-echo "`python3 src/main.py -f $1 -e $2 -m $3`"
+echo "`python3 src/main.py -f $1 -m $2`"
 
-## transfer files
-xrdcp -f *.parquet root://eosuser.cern.ch/$4
+## transfer files via condor
+#xrdcp -f *.parquet root://eosuser.cern.ch/$3

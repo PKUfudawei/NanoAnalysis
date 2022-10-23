@@ -9,7 +9,7 @@ from .GenMatch import GenMatch
 
 class Processor(processor.ProcessorABC):
     def __init__(
-        self, environment: str, outdir: str, mode: str,
+        self, outdir: str, mode: str,
         cutValue: dict = {
             'deltaR': {'min': 1.1},
         }, triggers: list = ['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
@@ -22,9 +22,6 @@ class Processor(processor.ProcessorABC):
         self.variables = {}
         self.cutflow = {}
         self.outdir = os.path.abspath(outdir)
-        if environment not in ['local', 'condor']:
-            raise ValueError("Processor.__init__(): environment must be in ['local', 'condor']")
-        self.environment = environment  # 'local' or 'condor'
         self.mode = mode  # = '$type_$year(_$channel)'
         self.cutValue = cutValue
         self.cuts = PackedSelection()
@@ -140,17 +137,11 @@ class Processor(processor.ProcessorABC):
                 self.variables[f'{obj}_{var}'] = array
     
     def to_parquet(self, array: ak.Array) -> None:
-        if self.environment not in ['local', 'condor']:
-            raise ValueError("Processor.__init__(): environment must be in ['local', 'condor']")
-
         output_dir = os.path.abspath(self.outdir)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        if self.environment=='local':
-            tokens = self.event.behavior["__events_factory__"]._partition_key.split('/')
-            name = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens])
-        elif self.environment=='condor':
-            name = 'output'
+        tokens = self.event.behavior["__events_factory__"]._partition_key.split('/')
+        name = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens])
         
         ak.to_parquet(array=ak.Array(array), where=os.path.join(output_dir, f'{name}.parq'))
     
@@ -212,7 +203,6 @@ class Processor(processor.ProcessorABC):
         event_cut = self.preselect_HGamma()
         cutflow = {k: int(ak.sum(v)) for (k, v) in self.cutflow.items()}
         if all(event_cut==False):
-            self.to_parquet(array={})
             return cutflow
         
         # gen-macthing
