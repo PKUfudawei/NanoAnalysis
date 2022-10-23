@@ -57,10 +57,9 @@ def filelist_to_submit(filelist: str, template: str, args: argparse.Namespace):
         mode = '_'.join([args.type, args.year])
     elif args.type=='mc':
         mode = '_'.join([args.type, args.year, args.channel])
-    outdir = subprocess.check_output('pwd', shell=True, encoding='utf-8').strip() + '/output'
     with open(f'./submit/{name}.submit', 'w') as f:
         f.write(
-            template.replace('$template', name).replace('$mode', mode).replace('$output_dir', outdir)
+            template.replace('$template', name).replace('$mode', mode)
         )
         
     print(f'==> Generated submit/{name}.submit from {filelist}')
