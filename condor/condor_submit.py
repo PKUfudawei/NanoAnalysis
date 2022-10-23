@@ -3,6 +3,7 @@ import argparse
 import os
 import subprocess
 
+
 def parse_commanline():
     parser = argparse.ArgumentParser(description='Script to check if each condor job is done')
     parser.add_argument('-t', '--type', help='To specify jobs in mc/ or data/', choices=('data', 'mc', '*'), default='*')
@@ -13,14 +14,15 @@ def parse_commanline():
     args = parser.parse_args()
     return args
 
+
 def main() -> None:
     args = parse_commanline()
     if args.bump.capitalize()=='True':
         print("====> Jump to the best schedd")
-        schedd = subprocess.check_output(f"myschedd bump", shell=True, encoding='utf-8').split("'")[1]
+        schedd = subprocess.check_output("myschedd bump", shell=True, encoding='utf-8').split("'")[1]
     else:
         schedd = ''
-    ## myschedd set $schedd
+    # myschedd set $schedd
     os.system(f"""
         myschedd show
         echo "###########################################################################"
@@ -33,7 +35,7 @@ def main() -> None:
         do
             read -n 1 -p "Press ENTER to submit condor jobs or CTRL+c to exit> " input
             if [[ -z $input ]];then
-                break   
+                break
             fi
             echo ""
         done
@@ -43,6 +45,7 @@ def main() -> None:
             do condor_submit $jdl
         done
         """)
-    
+
+   
 if __name__ == "__main__":
     main()

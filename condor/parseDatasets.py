@@ -6,6 +6,7 @@ import yaml
 import json
 import subprocess
 
+
 def parse_commanline():
     parser = argparse.ArgumentParser(description='Script to check if each condor job is done')
     parser.add_argument('-rm', '--remove', help='Whether to remove previous filelists/ and submit/', choices=('True', 'False', 'ture', 'false'), default='True')
@@ -19,6 +20,7 @@ def parse_commanline():
     args = parser.parse_args()
     return args
 
+
 def dataset_to_filelist(card_path: str):
     name = os.path.join(*card_path.split('/')[-4:-1])
     with open(card_path, 'r') as f:
@@ -30,7 +32,7 @@ def dataset_to_filelist(card_path: str):
         output = subprocess.check_output(f"/cvmfs/cms.cern.ch/common/dasgoclient -query={query} -json", shell=True, encoding='utf-8')
         output = json.loads(output)
         for file_info in output:
-            filelist.append('root://cms-xrd-global.cern.ch/'+file_info['file'][0]['name'])
+            filelist.append('root://cms-xrd-global.cern.ch/' + file_info['file'][0]['name'])
         
         if not os.path.exists(f'./filelists/{name}'):
             os.makedirs(f'./filelists/{name}')
@@ -55,10 +57,11 @@ def filelist_to_submit(filelist: str, template: str, args: argparse.Namespace):
         mode = '_'.join([args.type, args.year])
     elif args.type=='mc':
         mode = '_'.join([args.type, args.year, args.channel])
+    outdir = subprocess.check_output('pwd', shell=True, encoding='utf-8').strip() + '/output'
     with open(f'./submit/{name}.submit', 'w') as f:
         f.write(
             template.replace('$template', name).replace('$environment', args.environment)
-            .replace('$outdir', args.outdir).replace('$mode', mode)
+            .replace('$outdir', args.outdir).replace('$mode', mode).replace('$local_dir', outdir)
         )
         
     print(f'==> Generated submit/{name}.submit from {filelist}')
@@ -70,20 +73,20 @@ def main() -> None:
     if args.remove.capitalize() == 'True':
         print('!!! Removing previous ./filelists and ./submit !!!')
         os.system("rm -rf ./filelists ./submit")
-    print('#'*150)
+    print('#' * 150)
     if args.type=='data':
-        dataset_cards = os.path.join(args.directory, args.type, args.year, args.version+'.yaml')
+        dataset_cards = os.path.join(args.directory, args.type, args.year, args.version + '.yaml')
     elif args.type=='mc':
-        dataset_cards = os.path.join(args.directory, args.type, args.year, args.channel, args.version+'.yaml')
+        dataset_cards = os.path.join(args.directory, args.type, args.year, args.channel, args.version + '.yaml')
     dataset_cards = set(glob.glob(dataset_cards))
     print(f'==> Start generating filelist(s) from {len(dataset_cards)} dataset-cards')
     
     succeeded = 0
-    for dataset_card in dataset_cards:            
+    for dataset_card in dataset_cards:
         succeeded += dataset_to_filelist(card_path=dataset_card)
     print(f'==> Successfully generated {succeeded} filelist(s) in total')
     
-    print('#'*150)
+    print('#' * 150)
     if args.type=='data':
         filelists = os.path.join('filelists', args.type, args.year, '*.txt')
     elif args.type=='mc':
@@ -99,9 +102,8 @@ def main() -> None:
         args.channel = filelist.split('/')[-2]
         succeeded += filelist_to_submit(filelist=filelist, template=template, args=args)
     print(f'==> Successfully generated {succeeded} condor-submit file(s) in total')
-    print('################################################'*3)
+    print('#' * 150)
     print('Having generated corresponding empty log/ and output/ directories')
-        
     
     
 if __name__ == "__main__":

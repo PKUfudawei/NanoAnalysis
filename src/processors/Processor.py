@@ -3,7 +3,6 @@ import awkward as ak
 import os
 
 from coffea import processor, lumi_tools
-from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoEventsFactory, NanoAODSchema
 from coffea.analysis_tools import PackedSelection
 from coffea.nanoevents.methods.base import NanoEventsArray
@@ -27,14 +26,13 @@ class Processor(processor.ProcessorABC):
         self.outdir = os.path.abspath(outdir)
         if environment not in ['local', 'condor']:
             raise ValueError("Processor.__init__(): environment must be in ['local', 'condor']")
-        self.environment = environment ## 'local' or 'condor'
-        self.mode = mode ## = '$type_$year(_$channel)'
+        self.environment = environment  # 'local' or 'condor'
+        self.mode = mode  # = '$type_$year(_$channel)'
         self.cutValue = cutValue
         self.cuts = PackedSelection()
         self._accumulator = processor.defaultdict_accumulator()
     
-    
-    def lumi_mask(self, events: NanoEventsArray) -> NanoEventsArray: ## only applied on data
+    def lumi_mask(self, events: NanoEventsArray) -> NanoEventsArray:  # only applied on data
         golden_JSON = {
             '2018': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt',
             '2017': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt',
@@ -50,11 +48,10 @@ class Processor(processor.ProcessorABC):
         else:
             raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
         
-    
     def pass_cut(self, cutName: str, cut: ak.Array, mask: bool=True) -> None:
         self.cuts.add(cutName, cut)
         self.cutflow[cutName] = self.cuts.all(*self.cuts.names)
-        if mask: ## update all objects after passing cut
+        if mask:  # update all objects after passing cut
             self.event = ak.mask(array=self.event, mask=self.cutflow[cutName])
             for obj in self.object: ## keep size: (event, object) in intermediate process
                 self.object[obj] = ak.mask(self.object[obj], mask=self.cutflow[cutName])
