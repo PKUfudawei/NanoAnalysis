@@ -1,4 +1,0 @@
-root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/ZpToHGamma_M1200_13TeV_TuneCP5_madgraph-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/130000/E00AFACB-2619-BC41-B769-0CDAA1178466.root
-root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/ZpToHGamma_M1200_13TeV_TuneCP5_madgraph-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/260000/5844EC70-38B4-CF48-87C2-DF74AF87A4C2.root
-root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/ZpToHGamma_M1200_13TeV_TuneCP5_madgraph-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/270000/4275B3CA-8132-A946-B4AD-8B8A197F5E63.root
-root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/ZpToHGamma_M1200_13TeV_TuneCP5_madgraph-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/270000/CF533F49-99C4-9947-932F-039D63A0371E.root

@@ -20,4 +20,4 @@ printf "===> Job is running in directory: "; /bin/pwd
 echo "`python3 src/main.py -f $1 -e $2 -m $3`"
 
 ## transfer files
-xrdcp -f *.parquet root://eosuser.cern.ch/
+xrdcp -f *.parquet root://eosuser.cern.ch/$4

@@ -1,20 +1,18 @@
-import numpy as np
 import awkward as ak
 import os
 
 from coffea import processor, lumi_tools
-from coffea.nanoevents import NanoEventsFactory, NanoAODSchema
 from coffea.analysis_tools import PackedSelection
 from coffea.nanoevents.methods.base import NanoEventsArray
-from coffea.nanoevents.methods.nanoaod import FatJetArray, GenParticleArray
 from .GenMatch import GenMatch
+
 
 class Processor(processor.ProcessorABC):
     def __init__(
         self, environment: str, outdir: str, mode: str,
-        cutValue: dict={
+        cutValue: dict = {
             'deltaR': {'min': 1.1},
-        }, triggers: list=['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
+        }, triggers: list = ['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
     ) -> None:
         super().__init__()
         self.triggers = triggers
@@ -39,7 +37,7 @@ class Processor(processor.ProcessorABC):
             '2016': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt', 
         }
         sample_type, year = self.mode.split('_')[0], self.mode.split('_')[1]
-        if sample_type=='mc': ## usually skipped cuz type is restricted to data before executing this function
+        if sample_type=='mc':  # usually skipped cuz type is restricted to data before executing this function
             return events
         elif sample_type=='data':
             lumi_mask = lumi_tools.LumiMask(golden_JSON[year])
@@ -48,29 +46,27 @@ class Processor(processor.ProcessorABC):
         else:
             raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
         
-    def pass_cut(self, cutName: str, cut: ak.Array, mask: bool=True) -> None:
+    def pass_cut(self, cutName: str, cut: ak.Array, mask: bool = True) -> None:
         self.cuts.add(cutName, cut)
         self.cutflow[cutName] = self.cuts.all(*self.cuts.names)
         if mask:  # update all objects after passing cut
             self.event = ak.mask(array=self.event, mask=self.cutflow[cutName])
-            for obj in self.object: ## keep size: (event, object) in intermediate process
+            for obj in self.object:  # keep size: (event, object) in intermediate process
                 self.object[obj] = ak.mask(self.object[obj], mask=self.cutflow[cutName])
-        else: ## make projection after all cuts to reduce event size
+        else:  # make projection after all cuts to reduce event size
             self.event = self.event[self.cutflow[cutName]]
-            for obj in self.object: 
+            for obj in self.object:
                 self.object[obj] = ak.flatten(self.object[obj][self.cutflow[cutName]], axis=1)
     
-    
-    def triggered(self, level: str='any') -> ak.Array:
+    def triggered(self, level: str = 'any') -> ak.Array:
         if level not in ['any', 'all']:
             raise ValueError("Processor.passTriggers(): level must be in ['any', 'all']")
-        elif level == 'any': ## pass any trigger
+        elif level == 'any':  # pass any trigger
             return ak.any([self.event.HLT[t] for t in self.triggers if t in self.event.HLT.fields], axis=0)
-        elif level == 'all': ## pass all triggers
+        elif level == 'all':  # pass all triggers
             return ak.all([self.event.HLT[t] for t in self.triggers if t in self.event.HLT.fields], axis=0)
             
-        
-    def b_tag(self, level: str='tight', reco: bool=False) -> ak.Array:
+    def b_tag(self, level: str = 'tight', reco: bool = False) -> ak.Array:
         if level not in ['loose', 'medium', 'tight']:
             raise ValueError("Processor.b_veto(): level must be in ['loose', 'medium', 'tight']")
         
@@ -83,25 +79,23 @@ class Processor(processor.ProcessorABC):
             self.object['b'] = self.event.Jet[self.tag['b']]
         return self.tag['b']
     
-    
-    def muon_tag(self, reco: bool=False) -> ak.Array:
-        raw_muon = self.event.Muon # (event, muon)
-        self.tag['muon'] = ( # (event, boolean)
+    def muon_tag(self, reco: bool = False) -> ak.Array:
+        raw_muon = self.event.Muon  # (event, muon)
+        self.tag['muon'] = (  # (event, boolean)
             # high-pT cut-based ID (1 = tracker high pT, 2 = global high pT, which includes tracker high pT)
-            (raw_muon.highPtId == 2) & 
-            (raw_muon.tkRelIso < 0.1) & # Tracker-based relative isolation dR=0.3 for highPt, trkIso/tunePpt
-            (abs(raw_muon.eta) < 2.4) & 
-            (raw_muon.pt > 20) # I don't use `muon_corrected_pt` coming from ROOT.RoccoR
+            (raw_muon.highPtId == 2) &
+            (raw_muon.tkRelIso < 0.1) &  # Tracker-based relative isolation dR=0.3 for highPt, trkIso/tunePpt
+            (abs(raw_muon.eta) < 2.4) &
+            (raw_muon.pt > 20)  # I don't use `muon_corrected_pt` coming from ROOT.RoccoR
         )
         if reco:
             self.object['muon'] = self.event.Muon[self.tag['muon']]
         return self.tag['muon']
     
-    
-    def electron_tag(self, reco: bool=False) -> ak.Array:
-        raw_electron = self.event.Electron # (event, electron)
-        self.tag['electron'] = ( # (event, boolean)
-            (raw_electron.cutBased_HEEP == True) & # cut-based HEEP ID
+    def electron_tag(self, reco: bool = False) -> ak.Array:
+        raw_electron = self.event.Electron  # (event, electron)
+        self.tag['electron'] = (  # (event, boolean)
+            (raw_electron.cutBased_HEEP == True) &  # cut-based HEEP ID
             (abs(raw_electron.eta) < 2.5) &
             (raw_electron.pt > 20)
         )
@@ -109,10 +103,9 @@ class Processor(processor.ProcessorABC):
             self.object['electron'] = self.event.Electron[self.tag['electron']]
         return self.tag['electron']
     
-    
-    def photon_tag(self, reco: bool=False) -> ak.Array:
-        raw_photon = self.event.Photon # (event, photon), >=1 photon per event
-        self.tag['photon'] = ( # (event, boolean)
+    def photon_tag(self, reco: bool = False) -> ak.Array:
+        raw_photon = self.event.Photon  # (event, photon), >=1 photon per event
+        self.tag['photon'] = (  # (event, boolean)
             (raw_photon.mvaID_WP90 > 0.2) &
             (raw_photon.pt > 200) &
             (abs(raw_photon.eta) < 2.4)
@@ -121,21 +114,19 @@ class Processor(processor.ProcessorABC):
             self.object['photon'] = self.event.Photon[self.tag['photon']]
         return self.tag['photon']
     
-    
-    def AK8jet_tag(self, reco: bool=False) -> ak.Array:
-        raw_AK8jet = self.event.FatJet # (event, fatjet), >=1 AK8 jet per event
-        self.tag['AK8jet'] = ( # (event, boolean)
-            (raw_AK8jet.msoftdrop > 40) & # Corrected soft drop mass with PUPPI
-            (raw_AK8jet.pt > 250) & 
-            (abs(raw_AK8jet.eta) < 2.4) & 
-            (raw_AK8jet.jetId&2 > 0)
+    def AK8jet_tag(self, reco: bool = False) -> ak.Array:
+        raw_AK8jet = self.event.FatJet  # (event, fatjet), >=1 AK8 jet per event
+        self.tag['AK8jet'] = (  # (event, boolean)
+            (raw_AK8jet.msoftdrop > 40) &  # Corrected soft drop mass with PUPPI
+            (raw_AK8jet.pt > 250) &
+            (abs(raw_AK8jet.eta) < 2.4) &
+            (raw_AK8jet.jetId & 2 > 0)
             # Jet ID flags bit1 is loose (always false in 2017 since it does not exist), 
             # bit2 is tight, bit3 is tightLepVeto
         )
         if reco:
             self.object['AK8jet'] = self.event.FatJet[self.tag['AK8jet']]
         return self.tag['AK8jet']
-    
     
     def store_variables(self, vars: dict):
         for obj in vars.keys():
@@ -146,8 +137,7 @@ class Processor(processor.ProcessorABC):
                     array = self.event[var.split('_')[0]]['_'.join(var.split('_')[1:])]
                 elif obj=='event' and '_' not in var:
                     array = getattr(self.event, var)
-                self.variables[obj+'_'+var] = array
-    
+                self.variables[f'{obj}_{var}'] = array
     
     def to_parquet(self, array: ak.Array) -> None:
         if self.environment not in ['local', 'condor']:
@@ -158,46 +148,45 @@ class Processor(processor.ProcessorABC):
             os.makedirs(output_dir)
         if self.environment=='local':
             tokens = self.event.behavior["__events_factory__"]._partition_key.split('/')
-            name = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens ])
+            name = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens])
         elif self.environment=='condor':
             name = 'output'
         
         ak.to_parquet(array=ak.Array(array), where=os.path.join(output_dir, f'{name}.parq'))
     
-      
-    def preselect_HGamma(self) -> ak.Array: ## __ in prefix means private method
-        ## at least pass one trigger
+    def preselect_HGamma(self) -> ak.Array:  # __ in prefix means private method
+        # at least pass one trigger
         self.pass_cut(cutName='triggered', cut=self.triggered(level='any'))
         
-        ## b veto
+        # b veto
         self.pass_cut(cutName='b-veto', cut=(ak.sum(self.b_tag(level='tight'), axis=1)==0))
 
-        ## Muon veto
+        # Muon veto
         self.pass_cut(cutName='muon-veto', cut=(ak.sum(self.muon_tag(), axis=1)==0))
         
-        ## Electron veto
-        self.pass_cut(cutName='electron-veto', cut=(ak.sum(self.electron_tag(), axis=1)==0)) 
+        # Electron veto
+        self.pass_cut(cutName='electron-veto', cut=(ak.sum(self.electron_tag(), axis=1)==0))
         
-        ## Photon >=1
-        self.pass_cut(cutName='photon', cut=(ak.sum(self.photon_tag(reco=True), axis=1)>0)) 
+        # Photon >=1
+        self.pass_cut(cutName='photon', cut=(ak.sum(self.photon_tag(reco=True), axis=1)>0))
         
-        ## AK8 jet >=1
+        # AK8 jet >=1
         self.pass_cut(cutName='AK8jet', cut=(ak.sum(self.AK8jet_tag(reco=True), axis=1)>0))
         
-        ## Photon-Jet cleaning, a very special part so no function definition here
+        # Photon-Jet cleaning, a very special part so no function definition here
         pj_pair = ak.cartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
         pj_index_pair = ak.argcartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
         pj_dr = pj_pair.photon.delta_r(pj_pair.jet)
         pj_clean = (pj_dr > self.cutValue['deltaR']['min'])
         photon_index, jet_index = pj_index_pair.photon[pj_clean], pj_index_pair.jet[pj_clean]
-        ## exactly 1 pair of photon and jet passed jet-cleaning requirement
+        # exactly 1 pair of photon and jet passed jet-cleaning requirement
         self.object['photon'] = self.object['photon'][photon_index]
         self.object['AK8jet'] = self.object['AK8jet'][jet_index]
         self.object['photon-jet'] = self.object['photon'] + self.object['AK8jet']
-        ## mask=False means to drop events not passing all selections
-        self.pass_cut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1), mask=False) 
+        # mask=False means to drop events not passing all selections
+        self.pass_cut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1), mask=False)
         
-        ## Return vars of objects after pre-selection
+        # Return vars of objects after pre-selection
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
             'photon': {'pt', 'eta', 'phi', 'mass'},
@@ -205,14 +194,13 @@ class Processor(processor.ProcessorABC):
             'photon-jet': {'pt', 'eta', 'phi', 'mass'},
         })
 
-        ## Additional vars by special computing
+        # Additional vars by special computing
         self.variables['photon-jet_deltaR'] = self.object['photon'].delta_r(self.object['AK8jet'])
 
         return self.cuts.all(*self.cuts.names)
     
-
     def process(self, events: NanoEventsArray) -> dict:
-        ## initialize
+        # initialize
         if self.mode.startswith('data'):
             self.event = self.lumi_mask(events)
         elif self.mode.startswith('mc'):
@@ -220,27 +208,25 @@ class Processor(processor.ProcessorABC):
         else:
             raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
 
-        ## process
+        # process
         event_cut = self.preselect_HGamma()
-        cutflow = {k: int(ak.sum(v)) for (k,v) in self.cutflow.items()}
+        cutflow = {k: int(ak.sum(v)) for (k, v) in self.cutflow.items()}
         if all(event_cut==False):
             self.to_parquet(array={})
             return cutflow
         
-        ## gen-macthing
+        # gen-macthing
         if 'ZpToHGamma' in self.mode:
             gen_match = GenMatch()
             self.variables.update(gen_match.ZpToHGamma(self.event))
         
-        ## store output
+        # store output
         self.to_parquet(array=self.variables)
         return cutflow
     
-    
-    @property ## transform method into attribute and make it unchangable to hide _accumulator
+    @property  # transform method into attribute and make it unchangable to hide _accumulator
     def accumulator(self):
         return self._accumulator
-    
     
     def postprocess(self, accumulator):
         return super().postprocess(accumulator)
