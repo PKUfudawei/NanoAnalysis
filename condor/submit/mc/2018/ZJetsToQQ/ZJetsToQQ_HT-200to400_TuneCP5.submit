@@ -12,7 +12,7 @@ JobBatchName = mc/2018/ZJetsToQQ/ZJetsToQQ_HT-200to400_TuneCP5
 # EXECUTABLE is the program your job will run It's often useful 
 # to create a shell script to "wrap" your actual work. 
 Executable = ./Execute.sh
-Arguments = $(file) *_2018_ZJetsToQQ
+Arguments = $(file) mc_2018_ZJetsToQQ
 
 # Setting the should_transfer_files command explicitly enables 
 # or disables the file transfer mechanism

@@ -24,7 +24,7 @@ class Processor(processor.ProcessorABC):
         self.outdir = os.path.abspath(outdir)
         if mode.split('_')[0] not in ['data', 'mc']:
             raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
-        self.mode = mode  # = '$type_$year(_$channel)'
+        self.mode = mode  # = '$type_$year_$channel'
         self.cutValue = cutValue
         self.cuts = PackedSelection()
         self._accumulator = processor.defaultdict_accumulator()

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import subprocess
 
 
 def parse_commanline():
@@ -18,29 +17,17 @@ def parse_commanline():
 def main() -> None:
     args = parse_commanline()
     if args.bump.capitalize()=='True':
-        print("====> Jump to the best schedd")
-        schedd = subprocess.check_output("myschedd bump", shell=True, encoding='utf-8').split("'")[1]
+        print('#' * 150)
+        os.system('condor_status -schedd')
+        print('#' * 150)
+        number = input("====> Which schedd you wanna use? ")
+        print(f"====> myschedd set bigbird{number}.cern.ch")
+        os.system(f"myschedd set bigbird{number}.cern.ch")
     else:
-        schedd = ''
+        os.system("myschedd show")
+    input("====> Are you ready to submit condor jobs?")
     # myschedd set $schedd
     os.system(f"""
-        myschedd show
-        echo "###########################################################################"
-        echo "====> Status fo current schedd"
-        condor_status -schedd {schedd}
-        echo "###########################################################################"
-        echo "====> Wanna submit condor jobs on this schedd?"
-        
-        while true          # interactive interface
-        do
-            read -n 1 -p "Press ENTER to submit condor jobs or CTRL+c to exit> " input
-            if [[ -z $input ]];then
-                break
-            fi
-            echo ""
-        done
-        echo ""
-
         for jdl in submit/{args.type}/{args.year}/{args.channel}/{args.job}.submit
             do condor_submit $jdl
         done

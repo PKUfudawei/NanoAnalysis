@@ -44,12 +44,14 @@ def main():
     for i in os.listdir(args.outdir):
         if i.endswith('.parq')>0:
             result.append(ak.from_parquet(i))
+    
     if len(result)>1:
         result = ak.concatenate(result, axis=0)
     elif len(result)==1:
         result = result[0]
     else:
         result = ak.Array({})
+    
     ak.to_parquet(result, where='./output.parq')
     with open('./stats.json', 'w', encoding ='utf-8') as f:
         json.dump(stats, f)

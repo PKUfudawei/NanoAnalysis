@@ -11,10 +11,9 @@ def parse_commanline():
     parser = argparse.ArgumentParser(description='Script to check if each condor job is done')
     parser.add_argument('-rm', '--remove', help='Whether to remove previous filelists/ and submit/', choices=('True', 'False', 'ture', 'false'), default='True')
     parser.add_argument('-d', '--directory', help='To specify base directory', default=os.path.abspath('../datasets'))
-    parser.add_argument('-e', '--environment', help='Where to run jobs', choices=('local', 'condor'), default='condor')
     parser.add_argument('-o', '--outdir', help='Which directory to stroe output', default='./')
     parser.add_argument('-t', '--type', help='To specify jobs in mc/ or data/', choices=('data', 'mc', '*'), default='*')
-    parser.add_argument('-y', '--year', help='To specify jobs in which year', default='*')
+    parser.add_argument('-y', '--year', help='To specify jobs in which year', choices=('2018', '2017', '2016', '*'), default='*')
     parser.add_argument('-c', '--channel', help='To specify jobs in which channel', default='*')
     parser.add_argument('-v', '--version', help='To specify jobs in which nanoAOD version', default='*')
     args = parser.parse_args()
@@ -90,7 +89,7 @@ def main() -> None:
         
     succeeded = 0
     for filelist in filelists:
-        args.channel = filelist.split('/')[-2]
+        args.type, args.year, args.channel = filelist.split('/')[-4:-1]
         succeeded += filelist_to_submit(filelist=filelist, template=template, args=args)
     print(f'==> Successfully generated {succeeded} condor-submit file(s) in total')
     print('#' * 150)
