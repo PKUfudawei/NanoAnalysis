@@ -1,5 +1,5 @@
 # NanoAnalysis
-[HEP-EX](https://inspirehep.net/) analyzing framework for [NanoAOD](https://cms-opendata-workshop.github.io/workshop-lesson-root/08-analysis-physics/index.html) data in [CMS](https://cms.cern/) experiment  
+[HEP-EX](https://inspirehep.net/) analyzing framework for [NanoAOD](https://cms-opendata-workshop.github.io/workshop-lesson-root/08-analysis-physics/index.html) data in [CMS](https://cms.cern/) experiment (in dev) 
 
 >*Python & coffea/uproot instead of C++ & ROOT*  
 >  
