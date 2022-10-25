@@ -1,5 +1,6 @@
 import awkward as ak
 import os
+import json
 
 from coffea import processor, lumi_tools
 from coffea.analysis_tools import PackedSelection
@@ -42,6 +43,14 @@ class Processor(processor.ProcessorABC):
             lumi_mask = lumi_tools.LumiMask(golden_JSON[year])
             data_mask = lumi_mask(events.run, events.luminosityBlock)
             return events[data_mask]
+    
+    def cross_section_reweighting(self, genWeight):
+        year = self.mode.split('_')[1]
+        dataset = '_'.join(self.mode.split('_')[2:4])
+        lumi = json.loads('../json/luminosity.json')[year]
+        x_section = json.loads('../json/cross_section.json')[dataset]
+        genWeight *= x_section * lumi / self.cutflow['n_events']
+        return genWeight
         
     def pass_cut(self, cutName: str, cut: ak.Array, final: bool = False) -> None:
         self.cuts.add(cutName, cut)
@@ -140,8 +149,9 @@ class Processor(processor.ProcessorABC):
                     array = getattr(self.object[obj], var)
                 elif obj=='event' and '_' in var:
                     array = self.event[var.split('_')[0]]['_'.join(var.split('_')[1:])]
-                elif obj=='event' and '_' not in var:
-                    array = getattr(self.event, var, ak.ones_like(self.event.run))
+                elif obj=='event' and var=='genWeight':
+                    genWeight = getattr(self.event, var, ak.ones_like(self.event.run))
+                    array = self.cross_section_reweighting(genWeight=genWeight)
                     
                 self.variables[f'{obj}_{var}'] = array
     
