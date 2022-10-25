@@ -27,6 +27,10 @@ class Processor(processor.ProcessorABC):
             raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
         self.mode = mode  # = '$type_$year_$channel'
         self.cutValue = cutValue
+        with open('../json/luminosity.json', 'r', encoding ='utf-8') as f:
+            self.luminosity = json.load(f)
+        with open('../json/cross_section.json', 'r', encoding ='utf-8') as f:
+            self.cross_section = json.load(f)
         self.cuts = PackedSelection()
         self._accumulator = processor.defaultdict_accumulator()
     
@@ -47,9 +51,9 @@ class Processor(processor.ProcessorABC):
     def cross_section_reweighting(self, genWeight):
         year = self.mode.split('_')[1]
         dataset = '_'.join(self.mode.split('_')[2:4])
-        lumi = json.loads('../json/luminosity.json')[year]
-        x_section = json.loads('../json/cross_section.json')[dataset]
-        genWeight *= x_section * lumi / self.cutflow['n_events']
+        lumi = self.luminosity[year]
+        x_section = self.cross_section[dataset]
+        genWeight *= x_section * lumi
         return genWeight
         
     def pass_cut(self, cutName: str, cut: ak.Array, final: bool = False) -> None:
