@@ -12,10 +12,10 @@ from processors.Processor import Processor
 
 
 def parse_commanline():
-    parser = argparse.ArgumentParser(description='Script to check if each condor job is done')
+    parser = argparse.ArgumentParser(description='Main file to run processors')
     parser.add_argument('-f', '--file', help='To specify file path',)
     parser.add_argument('-o', '--outdir', help='To specify output directory', default='./')
-    parser.add_argument('-m', '--mode', help='To specify $type_$year(_$channel) mode', default='mc_2018_ZpToHGamma')
+    parser.add_argument('-m', '--mode', help='To specify $type_$year_$channel mode', default='mc_2018_ZpToHGamma')
     parser.add_argument('-n', '--ncpu', help='To specify the number of CPUs', default=1)
     args = parser.parse_args()
     return args

@@ -1,6 +1,5 @@
 import awkward as ak
 import os
-import json
 
 from coffea import processor, lumi_tools
 from coffea.analysis_tools import PackedSelection
@@ -27,10 +26,6 @@ class Processor(processor.ProcessorABC):
             raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
         self.mode = mode  # = '$type_$year_$channel'
         self.cutValue = cutValue
-        with open('../json/luminosity.json', 'r', encoding ='utf-8') as f:
-            self.luminosity = json.load(f)
-        with open('../json/cross_section.json', 'r', encoding ='utf-8') as f:
-            self.cross_section = json.load(f)
         self.cuts = PackedSelection()
         self._accumulator = processor.defaultdict_accumulator()
     
@@ -47,14 +42,6 @@ class Processor(processor.ProcessorABC):
             lumi_mask = lumi_tools.LumiMask(golden_JSON[year])
             data_mask = lumi_mask(events.run, events.luminosityBlock)
             return events[data_mask]
-    
-    def cross_section_reweighting(self, genWeight):
-        year = self.mode.split('_')[1]
-        dataset = '_'.join(self.mode.split('_')[2:4])
-        lumi = self.luminosity[year]
-        x_section = self.cross_section[dataset]
-        genWeight *= x_section * lumi
-        return genWeight
         
     def pass_cut(self, cutName: str, cut: ak.Array, final: bool = False) -> None:
         self.cuts.add(cutName, cut)
@@ -154,8 +141,7 @@ class Processor(processor.ProcessorABC):
                 elif obj=='event' and '_' in var:
                     array = self.event[var.split('_')[0]]['_'.join(var.split('_')[1:])]
                 elif obj=='event' and var=='genWeight':
-                    genWeight = getattr(self.event, var, ak.ones_like(self.event.run))
-                    array = self.cross_section_reweighting(genWeight=genWeight)
+                    array = getattr(self.event, var, ak.ones_like(self.event.run))
                     
                 self.variables[f'{obj}_{var}'] = array
     
