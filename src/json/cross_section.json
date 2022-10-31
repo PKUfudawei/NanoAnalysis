@@ -1,6 +1,8 @@
 {
     // unit: fb
-    "QCD_HT100to200": 27990000,
+    "QCD_HT100to200": 27990000000,
+    "QCD_HT200to300": 1712000000,
+    "QCD_HT300to500": 347700000,
     "QCD_HT500to700": 32100000,
     "QCD_HT700to1000": 6831000,
     "QCD_HT1000to1500": 1207000,
@@ -12,20 +14,20 @@
     "ST_tW_top": 35600,
     "TTToHadronic": 380094,
     "TTToSemiLeptonic": 364350.8,
-    "WJetsToQQ_HT-200to400": 2549000, // to be check
+    "WJetsToQQ_HT-200to400": 2549000,
     "WJetsToQQ_HT-400to600": 276500,
     "WJetsToQQ_HT-600to800": 59250,
     "WJetsToQQ_HT-800toInf": 33700,
     "WW_TuneCP5": 64300,
     "WZ_TuneCP5": 47130,
     "ZZ_TuneCP5_13TeV-pythia8": 16523,
-    "ZJetsToQQ_HT_200to400": 1012000, // to be check
+    "ZJetsToQQ_HT-200to400": 1012000,
     "ZJetsToQQ_HT-400to600": 114200,
     "ZJetsToQQ_HT-600to800": 25340,
     "ZJetsToQQ_HT-800toInf": 14600,
-    "GJets_HT-40To100": 20790,
-    "GJets_HT-100To200": 9238,
-    "GJets_HT-200To400": 2305,
-    "GJets_HT-400To600": 274.4,
-    "GJets_HT-600ToInf": 93.46
+    "GJets_HT-40To100": 20790000,
+    "GJets_HT-100To200": 9238000,
+    "GJets_HT-200To400": 2305000,
+    "GJets_HT-400To600": 274400,
+    "GJets_HT-600ToInf": 93460
 }
