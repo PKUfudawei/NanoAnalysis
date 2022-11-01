@@ -27,6 +27,7 @@ def main():
     args = parse_commanline()
     
     t0 = time.time()
+    print(f'===> Running on file: {args.file}')
     run = processor.Runner(
         executor = processor.FuturesExecutor(compression=None, workers=args.ncpu),
         schema = NanoAODSchema,
@@ -56,6 +57,7 @@ def main():
     with open('./stats.json', 'w', encoding ='utf-8') as f:
         json.dump(stats, f)
     
+    print()
     print(f'===> Removed {os.system("rm -rf *Events*.parq")} intermediate parquets')
     print(f'===> Time for full-processing: {(time.time() - t0)/60} mins')
     print('===> Metrics:\n', metrics)

@@ -29,5 +29,7 @@
     "GJets_HT-100To200": 9238000,
     "GJets_HT-200To400": 2305000,
     "GJets_HT-400To600": 274400,
-    "GJets_HT-600ToInf": 93460
+    "GJets_HT-600ToInf": 93460,
+    "TTGJets": 3700,
+    "ZpToHGamma_": 10000
 }

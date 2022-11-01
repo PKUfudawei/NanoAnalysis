@@ -57,7 +57,7 @@ class Processor(processor.ProcessorABC):
         if final:  # if it is final cut, let's make projection to drop unwanted events and objects
             self.event = self.event[event_flag]
             for obj in self.object:
-                self.object[obj] = ak.flatten(self.object[obj][event_flag], axis = 1)
+                self.object[obj] = self.object[obj][event_flag]
         else:  # if it is intermediate cut, keep event size but fill unwanted events and objects with None
             self.event = ak.mask(array=self.event, mask = event_flag)
             for obj in self.object:  # keep size: (event, object) in intermediate process
@@ -113,7 +113,7 @@ class Processor(processor.ProcessorABC):
         self.tag['photon'] = (  # (event, boolean)
             (raw_photon.mvaID_WP90 > 0.2) &
             (raw_photon.pt > 200) &
-            (abs(raw_photon.eta) < 2.4)
+            ((abs(raw_photon.eta) < 1.4442) | ((abs(raw_photon.eta) > 1.566) & (abs(raw_photon.eta) < 2.5)))
         )
         if reco:
             self.object['photon'] = self.event.Photon[self.tag['photon']]
@@ -171,8 +171,8 @@ class Processor(processor.ProcessorABC):
         self.pass_cut(cutName='photon', cut=(ak.sum(self.photon_tag(reco=True), axis=1)>0))
         
         # AK8 jet >=1
-        self.pass_cut(cutName='AK8jet', cut=(ak.sum(self.AK8jet_tag(reco=True), axis=1)>0))
-        
+        self.pass_cut(cutName='AK8jet', cut=(ak.sum(self.AK8jet_tag(reco=True), axis=1)>0), final=True)
+        """
         # Photon-Jet cleaning, a very special part so no function definition here
         pj_pair = ak.cartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
         pj_index_pair = ak.argcartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
@@ -185,17 +185,21 @@ class Processor(processor.ProcessorABC):
         self.object['photon-jet'] = self.object['photon'] + self.object['AK8jet']
         # final=True means to drop events not passing all selections
         self.pass_cut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1), final=True)
-        
+        """
         # Return vars of objects after pre-selection
+        heaviest_jet = ak.flatten(self.object['AK8jet'][ak.argmax(self.object['AK8jet'].msoftdrop, axis=1, keepdims=True)], axis=1)
+        leading_photon = ak.flatten(self.object['photon'][ak.argmax(self.object['photon'].pt, axis=1, keepdims=True)], axis=1)
+        self.object['photon-jet'] = heaviest_jet + leading_photon
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
             'photon': {'pt', 'eta', 'phi', 'mass'},
             'event': {'MET_pt', 'genWeight'},
             'photon-jet': {'pt', 'eta', 'phi', 'mass'},
         })
-
+        
         # Additional vars by special computing
-        self.variables['photon-jet_deltaR'] = self.object['photon'].delta_r(self.object['AK8jet'])
+        # self.variables['photon-jet_deltaR'] = self.object['photon'].delta_r(self.object['AK8jet'])
+        self.variables['photon-jet_deltaR'] = leading_photon.delta_r(heaviest_jet)
 
         return self.cuts.all(*self.cuts.names)
     
