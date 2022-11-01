@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import json
 import argparse
@@ -15,7 +16,9 @@ def parse_commanline():
 
 def cross_section_reweighting(file, lumi, x_section, n_events):
     array = ak.from_parquet(file)
-    array.event_weight = array.event_genWeight * x_section * lumi / n_events
+    if len(array)==0:
+        return
+    array['event_weight'] = array.event_genWeight * x_section * lumi / n_events
     ak.to_parquet(ak.Array(array), file)
     return array.event_weight
 
@@ -28,15 +31,16 @@ def main():
         X_SECTION = json.load(f)
     
     for (current_path, dirs, files) in os.walk(args.dir):
-        if current_path.split('/')[-5] != 'output':
+        if (len(current_path.split('/'))<5) or (current_path.split('/')[-5] != 'output'):
             continue
         
         print(f'===> Start postprocessing files in {current_path}')
         n_raw_events = 0
         dataset = current_path.split('/')[-1]
+        year = current_path.split('/')[-3]
         for f in files:
             if f.endswith('.json'):
-                with open(f, 'r', encoding ='utf-8') as f:
+                with open(os.path.join(current_path, f), 'r', encoding ='utf-8') as f:
                     stats = json.load(f)
                 if args.mode=='sum':
                     n_raw_events += list(stats.values())[0]['n_events']
@@ -45,8 +49,8 @@ def main():
         print(f'Finish parsing json files with n_raw_events={n_raw_events}')
         for f in files:
             if f.endswith('.parq'):
-                cross_section_reweighting(f, LUMI[dataset], X_SECTION[dataset], n_raw_events)
-        print(f'Finish postprocessing parquet files with lumi={LUMI[dataset]}, x-section={X_SECTION[dataset]}')
+                cross_section_reweighting(os.path.join(current_path, f), LUMI[year], X_SECTION[dataset], n_raw_events)
+        print(f'Finish postprocessing parquet files with lumi={LUMI[year]}, x-section={X_SECTION[dataset]}')
 
 
 if __name__ == "__main__":

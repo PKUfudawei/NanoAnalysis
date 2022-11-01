@@ -1,6 +1,7 @@
 {
-    // unit: fb-1
-    "2016": 36.8, // total lumi in 2016 for two seperate periods
+    "2016": 36.8,
     "2017": 41.48,
-    "2018": 59.83
+    "2018": 59.83,
+    "_comment1": "unit: fb-1",
+    "_comment2": "total lumi in 2016 for two seperate periods"
 }
