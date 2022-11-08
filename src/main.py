@@ -5,6 +5,7 @@ import time
 import argparse
 import awkward as ak
 import json
+import uproot
 
 from coffea import processor
 from coffea.nanoevents import NanoAODSchema
@@ -27,6 +28,7 @@ def main():
     args = parse_commanline()
     
     t0 = time.time()
+    uproot.open.defaults["xrootd_handler"] = uproot.MultithreadedXRootDSource
     print(f'===> Running on file: {args.file}')
     run = processor.Runner(
         executor = processor.FuturesExecutor(compression=None, workers=args.ncpu),

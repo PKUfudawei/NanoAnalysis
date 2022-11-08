@@ -48,6 +48,7 @@ class GenMatch():
         "statusFlags().isTauDecayProduct()                    * 4     +"
         "statusFlags().isDecayedLeptonHadron()                * 2     +"
         "statusFlags().isPrompt()                             * 1      "
+        # https://github.com/cms-sw/cmssw/blob/master/DataFormats/HepMCCandidate/interface/GenStatusFlags.h
         self.GEN_FLAGS = ["fromHardProcess", "isLastCopy"]
         
     def updateParticle(
