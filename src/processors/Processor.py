@@ -223,7 +223,7 @@ class Processor(processor.ProcessorABC):
         final_cut = self.preselect_HGamma()
         
         # gen-macthing
-        if any(final_cut):
+        if any(final_cut) and 'mc' in self.mode:
             if 'ZpToHGamma' in self.mode:
                 self.variables.update(GenMatch().ZpToHGamma(self.event))
             elif 'QCD' in self.mode:

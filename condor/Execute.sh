@@ -1,13 +1,13 @@
 #!/bin/bash
 ## configure python environment
-echo "===> Initializing CMSSW_12_4_10"
-cmsrel CMSSW_12_4_10
-cd CMSSW_12_4_10/src
+echo "===> Initializing CMSSW_11_3_4"
+cmsrel CMSSW_11_3_4
+cd CMSSW_11_3_4/src
 cmsenv
 echo "===> Python3 version: `python3 -V`"
 printf "===> Back to "; cd -
 echo "===> Python installing/upgrading modules"
-pip3 install -U coffea uproot awkward
+pip3 install -U coffea uproot awkward numpy numba
 
 ## print environment info
 printf "===> Start time: "; /bin/date 
