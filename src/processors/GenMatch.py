@@ -1,20 +1,22 @@
 import awkward as ak
+import numpy as np
 
 from coffea.nanoevents.methods.base import NanoEventsArray
-from coffea.nanoevents.methods.nanoaod import GenParticleArray
+from coffea.nanoevents.methods.nanoaod import GenParticleArray, GenParticle
+from coffea.analysis_tools import PackedSelection
 
 
 class GenMatch():
     def __init__(self) -> None:
         self.PDGID = {
-            "d": 1,
-            "u": 2,
-            "s": 3,
-            "c": 4,
-            "b": 5,
-            "t": 6,
-            "b'": 7,
-            "t'": 8,
+            "d": 1, "d~": -1,
+            "u": 2, "u~": -2,
+            "s": 3, "s~": -3,
+            "c": 4, "c~": -4,
+            "b": 5, "b~": -5,
+            "t": 6, "t~": -6,
+            "b_prime": 7,
+            "t_prime": 8,
             "e-": 11, "e+": -11,
             "ve": 12, "ve~": -12,
             "m-": 13, "m+": -13,
@@ -30,9 +32,9 @@ class GenMatch():
             "H": 25,
             "Zp": 9906663
         }
-        self.object = {}
+        self.particle = {}
         self.childs_of = {}  # childs shorter than children
-        self.genVars = {}
+        self.gen_cuts = PackedSelection()
         "statusFlags().isLastCopyBeforeFSR()                  * 16384 +"
         "statusFlags().isLastCopy()                           * 8192  +"
         "statusFlags().isFirstCopy()                          * 4096  +"
@@ -49,80 +51,136 @@ class GenMatch():
         "statusFlags().isDecayedLeptonHadron()                * 2     +"
         "statusFlags().isPrompt()                             * 1      "
         # https://github.com/cms-sw/cmssw/blob/master/DataFormats/HepMCCandidate/interface/GenStatusFlags.h
-        self.GEN_FLAGS = ["fromHardProcess", "isLastCopy"]
-        
-    def updateParticle(
-        self, name: str, genPart: GenParticleArray, flatten: bool = True,
+    
+    def find_lastcopy(self, particle: GenParticle):  # not in use at present
+        def iterate(particle):
+            if particle.hasFlags('isLastCopy'):
+                return particle
+            else:
+                childs = particle.children[particle.children.pdgId==particle.pdgId]
+                for p in childs:
+                    return iterate(p)
+        return iterate(particle=particle)
+    
+    def update_particle(
+        self, name: str, particles: GenParticleArray, flatten: bool = True,
         variables: set = {'pt', 'eta', 'phi', 'mass', 'pdgId'},
-        maxNum: int = 1, axis: int = -1, clip: bool = False
-    ) -> dict:  # default genPart shape: (event, particle)
-        
-        self.object[name] = genPart  # shape: (event, particle)
-        self.childs_of[name] = ak.flatten(self.object[name].children, axis=2) if flatten else self.object[name].children
+        num: int = 1, axis: int = -1, clip: bool = False
+    ) -> None:  # default particles shape: (event, particle)
+        self.particle[name] = ak.mask(particles, mask = ak.num(particles, axis=1)==num)  # shape: (event, particle)
+        self.childs_of[name] = ak.flatten(self.particle[name].children, axis=2) if flatten else self.particle[name].children
         # shape: (event, child_particle) if flatten else (event, particle, child_particle)
+        # return {
+        #     f'gen_{name}_{var}': ak.pad_none(
+        #         array=self.particle[name][var], target=num, axis=axis, clip=clip
+        #     ) for var in variables
+        # }"""
+    
+    def gluon(self, events: NanoEventsArray) -> np.array:
+        return
+    
+    def quark(self, events: NanoEventsArray) -> np.array:
+        return
+    
+    def Top(self, events: NanoEventsArray) -> np.array:  # single top process
+        gen_cuts = PackedSelection()
         
-        return {
-            f'gen_{name}_{var}': ak.pad_none(
-                array=self.object[name][var], target=maxNum, axis=axis, clip=clip
-            ) for var in variables
-        }
+        self.update_particle(
+            particles = events.GenPart[
+                (abs(events.GenPart.pdgId) == self.PDGID["t"]) &
+                events.GenPart.hasFlags(["fromHardProcess", "isLastCopy"])
+            ], name='t', num=1, flatten=True,  # select one t or t~
+        )
+        gen_cuts.add('N_top == 1', ak.num(self.particle['t'], axis=1)==1)
+        gen_cuts.add('top has 2 childs', ak.num(self.childs_of['t'], axis=1)==2)
+        
+        self.update_particle(
+            particles = self.childs_of['t'][
+                (self.childs_of['t'].pdgId == self.PDGID['W+'] * np.sign(self.genVars['t']['pdgId'])) &
+                self.childs_of['t'].hasFlags(["fromHardProcess"])
+            ], name='W', num=1, flatten=True,  # select one W with the same sign as top
+        )
+        gen_cuts.add('N_W == 1', ak.num(self.particle['W'], axis=1)==1)
+        
+        self.update_particle(
+            particles = self.childs_of['t'][
+                (self.childs_of['t'].pdgId == self.PDGID['b~'] * np.sign(self.genVars['t']['pdgId'])) &
+                self.childs_of['t'].hasFlags(["fromHardProcess"])
+            ], name='b', num=1, flatten=True,  # select one b with the opposite sign as top
+        )
+        gen_cuts.add('N_b == 1', ak.num(self.particle['b'], axis=1)==1)
+        
+        return gen_cuts.all(*gen_cuts.names)
         
     def ZpToHGamma(self, events: NanoEventsArray) -> dict:
-        """Get gen-info. and the wanted variables of H, WW, W_children and gamma"""
+        self.update_particle(  # shape: (event, particle)
+            particles = events.GenPart[
+                (events.GenPart.pdgId == self.PDGID['Zp']) &
+                events.GenPart.hasFlags(['fromHardProcess', 'isLastCopy'])
+            ], name='Zp', flatten=True, num=1
+        )
+        self.gen_cuts.add('N_Zp == 1', ak.num(self.particle['Zp'], axis=1)==1)
+        self.gen_cuts.add('Zp to H Gamma', (
+            (ak.num(self.childs_of['Zp'], axis=1)==2) &
+            (ak.sum(self.childs_of['Zp'].pdgId==self.PDGID['a'], axis=1)==1) &
+            (ak.sum(self.childs_of['Zp'].pdgId==self.PDGID['H'], axis=1)==1)
+        ))
         
-        self.genVars["Zp"] = self.updateParticle(  # shape: (event, particle)
-            genPart = events.GenPart[
-                (events.GenPart.pdgId == self.PDGID["Zp"]) &
-                events.GenPart.hasFlags(self.GEN_FLAGS)
-            ], name="Zp", flatten=True, maxNum=1
+        self.update_particle(  # shape: (event, gamma)
+            particles = self.childs_of['Zp'][
+                (self.childs_of['Zp'].pdgId == self.PDGID['a']) &
+                self.childs_of['Zp'].hasFlags(['fromHardProcess', 'isLastCopy'])
+            ], name='a', flatten=True, num=1
         )
         
-        self.genVars["H"] = self.updateParticle(  # shape: (event, H)
-            genPart = self.childs_of["Zp"][
-                (self.childs_of["Zp"].pdgId == self.PDGID["H"]) &
-                self.childs_of["Zp"].hasFlags(self.GEN_FLAGS)
-            ], name="H", flatten=True, maxNum=1
+        self.update_particle(  # shape: (event, H)
+            particles = events.GenPart[
+                (events.GenPart.pdgId == self.PDGID['H']) &
+                events.GenPart.hasFlags(['fromHardProcess', 'isLastCopy'])
+            ], name='H', flatten=True, num=1
+        )
+        self.gen_cuts.add('H to 2 childs', ak.num(self.childs_of['H'], axis=1)==2)
+        self.gen_cuts.add('H to WW', ak.sum(abs(self.childs_of['H'].pdgId)==self.PDGID['W+'], axis=1)==2)
+        self.gen_cuts.add('H to bb', ak.sum(abs(self.childs_of['H'].pdgId)==self.PDGID['b'], axis=1)==2)
+        self.gen_cuts.add('H to ZZ', ak.sum(abs(self.childs_of['H'].pdgId)==self.PDGID['Z'], axis=1)==2)
+        self.gen_cuts.add('H to tautau', ak.sum(abs(self.childs_of['H'].pdgId)==self.PDGID['ta-'], axis=1)==2)
+        self.gen_cuts.add('H to gammagamma', ak.sum(abs(self.childs_of['H'].pdgId)==self.PDGID['a'], axis=1)==2)
+        
+        self.update_particle(  # shape: (event, W)
+            particles = events.GenPart[  # shape: (event, H_childs)
+                (abs(events.GenPart.pdgId) == self.PDGID['W+']) &
+                events.GenPart.hasFlags(['fromHardProcess', 'isLastCopy'])
+            ], name='W', flatten=True, num=2
         )
         
-        self.genVars["a"] = self.updateParticle(  # shape: (event, gamma)
-            genPart = self.childs_of["Zp"][
-                (self.childs_of["Zp"].pdgId == self.PDGID["a"]) &
-                self.childs_of["Zp"].hasFlags(self.GEN_FLAGS)
-            ], name="a", flatten=True, maxNum=1
+        self.update_particle(  # shape: (event, W_childs)
+            particles = self.childs_of['W'][  # shape: (event, WW)
+                self.childs_of['W'].hasFlags(['fromHardProcess'])
+            ], name='WW_childs', flatten=True, num=4
         )
-        
-        self.genVars["WW"] = self.updateParticle(  # shape: (event, WW)
-            genPart = self.childs_of["H"][  # shape: (event, H_childs)
-                (ak.num(self.childs_of['H'].pdgId, axis=-1) == 2) &
-                ak.all(abs(self.childs_of['H'].pdgId) == self.PDGID["W+"], axis=-1) &
-                self.childs_of["H"].hasFlags(self.GEN_FLAGS)
-            ], name="WW", flatten=True, maxNum=2
-        )
-        
-        self.genVars["WW_childs"] = self.updateParticle(  # shape: (event, WW_childs)
-            genPart = self.childs_of["WW"][  # shape: (event, WW)
-                (ak.num(self.childs_of["WW"].pdgId, axis=-1) == 4) &
-                self.childs_of["WW"].hasFlags(self.GEN_FLAGS)
-            ], name="WW_childs", flatten=True, maxNum=4
-        )
+        self.gen_cuts.add('WW to 4 childs', ak.num(self.childs_of['W'], axis=1)==4)
         
         HWW_decay_mode = (
             ak.Array([0 for _ in range(len(events))]) +
-            1 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==11, axis=-1) +  # num. of electrons in WW_childs
-            2 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==13, axis=-1) +  # num. of muons in WW_childs
-            4 * ak.num(abs(self.childs_of['WW_childs'].pdgId)==15, axis=-1) +  # num. of tauons in WW_childs
-            8 * ak.num(abs(self.childs_of['WW_childs'].pdgId)<=6, axis=-1)     # num. of quarks in WW_childs
+            1 * ak.sum(abs(self.particle['WW_childs'].pdgId)==self.PDGID['e-'], axis=-1) +  # num. of electrons in WW_childs
+            2 * ak.sum(abs(self.particle['WW_childs'].pdgId)==self.PDGID['m-'], axis=-1) +  # num. of muons in WW_childs
+            4 * ak.sum(abs(self.particle['WW_childs'].pdgId)==self.PDGID['ta-'], axis=-1) +  # num. of tauons in WW_childs
+            8 * ak.sum(abs(self.particle['WW_childs'].pdgId)<=self.PDGID['t'], axis=-1)     # num. of quarks in WW_childs
         )
-        H_a_pair = ak.cartesian({'H': self.object['H'], 'a': self.object['a']}, axis=1, nested=False)
-        self.genVars['event'] = {
-            'gen_H_a': ak.flatten(ak.num(H_a_pair, axis=1)==1, axis=-1),
-            'gen_deltaR_H_a': ak.flatten(ak.pad_none(H_a_pair.H.delta_r(H_a_pair.a), target=1, axis=1), axis=-1),
-            'gen_HWW_decay_mode': HWW_decay_mode,
-            'gen_HWW_a': ak.flatten((HWW_decay_mode>0) * ak.num(H_a_pair, axis=1) == 1, axis=-1),
-            'gen_MET_pt': events.GenMET.pt,
-        }
- 
+        
+        base = ('N_Zp == 1', 'Zp to H Gamma')
         return {
-            **self.genVars["Zp"], **self.genVars["H"], **self.genVars["a"], **self.genVars["WW"],
-            **self.genVars["WW_childs"], **self.genVars['event'],
+            'gen_ZpToHGamma': self.gen_cuts.all(*base),
+            'gen_ZpToH(WW)Gamma': self.gen_cuts.all(*base, 'H to 2 childs', 'H to WW', 'WW to 4 childs'),
+            'gen_ZpToH(bb)Gamma': self.gen_cuts.all(*base, 'H to 2 childs', 'H to bb'),
+            'gen_ZpToH(ZZ)Gamma': self.gen_cuts.all(*base, 'H to 2 childs', 'H to ZZ'),
+            'gen_ZpToH(tautau)Gamma': self.gen_cuts.all(*base, 'H to 2 childs', 'H to tautau'),
+            'gen_ZpToH(gammagamma)Gamma': self.gen_cuts.all(*base, 'H to 2 childs', 'H to gammagamma'),
+            'gen_HWW_decay_mode': HWW_decay_mode,
         }
+    
+    def QCD(self, events: NanoEventsArray) -> ak.Array:
+        return ~ak.any(events.GenPart[abs(events.GenPart.pdgId)==22].hasFlags(['isPrompt']), axis=1)
+    
+    def GJets(self, events: NanoEventsArray) -> ak.Array:
+        return ak.any(events.GenPart[abs(events.GenPart.pdgId)==22].hasFlags(['isPrompt']), axis=1)

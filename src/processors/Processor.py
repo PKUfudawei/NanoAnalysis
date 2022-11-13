@@ -1,4 +1,5 @@
 import awkward as ak
+import numpy as np
 import os
 
 from coffea import processor, lumi_tools
@@ -43,7 +44,9 @@ class Processor(processor.ProcessorABC):
             data_mask = lumi_mask(events.run, events.luminosityBlock)
             return events[data_mask]
         
-    def pass_cut(self, cutName: str, cut: ak.Array, final: bool = False) -> None:
+    def pass_cut(self, cutName: str, cut: ak.Array, final: bool = False) -> ak.Array:
+        if self.cuts.names and len(cut) != len(self.cuts.all()):
+            self.cuts = PackedSelection()
         self.cuts.add(cutName, cut)
         
         # calculate cutflow
@@ -62,6 +65,7 @@ class Processor(processor.ProcessorABC):
             self.event = ak.mask(array=self.event, mask = event_flag)
             for obj in self.object:  # keep size: (event, object) in intermediate process
                 self.object[obj] = ak.mask(self.object[obj], mask = event_flag)
+        return event_flag
     
     def triggered(self, level: str = 'any') -> ak.Array:
         if level not in ['any', 'all']:
@@ -154,7 +158,7 @@ class Processor(processor.ProcessorABC):
         
         ak.to_parquet(array=ak.Array(array), where=os.path.join(output_dir, f'{name}.parq'))
     
-    def preselect_HGamma(self) -> ak.Array:  # __ in prefix means private method
+    def preselect_HGamma(self):  # __ in prefix means private method
         # at least pass one trigger
         self.pass_cut(cutName='triggered', cut=self.triggered(level='any'))
         
@@ -171,7 +175,7 @@ class Processor(processor.ProcessorABC):
         self.pass_cut(cutName='photon', cut=(ak.sum(self.photon_tag(reco=True), axis=1)>0))
         
         # AK8 jet >=1
-        self.pass_cut(cutName='AK8jet', cut=(ak.sum(self.AK8jet_tag(reco=True), axis=1)>0), final=True)
+        self.pass_cut(cutName='AK8jet', cut=(ak.sum(self.AK8jet_tag(reco=True), axis=1)>0))
         """
         # Photon-Jet cleaning, a very special part so no function definition here
         pj_pair = ak.cartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
@@ -187,21 +191,24 @@ class Processor(processor.ProcessorABC):
         self.pass_cut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1), final=True)
         """
         # Return vars of objects after pre-selection
-        heaviest_jet = ak.flatten(self.object['AK8jet'][ak.argmax(self.object['AK8jet'].msoftdrop, axis=1, keepdims=True)], axis=1)
-        leading_photon = ak.flatten(self.object['photon'][ak.argmax(self.object['photon'].pt, axis=1, keepdims=True)], axis=1)
-        self.object['photon-jet'] = heaviest_jet + leading_photon
+        self.object['heaviest_jet'] = self.object['AK8jet'][ak.argmax(self.object['AK8jet'].msoftdrop, axis=1, keepdims=True)][:, 0]
+        self.object['leading_photon'] = self.object['photon'][ak.argmax(self.object['photon'].pt, axis=1, keepdims=True)][:, 0]
+        self.object['photon-jet'] = self.object['heaviest_jet'] + self.object['leading_photon']
+        delta_phi = abs(self.object['heaviest_jet'].phi - self.object['leading_photon'].phi)
+        delta_phi = ak.min([delta_phi, 2 * np.pi - delta_phi], axis=0)
+        final_cut = self.pass_cut(cutName='photon-jet_delta_phi', cut=(delta_phi>2.9), final=True)
         self.store_variables(vars={
-            'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
-            'photon': {'pt', 'eta', 'phi', 'mass'},
+            'heaviest_jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
+            'leading_photon': {'pt', 'eta', 'phi', 'mass'},
             'event': {'MET_pt', 'genWeight'},
             'photon-jet': {'pt', 'eta', 'phi', 'mass'},
         })
         
         # Additional vars by special computing
         # self.variables['photon-jet_deltaR'] = self.object['photon'].delta_r(self.object['AK8jet'])
-        self.variables['photon-jet_deltaR'] = leading_photon.delta_r(heaviest_jet)
+        self.variables['photon-jet_deltaR'] = self.object['heaviest_jet'].delta_r(self.object['leading_photon'])
 
-        return self.cuts.all(*self.cuts.names)
+        return final_cut
     
     def process(self, events: NanoEventsArray) -> dict:
         # initialize
@@ -213,15 +220,19 @@ class Processor(processor.ProcessorABC):
             self.cutflow['n_events'] = ak.sum(self.event.genWeight)
 
         # process
-        event_cut = self.preselect_HGamma()
+        final_cut = self.preselect_HGamma()
         
         # gen-macthing
-        if 'ZpToHGamma' in self.mode and any(event_cut):
-            gen_match = GenMatch()
-            self.variables.update(gen_match.ZpToHGamma(self.event))
-        
+        if any(final_cut):
+            if 'ZpToHGamma' in self.mode:
+                self.variables.update(GenMatch().ZpToHGamma(self.event))
+            elif 'QCD' in self.mode:
+                final_cut = self.pass_cut(cutName='no prompt photon', cut=GenMatch().QCD(self.event), final=True)
+            elif 'GJets' in self.mode:
+                final_cut = self.pass_cut(cutName='any prompt photon', cut=GenMatch().GJets(self.event), final=True)
+                
         # store output
-        if any(event_cut):
+        if any(final_cut):
             self.to_parquet(array=self.variables)
         return {self.mode: {k: float(v) for (k, v) in self.cutflow.items()}}
     

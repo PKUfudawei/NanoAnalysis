@@ -45,7 +45,7 @@ def main():
     )
     result = []
     for i in os.listdir(args.outdir):
-        if i.endswith('.parq')>0:
+        if i.endswith('.parq'):
             result.append(ak.from_parquet(i))
     
     if len(result)>1:
