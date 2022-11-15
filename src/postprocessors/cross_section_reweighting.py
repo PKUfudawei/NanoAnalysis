@@ -8,7 +8,7 @@ import numpy as np
 
 def parse_commanline():
     parser = argparse.ArgumentParser(description='Do cross-section reweighting on files')
-    parser.add_argument('-d', '--dir', help='To specify file directory', default='../../condor/output')
+    parser.add_argument('-d', '--dir', help='To specify file directory', default='../../condor/output/mc')
     parser.add_argument('-m', '--mode', help='genWeight accumulating mode', choices=('sign', 'sum'), default='sum')
     args = parser.parse_args()
     return args
