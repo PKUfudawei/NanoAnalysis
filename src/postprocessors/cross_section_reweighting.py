@@ -3,13 +3,11 @@ import os
 import json
 import argparse
 import awkward as ak
-import numpy as np
 
 
 def parse_commanline():
     parser = argparse.ArgumentParser(description='Do cross-section reweighting on files')
     parser.add_argument('-d', '--dir', help='To specify file directory', default='../../condor/output/mc')
-    parser.add_argument('-m', '--mode', help='genWeight accumulating mode', choices=('sign', 'sum'), default='sum')
     args = parser.parse_args()
     return args
 
@@ -42,10 +40,8 @@ def main():
             if f.endswith('.json'):
                 with open(os.path.join(current_path, f), 'r', encoding ='utf-8') as f:
                     stats = json.load(f)
-                if args.mode=='sum':
-                    n_raw_events += list(stats.values())[0]['n_events']
-                elif args.mode=='sign':
-                    n_raw_events += np.sign(list(stats.values())[0]['n_events'])
+                n_raw_events += list(stats.values())[0]['n_events']
+
         print(f'Finish parsing json files with n_raw_events={n_raw_events}')
         for f in files:
             if f.endswith('.parq'):

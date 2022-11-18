@@ -163,13 +163,13 @@ class Processor(processor.ProcessorABC):
         self.pass_cut(cutName='triggered', cut=self.triggered(level='any'))
         
         # b veto
-        self.pass_cut(cutName='b-veto', cut=(ak.sum(self.b_tag(level='tight'), axis=1)==0))
+        self.pass_cut(cutName='b-veto', cut=(ak.sum(self.b_tag(reco=False, level='tight'), axis=1)==0))
 
         # Muon veto
-        self.pass_cut(cutName='muon-veto', cut=(ak.sum(self.muon_tag(), axis=1)==0))
+        self.pass_cut(cutName='muon-veto', cut=(ak.sum(self.muon_tag(reco=False), axis=1)==0))
         
         # Electron veto
-        self.pass_cut(cutName='electron-veto', cut=(ak.sum(self.electron_tag(), axis=1)==0))
+        self.pass_cut(cutName='electron-veto', cut=(ak.sum(self.electron_tag(reco=False), axis=1)==0))
         
         # Photon >=1
         self.pass_cut(cutName='photon', cut=(ak.sum(self.photon_tag(reco=True), axis=1)>0))
