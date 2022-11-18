@@ -11,9 +11,11 @@ from .GenMatch import GenMatch
 class Processor(processor.ProcessorABC):
     def __init__(
         self, outdir: str, mode: str,
-        cutValue: dict = {
-            'deltaR': {'min': 1.1},
-        }, triggers: list = ['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
+        triggers: dict = {
+            '2016': ['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
+            '2017': ['HLT_Photon200'],
+            '2018': ['HLT_Photon200'],
+        }
     ) -> None:
         super().__init__()
         self.triggers = triggers
@@ -26,7 +28,9 @@ class Processor(processor.ProcessorABC):
         if mode.split('_')[0] not in ['data', 'mc']:
             raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
         self.mode = mode  # = '$type_$year_$channel'
-        self.cutValue = cutValue
+        self.sample_type = self.mode.split('_')[0]
+        self.year = self.mode.split('_')[1]
+        self.channel = self.mode.split('_')[2]
         self.cuts = PackedSelection()
         self._accumulator = processor.defaultdict_accumulator()
     
@@ -36,11 +40,10 @@ class Processor(processor.ProcessorABC):
             '2017': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt',
             '2016': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt',
         }
-        sample_type, year = self.mode.split('_')[0], self.mode.split('_')[1]
-        if sample_type=='mc':  # usually skipped cuz type is restricted to data before executing this function
+        if self.sample_type=='mc':  # usually skipped cuz type is restricted to data before executing this function
             return events
-        elif sample_type=='data':
-            lumi_mask = lumi_tools.LumiMask(golden_JSON[year])
+        elif self.sample_type=='data':
+            lumi_mask = lumi_tools.LumiMask(golden_JSON[self.year])
             data_mask = lumi_mask(events.run, events.luminosityBlock)
             return events[data_mask]
         
@@ -71,9 +74,9 @@ class Processor(processor.ProcessorABC):
         if level not in ['any', 'all']:
             raise ValueError("Processor.passTriggers(): level must be in ['any', 'all']")
         elif level == 'any':  # pass any trigger
-            return ak.any([self.event.HLT[t] for t in self.triggers if t in self.event.HLT.fields], axis=0)
+            return ak.any([self.event.HLT[t] for t in self.triggers[self.year] if t in self.event.HLT.fields], axis=0)
         elif level == 'all':  # pass all triggers
-            return ak.all([self.event.HLT[t] for t in self.triggers if t in self.event.HLT.fields], axis=0)
+            return ak.all([self.event.HLT[t] for t in self.triggers[self.year] if t in self.event.HLT.fields], axis=0)
             
     def b_tag(self, level: str = 'tight', reco: bool = False) -> ak.Array:
         if level not in ['loose', 'medium', 'tight']:
