@@ -3,6 +3,7 @@ import os
 import json
 import argparse
 import awkward as ak
+import numpy as np
 
 
 def parse_commanline():
@@ -16,7 +17,7 @@ def cross_section_reweighting(file, lumi, x_section, n_events):
     array = ak.from_parquet(file)
     if len(array)==0:
         return
-    array['event_weight'] = array.event_genWeight * x_section * lumi / n_events
+    array['event_weight'] = np.sign(array.event_genWeight) * x_section * lumi / n_events
     ak.to_parquet(ak.Array(array), file)
     return array.event_weight
 

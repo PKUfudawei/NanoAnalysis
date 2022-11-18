@@ -220,7 +220,7 @@ class Processor(processor.ProcessorABC):
             self.cutflow['n_events'] = len(self.event)
         elif self.mode.startswith('mc'):
             self.event = events
-            self.cutflow['n_events'] = ak.sum(self.event.genWeight)
+            self.cutflow['n_events'] = ak.sum(np.sign(self.event.genWeight))
 
         # process
         final_cut = self.preselect_HGamma()
