@@ -13,8 +13,8 @@ class Processor(processor.ProcessorABC):
         self, outdir: str, mode: str,
         triggers: dict = {
             '2016': ['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
-            '2017': ['HLT_Photon200'],
-            '2018': ['HLT_Photon200'],
+            '2017': ['Photon200'],
+            '2018': ['Photon200'],
         }
     ) -> None:
         super().__init__()
