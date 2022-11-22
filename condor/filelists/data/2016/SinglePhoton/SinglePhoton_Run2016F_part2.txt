@@ -1,0 +1,2 @@
+root://cms-xrd-global.cern.ch//store/data/Run2016F/SinglePhoton/NANOAOD/UL2016_MiniAODv2_NanoAODv9-v1/120000/49C8E133-2CBB-0040-B5B1-50802069B0AC.root
+root://cms-xrd-global.cern.ch//store/data/Run2016F/SinglePhoton/NANOAOD/UL2016_MiniAODv2_NanoAODv9-v1/120000/5200DAB8-2FF0-E249-8A78-71E34E2F193F.root
