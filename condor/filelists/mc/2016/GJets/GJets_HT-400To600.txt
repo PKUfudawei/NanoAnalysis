@@ -1,0 +1,4 @@
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer16NanoAODv7/GJets_HT-400To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/NANOAODSIM/PUMoriond17_Nano02Apr2020_102X_mcRun2_asymptotic_v8_ext1-v1/70000/2CE2E0AA-1F44-AA42-BA33-EB047C7024FA.root
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer16NanoAODv7/GJets_HT-400To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/NANOAODSIM/PUMoriond17_Nano02Apr2020_102X_mcRun2_asymptotic_v8_ext1-v1/70000/40228690-BDD0-FC44-B240-88C758B15F7D.root
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer16NanoAODv7/GJets_HT-400To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/NANOAODSIM/PUMoriond17_Nano02Apr2020_102X_mcRun2_asymptotic_v8_ext1-v1/70000/51743C81-73A5-CC44-B393-17344ABC763B.root
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer16NanoAODv7/GJets_HT-400To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/NANOAODSIM/PUMoriond17_Nano02Apr2020_102X_mcRun2_asymptotic_v8_ext1-v1/70000/FF4EFA4B-6656-AC48-B0C0-D423932544E6.root

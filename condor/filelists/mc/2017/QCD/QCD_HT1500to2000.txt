@@ -43,4 +43,4 @@ root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17NanoAODv9/QCD_HT1500to2
 root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17NanoAODv9/QCD_HT1500to2000_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_mc2017_realistic_v9-v1/70000/ECD14679-BE38-764C-95D2-FF05A21378F1.root
 root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17NanoAODv9/QCD_HT1500to2000_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_mc2017_realistic_v9-v1/70000/F95FB44E-4E3C-EF4F-AD36-EF7A4D214383.root
 root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17NanoAODv9/QCD_HT1500to2000_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_mc2017_realistic_v9-v1/70000/FEA8223E-3A49-D04E-BF01-1E7DDC8C4084.root
-root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17NanoAODv9/QCD_HT1500to2000_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_mc2017_realistic_v9-v1/70000/FF78516D-153C-8540-9DBF-FC22CD9469B3.root
+/eos/cms/store/mc/RunIISummer20UL17NanoAODv9/QCD_HT1500to2000_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_mc2017_realistic_v9-v1/70000/FF78516D-153C-8540-9DBF-FC22CD9469B3.root

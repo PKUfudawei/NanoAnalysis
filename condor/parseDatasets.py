@@ -31,7 +31,10 @@ def dataset_to_filelist(card_path: str):
         output = subprocess.check_output(f"/cvmfs/cms.cern.ch/common/dasgoclient -query={query} -json", shell=True, encoding='utf-8')
         output = json.loads(output)
         for file_info in output:
-            filelist.append('root://cms-xrd-global.cern.ch/' + file_info['file'][0]['name'])
+            if os.path.exists('/eos/cms' + file_info['file'][0]['name']):
+                filelist.append('/eos/cms' + file_info['file'][0]['name'])
+            else:
+                filelist.append('root://cms-xrd-global.cern.ch/' + file_info['file'][0]['name'])
         
         if not os.path.exists(f'./filelists/{name}'):
             os.makedirs(f'./filelists/{name}')
@@ -43,7 +46,7 @@ def dataset_to_filelist(card_path: str):
 
 
 def filelist_to_submit(filelist: str, template: str, args: argparse.Namespace):
-    name = os.path.join(*filelist.split('.')[0].split('/')[-4:])
+    name = os.path.join(*filelist.split('.')[0].split('/')[-4:]).replace('_APV', '')
     if not os.path.exists(f'./output/{name}'):
         os.makedirs(f'./output/{name}')
     if not os.path.exists(f'./log/{name}'):
