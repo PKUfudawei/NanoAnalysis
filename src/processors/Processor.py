@@ -12,7 +12,7 @@ class Processor(processor.ProcessorABC):
     def __init__(
         self, outdir: str, mode: str,
         triggers: dict = {
-            '2016': ['Photon175', 'Photon165_R9Id90_HE10_IsoM'],
+            '2016': ['Photon175', 'Photon165_HE10'],
             '2017': ['Photon200'],
             '2018': ['Photon200'],
         }
@@ -118,9 +118,10 @@ class Processor(processor.ProcessorABC):
     def photon_tag(self, reco: bool = False) -> ak.Array:
         raw_photon = self.event.Photon  # (event, photon), >=1 photon per event
         self.tag['photon'] = (  # (event, boolean)
-            (raw_photon.mvaID_WP90 > 0.2) &
             (raw_photon.pt > 200) &
-            ((abs(raw_photon.eta) < 1.4442) | ((abs(raw_photon.eta) > 1.566) & (abs(raw_photon.eta) < 2.5)))
+            ((abs(raw_photon.eta) < 1.4442) | ((abs(raw_photon.eta) > 1.566) & (abs(raw_photon.eta) < 2.4))) &
+            (raw_photon.mvaID_WP90 > 0.2) &
+            (raw_photon.electronVeto == True)
         )
         if reco:
             self.object['photon'] = self.event.Photon[self.tag['photon']]
@@ -129,10 +130,11 @@ class Processor(processor.ProcessorABC):
     def AK8jet_tag(self, reco: bool = False) -> ak.Array:
         raw_AK8jet = self.event.FatJet  # (event, fatjet), >=1 AK8 jet per event
         self.tag['AK8jet'] = (  # (event, boolean)
-            (raw_AK8jet.msoftdrop > 40) &  # Corrected soft drop mass with PUPPI
             (raw_AK8jet.pt > 250) &
-            (abs(raw_AK8jet.eta) < 2.4) &
-            (raw_AK8jet.jetId & 2 > 0)
+            (abs(raw_AK8jet.eta) < 2.6) &
+            (raw_AK8jet.msoftdrop > 30) &  # Corrected soft drop mass with PUPPI
+            (raw_AK8jet.jetId & 2 > 0) &
+            (raw_AK8jet.jetId & 4 > 0)
             # Jet ID flags bit1 is loose (always false in 2017 since it does not exist),
             # bit2 is tight, bit3 is tightLepVeto
         )
@@ -166,32 +168,34 @@ class Processor(processor.ProcessorABC):
         self.pass_cut(cutName='triggered', cut=self.triggered(level='any'))
         
         # b veto
-        self.pass_cut(cutName='b-veto', cut=(ak.sum(self.b_tag(reco=False, level='tight'), axis=1)==0))
+        # self.pass_cut(cutName='b-veto', cut=(ak.sum(self.b_tag(reco=False, level='tight'), axis=1)==0))
 
         # Muon veto
-        self.pass_cut(cutName='muon-veto', cut=(ak.sum(self.muon_tag(reco=False), axis=1)==0))
+        # self.pass_cut(cutName='muon-veto', cut=(ak.sum(self.muon_tag(reco=False), axis=1)==0))
         
         # Electron veto
-        self.pass_cut(cutName='electron-veto', cut=(ak.sum(self.electron_tag(reco=False), axis=1)==0))
+        # self.pass_cut(cutName='electron-veto', cut=(ak.sum(self.electron_tag(reco=False), axis=1)==0))
         
-        # Photon >=1
-        self.pass_cut(cutName='photon', cut=(ak.sum(self.photon_tag(reco=True), axis=1)>0))
+        # Photon == 1
+        self.pass_cut(cutName='photon', cut=(ak.sum(self.photon_tag(reco=True), axis=1)==1))
         
         # AK8 jet >=1
         self.pass_cut(cutName='AK8jet', cut=(ak.sum(self.AK8jet_tag(reco=True), axis=1)>0))
-        """
+        
         # Photon-Jet cleaning, a very special part so no function definition here
-        pj_pair = ak.cartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
-        pj_index_pair = ak.argcartesian({'photon': self.object['photon'], 'jet': self.object['AK8jet']}, axis=1, nested=False)
-        pj_dr = pj_pair.photon.delta_r(pj_pair.jet)
-        pj_clean = (pj_dr > self.cutValue['deltaR']['min'])
-        photon_index, jet_index = pj_index_pair.photon[pj_clean], pj_index_pair.jet[pj_clean]
-        # exactly 1 pair of photon and jet passed jet-cleaning requirement
+        pj_pair = ak.cartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
+        pj_index_pair = ak.argcartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
+        pj_dr = pj_pair.photon.delta_r(pj_pair.AK8jet)
+        pj_clean = (pj_dr > 1.1)
+        photon_index, jet_index = pj_index_pair.photon[pj_clean], pj_index_pair.AK8jet[pj_clean]
         self.object['photon'] = self.object['photon'][photon_index]
         self.object['AK8jet'] = self.object['AK8jet'][jet_index]
-        self.object['photon-jet'] = self.object['photon'] + self.object['AK8jet']
+        self.object['AK8jet'] = self.object['AK8jet'][ak.argmin(abs(self.object['AK8jet'].msoftdrop - 125), axis=1, keepdims=True)]
         # final=True means to drop events not passing all selections
-        self.pass_cut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)==1), final=True)
+        final_cut = self.pass_cut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)>0), final=True)
+        self.object['photon'] = self.object['photon'][:, 0]
+        self.object['AK8jet'] = self.object['AK8jet'][:, 0]
+        self.object['photon-jet'] = self.object['photon'] + self.object['AK8jet']
         """
         # Return vars of objects after pre-selection
         self.object['heaviest_jet'] = self.object['AK8jet'][ak.argmax(self.object['AK8jet'].msoftdrop, axis=1, keepdims=True)][:, 0]
@@ -200,16 +204,17 @@ class Processor(processor.ProcessorABC):
         delta_phi = abs(self.object['heaviest_jet'].phi - self.object['leading_photon'].phi)
         delta_phi = ak.min([delta_phi, 2 * np.pi - delta_phi], axis=0)
         final_cut = self.pass_cut(cutName='photon-jet_delta_phi', cut=(delta_phi>2.9), final=True)
+        """
         self.store_variables(vars={
-            'heaviest_jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
-            'leading_photon': {'pt', 'eta', 'phi', 'mass'},
+            'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
+            'photon': {'pt', 'eta', 'phi', 'mass'},
             'event': {'MET_pt', 'genWeight'},
             'photon-jet': {'pt', 'eta', 'phi', 'mass'},
         })
         
         # Additional vars by special computing
         # self.variables['photon-jet_deltaR'] = self.object['photon'].delta_r(self.object['AK8jet'])
-        self.variables['photon-jet_deltaR'] = self.object['heaviest_jet'].delta_r(self.object['leading_photon'])
+        self.variables['photon-jet_deltaR'] = self.object['AK8jet'].delta_r(self.object['photon'])
 
         return final_cut
     

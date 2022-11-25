@@ -46,7 +46,7 @@ def dataset_to_filelist(card_path: str):
 
 
 def filelist_to_submit(filelist: str, template: str, args: argparse.Namespace):
-    name = os.path.join(*filelist.split('.')[0].split('/')[-4:]).replace('_APV', '')
+    name = os.path.join(*filelist.split('.')[0].split('/')[-4:])
     if not os.path.exists(f'./output/{name}'):
         os.makedirs(f'./output/{name}')
     if not os.path.exists(f'./log/{name}'):
