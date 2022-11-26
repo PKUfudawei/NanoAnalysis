@@ -226,7 +226,7 @@ class Processor(processor.ProcessorABC):
         elif self.mode.startswith('mc'):
             self.event = events
             self.cutflow['n_events'] = ak.sum(np.sign(self.event.genWeight))
-
+        
         # process
         final_cut = self.preselect_HGamma()
         
@@ -234,9 +234,9 @@ class Processor(processor.ProcessorABC):
         if any(final_cut) and 'mc' in self.mode:
             if 'ZpToHGamma' in self.mode:
                 self.variables.update(GenMatch().ZpToHGamma(self.event))
-            elif 'QCD' in self.mode:
+            elif self.channel == 'QCD':
                 final_cut = self.pass_cut(cutName='no prompt photon', cut=GenMatch().QCD(self.event), final=True)
-            elif 'GJets' in self.mode:
+            elif self.channel == 'GJets':
                 final_cut = self.pass_cut(cutName='any prompt photon', cut=GenMatch().GJets(self.event), final=True)
                 
         # store output
