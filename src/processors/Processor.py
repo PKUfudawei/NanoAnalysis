@@ -29,7 +29,7 @@ class Processor(processor.ProcessorABC):
             raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
         self.mode = mode  # = '$type_$year_$channel'
         self.sample_type = self.mode.split('_')[0]
-        self.year = self.mode.split('_')[1]
+        self.year = self.mode.split('_')[1].replace('APV', '')
         self.channel = self.mode.split('_')[2]
         self.cuts = PackedSelection()
         self._accumulator = processor.defaultdict_accumulator()

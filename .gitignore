@@ -53,5 +53,9 @@ node_modules
 # vscode
 .vscode
 
+# jupyter
 .ipynb_checkpoints/
+
+# others
 log/
+ouput/
