@@ -1,6 +1,7 @@
 import awkward as ak
 import numpy as np
 import os
+import json
 
 from coffea import processor, lumi_tools
 from coffea.analysis_tools import PackedSelection
@@ -9,41 +10,36 @@ from .GenMatch import GenMatch
 
 
 class Processor(processor.ProcessorABC):
-    def __init__(
-        self, outdir: str, mode: str,
-        triggers: dict = {
-            '2016': ['Photon175', 'Photon165_HE10'],
-            '2017': ['Photon200'],
-            '2018': ['Photon200'],
-        }
-    ) -> None:
+    def __init__(self, outdir: str, mode: str) -> None:
         super().__init__()
-        self.triggers = triggers
         self.event = None
         self.tag = {}
         self.object = {}
         self.variables = {}
         self.cutflow = {}
         self.outdir = os.path.abspath(outdir)
+        self.cuts = PackedSelection()
+        self._accumulator = processor.defaultdict_accumulator()
+        
         if mode.split('_')[0] not in ['data', 'mc']:
             raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
         self.mode = mode  # = '$type_$year_$channel'
         self.sample_type = self.mode.split('_')[0]
         self.year = self.mode.split('_')[1].replace('APV', '')
         self.channel = self.mode.split('_')[2]
-        self.cuts = PackedSelection()
-        self._accumulator = processor.defaultdict_accumulator()
+        
+        with open('../json/triggers.json', 'r', encoding ='utf-8') as f:
+            self.triggers = json.load(f)
+        with open('../json/golden_JSON.json', 'r', encoding ='utf-8') as f:
+            self.golden_JSON = json.load(f)
+        with open('../json/flags.json', 'r', encoding ='utf-8') as f:
+            self.flags = json.load(f)
     
     def lumi_mask(self, events: NanoEventsArray) -> NanoEventsArray:  # only applied on data
-        golden_JSON = {
-            '2018': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt',
-            '2017': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt',
-            '2016': '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt',
-        }
         if self.sample_type=='mc':  # usually skipped cuz type is restricted to data before executing this function
             return events
         elif self.sample_type=='data':
-            lumi_mask = lumi_tools.LumiMask(golden_JSON[self.year])
+            lumi_mask = lumi_tools.LumiMask(self.golden_JSON[self.year])
             data_mask = lumi_mask(events.run, events.luminosityBlock)
             return events[data_mask]
         
@@ -54,9 +50,9 @@ class Processor(processor.ProcessorABC):
         
         # calculate cutflow
         event_flag = self.cuts.all(*self.cuts.names)
-        if self.mode.startswith('data'):
+        if self.sample_type == 'data':
             self.cutflow[cutName] = ak.sum(event_flag)
-        elif self.mode.startswith('mc'):
+        elif self.sample_type == 'mc':
             self.cutflow[cutName] = ak.sum(self.event.genWeight[event_flag])
         
         # update events and all objects after passing cut
@@ -72,12 +68,20 @@ class Processor(processor.ProcessorABC):
     
     def triggered(self, level: str = 'any') -> ak.Array:
         if level not in ['any', 'all']:
-            raise ValueError("Processor.passTriggers(): level must be in ['any', 'all']")
+            raise ValueError("Processor.triggered(): level must be in ['any', 'all']")
         elif level == 'any':  # pass any trigger
             return ak.any([self.event.HLT[t] for t in self.triggers[self.year] if t in self.event.HLT.fields], axis=0)
         elif level == 'all':  # pass all triggers
             return ak.all([self.event.HLT[t] for t in self.triggers[self.year] if t in self.event.HLT.fields], axis=0)
-            
+    
+    def flagged(self, level: str = 'all') -> ak.Array:
+        if level not in ['any', 'all']:
+            raise ValueError("Processor.flagged(): level must be in ['any', 'all']")
+        elif level == 'any':  # pass any trigger
+            return ak.any([self.event.Flag[t] for t in self.flags[self.sample_type][self.year] if t in self.event.Flag.fields], axis=0)
+        elif level == 'all':  # pass all triggers
+            return ak.all([self.event.Flag[t] for t in self.flags[self.sample_type][self.year] if t in self.event.Flag.fields], axis=0)
+    
     def b_tag(self, level: str = 'tight', reco: bool = False) -> ak.Array:
         if level not in ['loose', 'medium', 'tight']:
             raise ValueError("Processor.b_veto(): level must be in ['loose', 'medium', 'tight']")
@@ -167,6 +171,9 @@ class Processor(processor.ProcessorABC):
         # at least pass one trigger
         self.pass_cut(cutName='triggered', cut=self.triggered(level='any'))
         
+        # pass all needed flags
+        self.pass_cut(cutName='flagged', cut=self.flagged(level='all'))
+        
         # b veto
         # self.pass_cut(cutName='b-veto', cut=(ak.sum(self.b_tag(reco=False, level='tight'), axis=1)==0))
 
@@ -191,6 +198,7 @@ class Processor(processor.ProcessorABC):
         self.object['photon'] = self.object['photon'][photon_index]
         self.object['AK8jet'] = self.object['AK8jet'][jet_index]
         self.object['AK8jet'] = self.object['AK8jet'][ak.argmin(abs(self.object['AK8jet'].msoftdrop - 125), axis=1, keepdims=True)]
+        
         # final=True means to drop events not passing all selections
         final_cut = self.pass_cut(cutName='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1)>0), final=True)
         self.object['photon'] = self.object['photon'][:, 0]
@@ -205,6 +213,7 @@ class Processor(processor.ProcessorABC):
         delta_phi = ak.min([delta_phi, 2 * np.pi - delta_phi], axis=0)
         final_cut = self.pass_cut(cutName='photon-jet_delta_phi', cut=(delta_phi>2.9), final=True)
         """
+        
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
             'photon': {'pt', 'eta', 'phi', 'mass'},
@@ -220,10 +229,10 @@ class Processor(processor.ProcessorABC):
     
     def process(self, events: NanoEventsArray) -> dict:
         # initialize
-        if self.mode.startswith('data'):
+        if self.sample_type == 'data':
             self.event = self.lumi_mask(events)
             self.cutflow['n_events'] = len(self.event)
-        elif self.mode.startswith('mc'):
+        elif self.sample_type == 'mc':
             self.event = events
             self.cutflow['n_events'] = ak.sum(np.sign(self.event.genWeight))
         
@@ -231,8 +240,8 @@ class Processor(processor.ProcessorABC):
         final_cut = self.preselect_HGamma()
         
         # gen-macthing
-        if any(final_cut) and 'mc' in self.mode:
-            if 'ZpToHGamma' in self.mode:
+        if any(final_cut) and self.sample_type == 'mc':
+            if self.channel == 'ZpToHGamma':
                 self.variables.update(GenMatch().ZpToHGamma(self.event))
             elif self.channel == 'QCD':
                 final_cut = self.pass_cut(cutName='no prompt photon', cut=GenMatch().QCD(self.event), final=True)
