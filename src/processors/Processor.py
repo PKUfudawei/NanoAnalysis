@@ -10,16 +10,18 @@ from .GenMatch import GenMatch
 
 
 class Processor(processor.ProcessorABC):
-    def __init__(self, outdir: str, mode: str) -> None:
+    def __init__(self, mode: str, JSONdir: str, outdir: str) -> None:
         super().__init__()
         self.event = None
         self.tag = {}
         self.object = {}
         self.variables = {}
         self.cutflow = {}
-        self.outdir = os.path.abspath(outdir)
         self.cuts = PackedSelection()
         self._accumulator = processor.defaultdict_accumulator()
+        
+        self.JSONdir = os.path.abspath(JSONdir)
+        self.outdir = os.path.abspath(outdir)
         
         if mode.split('_')[0] not in ['data', 'mc']:
             raise ValueError("Processor.__init__(): mode must start with 'data' or 'mc'")
@@ -28,12 +30,12 @@ class Processor(processor.ProcessorABC):
         self.year = self.mode.split('_')[1].replace('APV', '')
         self.channel = self.mode.split('_')[2]
         
-        with open('../json/triggers.json', 'r', encoding ='utf-8') as f:
+        with open(os.path.join(self.JSONdir, 'triggers.json'), 'r', encoding ='utf-8') as f:
             self.triggers = json.load(f)
-        with open('../json/golden_JSON.json', 'r', encoding ='utf-8') as f:
+        with open(os.path.join(self.JSONdir, 'golden_JSON.json'), 'r', encoding ='utf-8') as f:
             self.golden_JSON = json.load(f)
-        with open('../json/flags.json', 'r', encoding ='utf-8') as f:
-            self.flags = json.load(f)
+        with open(os.path.join(self.JSONdir, 'filters.json'), 'r', encoding ='utf-8') as f:
+            self.filters = json.load(f)
     
     def lumi_mask(self, events: NanoEventsArray) -> NanoEventsArray:  # only applied on data
         if self.sample_type=='mc':  # usually skipped cuz type is restricted to data before executing this function
@@ -53,7 +55,7 @@ class Processor(processor.ProcessorABC):
         if self.sample_type == 'data':
             self.cutflow[cutName] = ak.sum(event_flag)
         elif self.sample_type == 'mc':
-            self.cutflow[cutName] = ak.sum(self.event.genWeight[event_flag])
+            self.cutflow[cutName] = ak.sum(np.sign(self.event.genWeight[event_flag]))
         
         # update events and all objects after passing cut
         if final:  # if it is final cut, let's make projection to drop unwanted events and objects
@@ -74,13 +76,13 @@ class Processor(processor.ProcessorABC):
         elif level == 'all':  # pass all triggers
             return ak.all([self.event.HLT[t] for t in self.triggers[self.year] if t in self.event.HLT.fields], axis=0)
     
-    def flagged(self, level: str = 'all') -> ak.Array:
+    def filtered(self, level: str = 'all') -> ak.Array:
         if level not in ['any', 'all']:
-            raise ValueError("Processor.flagged(): level must be in ['any', 'all']")
-        elif level == 'any':  # pass any trigger
-            return ak.any([self.event.Flag[t] for t in self.flags[self.sample_type][self.year] if t in self.event.Flag.fields], axis=0)
-        elif level == 'all':  # pass all triggers
-            return ak.all([self.event.Flag[t] for t in self.flags[self.sample_type][self.year] if t in self.event.Flag.fields], axis=0)
+            raise ValueError("Processor.filtered(): level must be in ['any', 'all']")
+        elif level == 'any':  # pass any filter
+            return ak.any([self.event.Flag[t] for t in self.filters[self.year] if t in self.event.Flag.fields], axis=0)
+        elif level == 'all':  # pass all filters
+            return ak.all([self.event.Flag[t] for t in self.filters[self.year] if t in self.event.Flag.fields], axis=0)
     
     def b_tag(self, level: str = 'tight', reco: bool = False) -> ak.Array:
         if level not in ['loose', 'medium', 'tight']:
@@ -165,14 +167,14 @@ class Processor(processor.ProcessorABC):
         tokens = self.event.behavior["__events_factory__"]._partition_key.split('/')
         name = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens])
         
-        ak.to_parquet(array=ak.Array(array), where=os.path.join(output_dir, f'{name}.parq'))
+        ak.to_parquet(array=array, where=os.path.join(output_dir, f'{name}.parq'))
     
     def preselect_HGamma(self):  # __ in prefix means private method
         # at least pass one trigger
         self.pass_cut(cutName='triggered', cut=self.triggered(level='any'))
         
         # pass all needed flags
-        self.pass_cut(cutName='flagged', cut=self.flagged(level='all'))
+        self.pass_cut(cutName='filtered', cut=self.filtered(level='all'))
         
         # b veto
         # self.pass_cut(cutName='b-veto', cut=(ak.sum(self.b_tag(reco=False, level='tight'), axis=1)==0))
@@ -217,7 +219,7 @@ class Processor(processor.ProcessorABC):
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
             'photon': {'pt', 'eta', 'phi', 'mass'},
-            'event': {'MET_pt', 'genWeight'},
+            'event': {'MET_pt', 'genWeight', 'event'},
             'photon-jet': {'pt', 'eta', 'phi', 'mass'},
         })
         
@@ -241,16 +243,17 @@ class Processor(processor.ProcessorABC):
         
         # gen-macthing
         if any(final_cut) and self.sample_type == 'mc':
-            if self.channel == 'ZpToHGamma':
-                self.variables.update(GenMatch().ZpToHGamma(self.event))
-            elif self.channel == 'QCD':
-                final_cut = self.pass_cut(cutName='no prompt photon', cut=GenMatch().QCD(self.event), final=True)
-            elif self.channel == 'GJets':
-                final_cut = self.pass_cut(cutName='any prompt photon', cut=GenMatch().GJets(self.event), final=True)
+            gen = GenMatch(events=self.event)
+            if self.channel.upper() == 'ZpToHGamma'.upper():
+                self.variables.update(gen.ZpToHGamma())
+            elif self.channel.upper() == 'QCD'.upper():
+                final_cut = self.pass_cut(cutName='no prompt photon', cut=gen.QCD(), final=True)
+            elif self.channel.upper() == 'GJets'.upper():
+                final_cut = self.pass_cut(cutName='any prompt photon', cut=gen.GJets(), final=True)
                 
         # store output
         if any(final_cut):
-            self.to_parquet(array=self.variables)
+            self.to_parquet(array=ak.Array(self.variables))
         return {self.mode: {k: float(v) for (k, v) in self.cutflow.items()}}
     
     @property  # transform method into attribute and make it unchangable to hide _accumulator

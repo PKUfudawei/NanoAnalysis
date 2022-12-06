@@ -7,7 +7,7 @@ cmsenv
 echo "===> Python3 version: `python3 -V`"
 printf "===> Back to working directory"; cd -
 echo "===> Python installing/upgrading modules"
-pip3 install coffea qiskit
+pip3 install coffea qiskit json
 
 ## print environment info
 printf "===> Start time: "; /bin/date 
@@ -17,7 +17,7 @@ voms-proxy-info
 printf "===> Job is running in directory: "; /bin/pwd
 
 ## execute main.py
-echo "`python3 src/main.py -f $1 -m $2`"
+echo "`python3 src/main.py -f $1 -m $2 -j $3`"
 
 ## transfer files via condor
 #xrdcp -f *.parquet root://eosuser.cern.ch/$3

@@ -12,7 +12,7 @@ JobBatchName = data/2017/SinglePhoton/SinglePhoton_Run2016D
 # EXECUTABLE is the program your job will run It's often useful 
 # to create a shell script to "wrap" your actual work. 
 Executable = ./Execute.sh
-Arguments = $(file) data_2017_SinglePhoton
+Arguments = $(file) data_2017_SinglePhoton ./src/json/
 
 # Setting the should_transfer_files command explicitly enables 
 # or disables the file transfer mechanism

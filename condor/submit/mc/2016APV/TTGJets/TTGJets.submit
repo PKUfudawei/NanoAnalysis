@@ -12,7 +12,7 @@ JobBatchName = mc/2016APV/TTGJets/TTGJets
 # EXECUTABLE is the program your job will run It's often useful 
 # to create a shell script to "wrap" your actual work. 
 Executable = ./Execute.sh
-Arguments = $(file) mc_2016APV_TTGJets
+Arguments = $(file) mc_2016APV_TTGJets ./src/json/
 
 # Setting the should_transfer_files command explicitly enables 
 # or disables the file transfer mechanism

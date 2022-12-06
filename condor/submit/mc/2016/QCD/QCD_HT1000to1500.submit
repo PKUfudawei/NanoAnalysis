@@ -12,7 +12,7 @@ JobBatchName = mc/2016/QCD/QCD_HT1000to1500
 # EXECUTABLE is the program your job will run It's often useful 
 # to create a shell script to "wrap" your actual work. 
 Executable = ./Execute.sh
-Arguments = $(file) mc_2016_QCD
+Arguments = $(file) mc_2016_QCD ./src/json/
 
 # Setting the should_transfer_files command explicitly enables 
 # or disables the file transfer mechanism
