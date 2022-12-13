@@ -7,12 +7,12 @@ cmsenv
 echo "===> Python3 version: `python3 -V`"
 printf "===> Back to working directory"; cd -
 echo "===> Python installing/upgrading modules"
-pip3 install coffea qiskit json
+pip3 install coffea qiskit
 
 ## print environment info
-printf "===> Start time: "; /bin/date 
-printf "===> Job is running on node: "; /bin/hostname 
-printf "===> Job running as user: "; /usr/bin/id 
+printf "===> Start time: "; /bin/date
+printf "===> Job is running on node: "; /bin/hostname
+printf "===> Job running as user: "; /usr/bin/id
 voms-proxy-info
 printf "===> Job is running in directory: "; /bin/pwd
 
