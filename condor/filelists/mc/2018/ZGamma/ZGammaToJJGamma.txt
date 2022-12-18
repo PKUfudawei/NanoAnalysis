@@ -1,0 +1,7 @@
+/eos/cms/store/mc/RunIISummer20UL18NanoAODv9/ZGammaToJJGamma_TuneCP5_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/30000/0A35A8E9-4E41-DA4A-B2EF-F5C3B5B07D86.root
+/eos/cms/store/mc/RunIISummer20UL18NanoAODv9/ZGammaToJJGamma_TuneCP5_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/30000/54C83E6F-7EAA-1F4D-87BD-A27679ADA1D4.root
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18NanoAODv9/ZGammaToJJGamma_TuneCP5_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/30000/B729961B-402C-3042-86B5-E54C40D587A4.root
+/eos/cms/store/mc/RunIISummer20UL18NanoAODv9/ZGammaToJJGamma_TuneCP5_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/40000/2D280A5A-2C47-D441-A57B-7E8B54067EEA.root
+/eos/cms/store/mc/RunIISummer20UL18NanoAODv9/ZGammaToJJGamma_TuneCP5_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/40000/38432281-468E-7143-A7B8-940B47BAAFD5.root
+/eos/cms/store/mc/RunIISummer20UL18NanoAODv9/ZGammaToJJGamma_TuneCP5_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/40000/3E1C169F-C256-E94F-87FB-B3E782B4A65A.root
+/eos/cms/store/mc/RunIISummer20UL18NanoAODv9/ZGammaToJJGamma_TuneCP5_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/40000/88DABD0B-5236-5941-88EA-D630CE856C65.root

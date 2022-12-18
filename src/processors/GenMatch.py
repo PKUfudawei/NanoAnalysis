@@ -178,8 +178,8 @@ class GenMatch():
             'gen_HWW_decay_mode': HWW_decay_mode,
         }
     
-    def QCD(self) -> ak.Array:
+    def all_fake_photon(self) -> ak.Array:
         return ~ak.any(self.event.GenPart[abs(self.event.GenPart.pdgId)==22].hasFlags(['isPrompt']), axis=1)
     
-    def GJets(self) -> ak.Array:
+    def any_true_photon(self) -> ak.Array:
         return ak.any(self.event.GenPart[abs(self.event.GenPart.pdgId)==22].hasFlags(['isPrompt']), axis=1)

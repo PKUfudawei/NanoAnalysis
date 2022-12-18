@@ -2,6 +2,7 @@ import awkward as ak
 import numpy as np
 import os
 import json
+import random
 
 from coffea import processor, lumi_tools
 from coffea.analysis_tools import PackedSelection
@@ -36,6 +37,8 @@ class Processor(processor.ProcessorABC):
             self.golden_JSON = json.load(f)
         with open(os.path.join(self.JSONdir, 'filters.json'), 'r', encoding ='utf-8') as f:
             self.filters = json.load(f)
+        with open(os.path.join(self.JSONdir, '2018_HEM_correction.json'), 'r', encoding ='utf-8') as f:
+            self.HEM_parameters = json.load(f)
     
     def lumi_mask(self, events: NanoEventsArray) -> NanoEventsArray:  # only applied on data
         if self.sample_type=='mc':  # usually skipped cuz type is restricted to data before executing this function
@@ -92,10 +95,10 @@ class Processor(processor.ProcessorABC):
         # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
         # refer to https://gitlab.cern.ch/groups/cms-btv/-/wikis/SFCampaigns/UL2018
         WP = {'loose': 0.0490, 'medium': 0.2783, 'tight': 0.7100}
-        self.tag['b'] = (raw_AK4jet.btagDeepFlavB > WP[level])
+        self.tag['b-jet'] = (raw_AK4jet.btagDeepFlavB > WP[level])
         if reco:
-            self.object['b'] = self.event.Jet[self.tag['b']]
-        return self.tag['b']
+            self.object['b-jet'] = self.event.Jet[self.tag['b-jet']]
+        return self.tag['b-jet']
     
     def muon_tag(self, reco: bool = False) -> ak.Array:
         raw_muon = self.event.Muon  # (event, muon)
@@ -148,6 +151,25 @@ class Processor(processor.ProcessorABC):
             self.object['AK8jet'] = self.event.FatJet[self.tag['AK8jet']]
         return self.tag['AK8jet']
     
+    def HEM_tag(self, jet) -> ak.Array:  # jet shape: (event, jet), jet = AK8jet or AK4jet
+        if self.year == '2018' and (self.sample_type == 'data' and ((self.event.run >= 319313) & (self.event.run <= 325273))):
+            HEM_CORRECTION = True
+        elif self.year == '2018' and self.sample_type == 'mc' and 0 < random.random() < 0.632:  # RunC & RunD is 63.2% of 2018
+            HEM_CORRECTION = True
+        else:  # HEM_tag only applied in 2018
+            HEM_CORRECTION = False
+            
+        if HEM_CORRECTION:
+            jet_in_HEM = (
+                (jet.eta > self.HEM_parameters['eta']['min'] - 0.2) &
+                (jet.eta < self.HEM_parameters['eta']['max'] + 0.2) &
+                (jet.phi > self.HEM_parameters['phi']['min'] - 0.2) &
+                (jet.phi < self.HEM_parameters['phi']['max'] + 0.2)
+            )
+            return ~ak.any(jet_in_HEM, axis=1)
+        else:
+            return ak.Array([True for _ in range(len(self.event))])
+        
     def store_variables(self, vars: dict):
         for obj in vars.keys():
             for var in vars[obj]:
@@ -177,7 +199,7 @@ class Processor(processor.ProcessorABC):
         self.pass_cut(cutName='filtered', cut=self.filtered(level='all'))
         
         # b veto
-        # self.pass_cut(cutName='b-veto', cut=(ak.sum(self.b_tag(reco=False, level='tight'), axis=1)==0))
+        self.pass_cut(cutName='b-veto', cut=(ak.sum(self.b_tag(reco=True, level='tight'), axis=1)==0))
 
         # Muon veto
         # self.pass_cut(cutName='muon-veto', cut=(ak.sum(self.muon_tag(reco=False), axis=1)==0))
@@ -190,6 +212,9 @@ class Processor(processor.ProcessorABC):
         
         # AK8 jet >=1
         self.pass_cut(cutName='AK8jet', cut=(ak.sum(self.AK8jet_tag(reco=True), axis=1)>0))
+        
+        # HEM filter
+        self.pass_cut(cutName='2018_HEM_correction', cut=self.HEM_tag(jet=self.object['AK8jet']))
         
         # Photon-Jet cleaning, a very special part so no function definition here
         pj_pair = ak.cartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
@@ -219,6 +244,7 @@ class Processor(processor.ProcessorABC):
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
             'photon': {'pt', 'eta', 'phi', 'mass'},
+            'b-jet': {'pt', 'eta', 'phi', 'mass'},
             'event': {'MET_pt', 'genWeight', 'event'},
             'photon-jet': {'pt', 'eta', 'phi', 'mass'},
         })
@@ -244,12 +270,12 @@ class Processor(processor.ProcessorABC):
         # gen-macthing
         if any(final_cut) and self.sample_type == 'mc':
             gen = GenMatch(events=self.event)
-            if self.channel.upper() == 'ZpToHGamma'.upper():
+            if self.channel == 'ZpToHGamma':
                 self.variables.update(gen.ZpToHGamma())
-            elif self.channel.upper() == 'QCD'.upper():
-                final_cut = self.pass_cut(cutName='no prompt photon', cut=gen.QCD(), final=True)
-            elif self.channel.upper() == 'GJets'.upper():
-                final_cut = self.pass_cut(cutName='any prompt photon', cut=gen.GJets(), final=True)
+            elif self.channel in ['QCD', 'TTJets', 'WJetsToQQ', 'ZJetsToQQ']:
+                final_cut = self.pass_cut(cutName='no prompt photon', cut=gen.all_fake_photon(), final=True)
+            elif self.channel in ['GJets', 'TTGJets', 'WGamma', 'ZGamma']:
+                final_cut = self.pass_cut(cutName='any prompt photon', cut=gen.any_true_photon(), final=True)
                 
         # store output
         if any(final_cut):

@@ -1,1 +1,0 @@
-root://cms-xrd-global.cern.ch//store/mc/RunIIFall17NanoAODv7/ZpToHGamma_M2400_13TeV_TuneCP5_madgraph-pythia8/NANOAODSIM/PU2017_12Apr2018_Nano02Apr2020_102X_mc2017_realistic_v8-v1/110000/B9162624-E154-2344-80A4-7FEA975883E5.root
