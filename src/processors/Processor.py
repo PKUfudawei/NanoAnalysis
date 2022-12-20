@@ -152,23 +152,22 @@ class Processor(processor.ProcessorABC):
         return self.tag['AK8jet']
     
     def HEM_tag(self, jet) -> ak.Array:  # jet shape: (event, jet), jet = AK8jet or AK4jet
-        if self.year == '2018' and (self.sample_type == 'data' and ((self.event.run >= 319313) & (self.event.run <= 325273))):
-            HEM_CORRECTION = True
-        elif self.year == '2018' and self.sample_type == 'mc' and 0 < random.random() < 0.632:  # RunC & RunD is 63.2% of 2018
-            HEM_CORRECTION = True
-        else:  # HEM_tag only applied in 2018
-            HEM_CORRECTION = False
-            
-        if HEM_CORRECTION:
-            jet_in_HEM = (
-                (jet.eta > self.HEM_parameters['eta']['min'] - 0.2) &
-                (jet.eta < self.HEM_parameters['eta']['max'] + 0.2) &
-                (jet.phi > self.HEM_parameters['phi']['min'] - 0.2) &
-                (jet.phi < self.HEM_parameters['phi']['max'] + 0.2)
-            )
-            return ~ak.any(jet_in_HEM, axis=1)
-        else:
+        if self.year != '2018':
             return ak.Array([True for _ in range(len(self.event))])
+         
+        if self.sample_type == 'data':
+            event_in_HEM = ((self.event.run >= 319313) & (self.event.run <= 325273))
+        elif self.sample_type == 'mc':  # RunC & RunD is 63.2% of 2018
+            event_in_HEM = ak.Array([random.random() for _ in range(len(self.event))])
+            
+        jet_in_HEM = (
+            (jet.eta > self.HEM_parameters['eta']['min'] - 0.2) &
+            (jet.eta < self.HEM_parameters['eta']['max'] + 0.2) &
+            (jet.phi > self.HEM_parameters['phi']['min'] - 0.2) &
+            (jet.phi < self.HEM_parameters['phi']['max'] + 0.2)
+        )
+        
+        return ~ak.any(event_in_HEM * jet_in_HEM, axis=1)
         
     def store_variables(self, vars: dict):
         for obj in vars.keys():
