@@ -1,0 +1,3 @@
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18NanoAODv9/ZJetsToNuNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/270000/3714998D-766E-FD42-BFE4-8C92DEBA72BA.root
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18NanoAODv9/ZJetsToNuNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/280000/54ED67AA-D887-D449-A108-5607C0FCC0E9.root
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18NanoAODv9/ZJetsToNuNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/280000/CB07B6AE-F6FD-5846-8354-93A2EA10522A.root

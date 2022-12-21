@@ -1,1 +1,1 @@
-{"data_2018_EGamma": {"n_events": 2560318.0, "triggered": 77642.0, "filtered": 75778.0, "b-veto": 69227.0, "photon": 6167.0, "AK8jet": 1243.0, "2018_HEM_correction": 1207.0, "photon-jet_cleaning": 963.0}}
+{"data_2018_EGamma": {"n_events": 2560318.0, "triggered": 77642.0, "filtered": 75778.0, "b-veto": 69227.0, "photon": 6167.0, "AK8jet": 1243.0, "2018_HEM_correction": 1155.0, "photon-jet_cleaning": 916.0}}

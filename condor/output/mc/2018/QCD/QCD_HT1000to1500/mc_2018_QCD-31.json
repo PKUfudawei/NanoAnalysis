@@ -1,1 +1,1 @@
-{"mc_2018_QCD": {"n_events": 28368.0, "triggered": 953.0, "filtered": 949.0, "b-veto": 823.0, "photon": 9.0, "AK8jet": 6.0, "2018_HEM_correction": 5.0, "photon-jet_cleaning": 4.0, "no prompt photon": 0.0}}
+{"mc_2018_QCD": {"n_events": 28368.0, "triggered": 953.0, "filtered": 949.0, "b-veto": 823.0, "photon": 9.0, "AK8jet": 6.0, "2018_HEM_correction": 4.0, "photon-jet_cleaning": 3.0, "no prompt photon": 0.0}}

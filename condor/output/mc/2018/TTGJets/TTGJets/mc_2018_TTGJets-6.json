@@ -1,1 +1,1 @@
-{"mc_2018_TTGJets": {"n_events": 6672.0, "triggered": 234.0, "filtered": 233.0, "b-veto": 60.0, "photon": 42.0, "AK8jet": 13.0, "2018_HEM_correction": 13.0, "photon-jet_cleaning": 11.0, "any prompt photon": 11.0}}
+{"mc_2018_TTGJets": {"n_events": 6672.0, "triggered": 234.0, "filtered": 233.0, "b-veto": 60.0, "photon": 42.0, "AK8jet": 13.0, "2018_HEM_correction": 12.0, "photon-jet_cleaning": 10.0, "any prompt photon": 10.0}}

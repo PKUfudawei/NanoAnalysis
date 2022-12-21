@@ -1,1 +1,1 @@
-{"mc_2018_GJets": {"n_events": 66767.0, "triggered": 964.0, "filtered": 963.0, "b-veto": 924.0, "photon": 696.0, "AK8jet": 92.0, "2018_HEM_correction": 90.0, "photon-jet_cleaning": 75.0, "any prompt photon": 75.0}}
+{"mc_2018_GJets": {"n_events": 66767.0, "triggered": 964.0, "filtered": 963.0, "b-veto": 924.0, "photon": 696.0, "AK8jet": 92.0, "2018_HEM_correction": 89.0, "photon-jet_cleaning": 74.0, "any prompt photon": 74.0}}

@@ -89,7 +89,7 @@ class Processor(processor.ProcessorABC):
     
     def b_tag(self, level: str = 'tight', reco: bool = False) -> ak.Array:
         if level not in ['loose', 'medium', 'tight']:
-            raise ValueError("Processor.b_veto(): level must be in ['loose', 'medium', 'tight']")
+            raise ValueError("Processor.b_tag(): level must be in ['loose', 'medium', 'tight']")
         
         raw_AK4jet = self.event.Jet
         # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
@@ -151,23 +151,32 @@ class Processor(processor.ProcessorABC):
             self.object['AK8jet'] = self.event.FatJet[self.tag['AK8jet']]
         return self.tag['AK8jet']
     
-    def HEM_tag(self, jet) -> ak.Array:  # jet shape: (event, jet), jet = AK8jet or AK4jet
+    def HEM_tag(self) -> ak.Array:  # jet shape: (event, jet), jet = AK8jet or AK4jet
         if self.year != '2018':
             return ak.Array([True for _ in range(len(self.event))])
          
         if self.sample_type == 'data':
-            event_in_HEM = ((self.event.run >= 319313) & (self.event.run <= 325273))
+            event_in_HEM = (
+                (self.event.run >= self.HEM_parameters['2018']['RunC']['start']) &
+                (self.event.run <= self.HEM_parameters['2018']['RunD']['end'])
+            )
         elif self.sample_type == 'mc':  # RunC & RunD is 63.2% of 2018
-            event_in_HEM = ak.Array([random.random() for _ in range(len(self.event))])
+            event_in_HEM = ak.Array([random.random()<0.632 for _ in range(len(self.event))])
             
         jet_in_HEM = (
-            (jet.eta > self.HEM_parameters['eta']['min'] - 0.2) &
-            (jet.eta < self.HEM_parameters['eta']['max'] + 0.2) &
-            (jet.phi > self.HEM_parameters['phi']['min'] - 0.2) &
-            (jet.phi < self.HEM_parameters['phi']['max'] + 0.2)
+            (self.object['AK8jet'].eta > self.HEM_parameters['eta']['min'] - 0.4) &
+            (self.object['AK8jet'].eta < self.HEM_parameters['eta']['max'] + 0.4) &
+            (self.object['AK8jet'].phi > self.HEM_parameters['phi']['min'] - 0.4) &
+            (self.object['AK8jet'].phi < self.HEM_parameters['phi']['max'] + 0.4)
+        )
+        photon_in_HEM = (
+            (self.object['photon'].eta > self.HEM_parameters['eta']['min']) &
+            (self.object['photon'].eta < self.HEM_parameters['eta']['max']) &
+            (self.object['photon'].phi > self.HEM_parameters['phi']['min']) &
+            (self.object['photon'].phi < self.HEM_parameters['phi']['max'])
         )
         
-        return ~ak.any(event_in_HEM * jet_in_HEM, axis=1)
+        return ~(event_in_HEM & (ak.any(jet_in_HEM, axis=1) | ak.any(photon_in_HEM, axis=1)))
         
     def store_variables(self, vars: dict):
         for obj in vars.keys():
@@ -213,7 +222,7 @@ class Processor(processor.ProcessorABC):
         self.pass_cut(cutName='AK8jet', cut=(ak.sum(self.AK8jet_tag(reco=True), axis=1)>0))
         
         # HEM filter
-        self.pass_cut(cutName='2018_HEM_correction', cut=self.HEM_tag(jet=self.object['AK8jet']))
+        self.pass_cut(cutName='2018_HEM_correction', cut=self.HEM_tag())
         
         # Photon-Jet cleaning, a very special part so no function definition here
         pj_pair = ak.cartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
