@@ -39,6 +39,8 @@ class Processor(processor.ProcessorABC):
             self.filters = json.load(f)
         with open(os.path.join(self.JSONdir, '2018_HEM_correction.json'), 'r', encoding ='utf-8') as f:
             self.HEM_parameters = json.load(f)
+        with open(os.path.join(self.JSONdir, 'channel.json'), 'r', encoding ='utf-8') as f:
+            self.channel_info = json.load(f)
     
     def lumi_mask(self, events: NanoEventsArray) -> NanoEventsArray:  # only applied on data
         if self.sample_type=='mc':  # usually skipped cuz type is restricted to data before executing this function
@@ -278,11 +280,11 @@ class Processor(processor.ProcessorABC):
         # gen-macthing
         if any(final_cut) and self.sample_type == 'mc':
             gen = GenMatch(events=self.event)
-            if self.channel == 'ZpToHGamma':
-                self.variables.update(gen.ZpToHGamma())
-            elif self.channel in ['QCD', 'TTJets', 'WJetsToQQ', 'ZJetsToQQ']:
+            if self.channel in self.channel_info['signal']:
+                self.variables.update(gen.signal())
+            elif self.channel in self.channel_info['fake_photon']:
                 final_cut = self.pass_cut(cutName='no prompt photon', cut=gen.all_fake_photon(), final=True)
-            elif self.channel in ['GJets', 'TTGJets', 'WGamma', 'ZGamma']:
+            elif self.channel in self.channel_info['true_photon']:
                 final_cut = self.pass_cut(cutName='any prompt photon', cut=gen.any_true_photon(), final=True)
                 
         # store output

@@ -21,12 +21,15 @@ def main() -> None:
         os.system('condor_status -schedd')
         print('#' * 150)
         number = input("====> Which schedd you wanna use? ")
-        print(f"====> myschedd set bigbird{number}.cern.ch")
-        os.system(f"myschedd set bigbird{number}.cern.ch")
+        if number.isdigit():
+            print(f"====> myschedd set bigbird{number}.cern.ch")
+            os.system(f"myschedd set bigbird{number}.cern.ch")
+        else:
+            os.system("myschedd show")
     else:
         os.system("myschedd show")
     input("====> Are you ready to submit condor jobs?")
-    # myschedd set $schedd
+
     os.system(f"""
         for jdl in submit/{args.type}/{args.year}/{args.channel}/{args.job}.submit
             do condor_submit $jdl

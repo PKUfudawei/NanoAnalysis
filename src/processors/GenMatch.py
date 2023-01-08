@@ -110,7 +110,7 @@ class GenMatch():
         
         return gen_cuts.all(*gen_cuts.names)
         
-    def ZpToHGamma(self) -> dict:
+    def signal(self) -> dict:  # ZprimeToHGamma
         self.update_particle(  # shape: (event, particle)
             pool=self.event.GenPart, cut=(
                 (self.event.GenPart.pdgId == self.PDGID['Zp']) &

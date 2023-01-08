@@ -1,0 +1,17 @@
+{
+    "signal": ["ZpToHG"],
+    "background": [
+        "QCD",
+        "TTJets",
+        "WJetsToLNu",
+        "WJetsToQQ",
+        "ZJetsToNuNu",
+        "ZJetsToQQ",
+        "GJets",
+        "TTGJets",
+        "WGToJJG",
+        "ZGToJJG"
+    ],
+    "fake_photon": ["QCD", "TTJets", "WJetsToLNu", "WJetsToQQ", "ZJetsToNuNu", "ZJetsToQQ"],
+    "true_photon": ["GJets", "TTGJets", "WGToJJG", "ZGToJJG"]
+}
