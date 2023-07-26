@@ -1,0 +1,5 @@
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/1.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/3.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/0.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/4.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/2.root

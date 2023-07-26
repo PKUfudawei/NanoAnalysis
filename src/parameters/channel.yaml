@@ -1,0 +1,34 @@
+data:
+    - EGamma
+    - SinglePhoton
+signal:
+    - ZpToHG
+background:
+    - QCD
+    - GJets
+    - TTGJets
+    - TTJets
+    - WGToJJG
+    - WGToLNuG
+    - WJetsToLNu
+    - WJetsToQQ
+    - ZGToJJG
+    - ZGToLLG
+    - ZJetsToLL
+    - ZJetsToNuNu
+    - ZJetsToQQ
+    - ST
+fake_photon:
+    - QCD
+    - TTJets
+    - WJetsToLNu
+    - WJetsToQQ
+    - ZJetsToLL
+    - ZJetsToQQ
+true_photon:
+    - GJets
+    - TTGJets
+    - WGToJJG
+    - WGToLNuG
+    - ZGToJJG
+    - ZGToLLG

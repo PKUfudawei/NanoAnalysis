@@ -1,0 +1,15 @@
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/2.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/8.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/3.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/1.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/0.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/6.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/10.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/7.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/4.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/13.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/5.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/11.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/9.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/14.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016pre/ZJetsToNuNu/ZJetsToNuNu_HT-800To1200/12.root

@@ -1,0 +1,13 @@
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/2.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/8.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/3.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/1.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/0.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/6.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/10.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/7.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/4.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/5.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/11.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/9.root
+https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2000/12.root

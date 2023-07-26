@@ -1,0 +1,51 @@
+# The UNIVERSE defines an execution environment. You will almost always use VANILLA. 
+Universe = vanilla 
+
+# +ProjectName is the name of the project reported to the OSG accounting system
++ProjectName = "cms.org.cern"
+
+# Jobs which exceed the maximum runtime will be terminated
+## "tomorrow" = 1 day
++JobFlavour = "testmatch"
+JobBatchName = mc/2016pre/WJetsToLNu/WJetsToLNu_HT-2500ToInf
+
+# EXECUTABLE is the program your job will run It's often useful 
+# to create a shell script to "wrap" your actual work. 
+Executable = ./Execute.sh
+Arguments = mc_2016pre_WJetsToLNu ./src/parameters/
+
+# Setting the should_transfer_files command explicitly enables 
+# or disables the file transfer mechanism
+should_transfer_files   = YES
+transfer_input_files    = ../src, $(file)
+when_to_transfer_output = ON_EXIT_OR_EVICT
+transfer_output_files   = output.parq, stats.pkl
+transfer_output_remaps  = "output.parq = output/mc/2016pre/WJetsToLNu/WJetsToLNu_HT-2500ToInf/mc_2016pre_WJetsToLNu-$(Process).parq; stats.pkl = output/mc/2016pre/WJetsToLNu/WJetsToLNu_HT-2500ToInf/mc_2016pre_WJetsToLNu-$(Process).pkl"
+#output_destination = output_test/mc/2016pre/WJetsToLNu/WJetsToLNu_HT-2500ToInf/ ## not tested yet
+
+# If one wants to use local condor batch to analyze user/group skims 
+# located at remote sites. The only modification needed is adding
+use_x509userproxy       = true
+# For OLDER versions of HTCondor (before 8.0.0), you need
+# x509userproxy           = ~/.proxy
+
+# ERROR and OUTPUT are the error and output channels from your job
+# that HTCondor returns from the remote host.
+# The LOG file is where HTCondor places information about your 
+# job's status, success, and resource consumption. 
+Error = log/mc/2016pre/WJetsToLNu/WJetsToLNu_HT-2500ToInf/$(Cluster).$(Process).err
+Output = log/mc/2016pre/WJetsToLNu/WJetsToLNu_HT-2500ToInf/$(Cluster).$(Process).out
+Log = log/mc/2016pre/WJetsToLNu/WJetsToLNu_HT-2500ToInf/$(Cluster).log
+
+# Specify CPU,Memory and Disk
+# Default units if not specified:
+# Disk: Kb, Memory:Mb
+# Request_cpus = 3 ## requesting more cpu leads to more idle time
+# Request_disk = 100 Mb
+# Request_memory = 2048
+Rank = Memory
+# Rank = ( Memory>=32 ) * ( 10*Mips + 2*KFlops + 100*Memory + 8*VirtualMemory )
+
+# QUEUE is the "start button" - it launches any jobs that have been 
+# specified thus far. 
+Queue file from filelists/mc/2016pre/WJetsToLNu/WJetsToLNu_HT-2500ToInf.txt
