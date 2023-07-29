@@ -43,6 +43,7 @@ def main():
                 stats = pickle.load(file)
             for (key, value) in stats.items():
                 cutflow[key] = cutflow.get(key, 0) + value
+                continue
             if stats['final'] != 0:
                 arrays.append(ak.from_parquet(os.path.join(current_path, f.replace('pkl', 'parq'))))
 
@@ -53,7 +54,7 @@ def main():
                 yaml.dump(cutflow, file)
         output_file = os.path.join(current_path, f'{mode}.parquet')
         if len(arrays) > 0:
-            ak.to_parquet(array=ak.concatenate(arrays, axis=0), destination=output_file)
+            ak.to_parquet(ak.concatenate(arrays, axis=0), output_file)
 
         print(f'===> Finish merging parquet and pickle files in {current_path}')
         os.system(f"rm -rf {current_path}/*.pkl {current_path}/*.parq")
