@@ -58,7 +58,7 @@ node_modules
 
 # others
 log/
-intput*/
+input*/
 output*/
 plots/
 test/
