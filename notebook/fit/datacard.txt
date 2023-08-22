@@ -1,0 +1,20 @@
+# Datacard example for combine tutorial 2023 (part 1)
+---------------------------------------------
+imax 1
+jmax 1
+kmax *
+---------------------------------------------
+
+shapes      signal          Tag0      output/2018/workspace_signal_1000.root      workspace_signal:model_signal
+shapes      background     Tag0      output/2018/workspace_background.root      workspace_background:model_background
+shapes      data_obs     Tag0      output/2018/workspace_mc_SR.root      workspace_mc_SR:mc_SR
+
+---------------------------------------------
+bin             Tag0
+observation     -1
+---------------------------------------------
+bin             Tag0         Tag0
+process         signal          background
+process         0            1
+rate            94.41021543297185       1.0
+---------------------------------------------
