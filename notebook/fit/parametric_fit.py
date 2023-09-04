@@ -6,8 +6,9 @@ ROOT.gStyle.SetOptTitle(0)
 year = '2018'
 signal_mass = 1000
 
-tagger_cut_low, tagger_cut_high = 0.5, 0.8
-fit_range_low, fit_range_high = 720, 2000
+tagger_cut_low, tagger_cut_high = 0.8, 2
+fit_sig_low, fit_sig_high = 720, 2000
+fit_bkg_low, fit_bkg_high = 720, 2000
 
 Fit_signal = True
 Fit_background = True
@@ -23,7 +24,7 @@ def fit_signal(year, signal_mass):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", m, fit_range_low, fit_range_high)
+    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", m, fit_sig_low, fit_sig_high)
     weight = ROOT.RooRealVar("weight", "weight", 0, -10, 10)
     mass_Higgs = ROOT.RooRealVar("mass_Higgs", "mass_Higgs", 125, 0, 999)
     tagger_Hbb = ROOT.RooRealVar("tagger_Hbb", "tagger_Hbb", 0, 0, 2)
@@ -73,8 +74,11 @@ def fit_signal(year, signal_mass):
     plot.Draw()
     can.Update()
     can.Draw()
-    print("==> chi^2/ndf = ", plot.chiSquare(7))
-    #text.Draw()
+    
+    mass_Zprime.setBins(160)
+    hist = ROOT.RooDataHist("hist", "hist", mass_Zprime, mc)
+    print("==> chi^2/ndf = ", ROOT.RooChi2Var('chi2/ndf', 'chi2/ndf', model_signal, hist))
+    # text.Draw()
     can.SaveAs(f"../plots/fit/{year}/model_signal_{m}.pdf")
 
     if not os.path.exists(f'output/{year}'):
@@ -107,7 +111,7 @@ def background_fit(year):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_range_low, fit_range_high)
+    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_bkg_low, fit_bkg_high)
     weight = ROOT.RooRealVar("weight", "weight", 1, -10, 10)
     mass_Higgs = ROOT.RooRealVar("mass_Higgs", "mass_Higgs", 125, 0, 999)
     tagger_Hbb = ROOT.RooRealVar("tagger_Hbb", "tagger_Hbb", 0, 0, 2)
@@ -115,8 +119,8 @@ def background_fit(year):
     # Convert to RooDataSet
     data_sideband = ROOT.RooDataSet("data_sideband", "data_sideband", tree, ROOT.RooArgSet(mass_Zprime, weight, mass_Higgs, tagger_Hbb), sideband_cut, "weight")
 
-    n_bins = (fit_range_high - fit_range_low) // 50
-    binning = ROOT.RooFit.Binning(n_bins, fit_range_low, fit_range_high)
+    n_bins = (fit_bkg_high - fit_bkg_low) // 50
+    binning = ROOT.RooFit.Binning(n_bins, fit_bkg_low, fit_bkg_high)
 
     # Lets plot the signal mass distribution
     can = ROOT.TCanvas()
@@ -183,7 +187,7 @@ def get_SR_data(year):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_range_low, fit_range_high)
+    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_bkg_low, fit_bkg_high)
     weight = ROOT.RooRealVar("weight", "weight", 0, -10, 10)
     mass_Higgs = ROOT.RooRealVar("mass_Higgs", "mass_Higgs", 125, 0, 500)
     tagger_Hbb = ROOT.RooRealVar("tagger_Hbb", "tagger_Hbb", 0, 0, 2)
@@ -191,8 +195,8 @@ def get_SR_data(year):
     # Convert to RooDataSet
     data_SR = ROOT.RooDataSet("data_SR", "data_SR", tree, ROOT.RooArgSet(mass_Zprime, weight, mass_Higgs, tagger_Hbb), SR_cut, "weight")
 
-    n_bins = (fit_range_high - fit_range_low) // 50
-    binning = ROOT.RooFit.Binning(n_bins, fit_range_low, fit_range_high)
+    n_bins = (fit_bkg_high - fit_bkg_low) // 50
+    binning = ROOT.RooFit.Binning(n_bins, fit_bkg_low, fit_bkg_high)
 
     # Lets plot the signal mass distribution
     can = ROOT.TCanvas()
@@ -216,7 +220,7 @@ def get_SR_bkg_MC(year):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_range_low, fit_range_high)
+    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_bkg_low, fit_bkg_high)
     weight = ROOT.RooRealVar("weight", "weight", 0, -999, 999)
     mass_Higgs = ROOT.RooRealVar("mass_Higgs", "mass_Higgs", 125, 0, 500)
     tagger_Hbb = ROOT.RooRealVar("tagger_Hbb", "tagger_Hbb", 0, 0, 2)
@@ -224,8 +228,8 @@ def get_SR_bkg_MC(year):
     # Convert to RooDataSet
     mc_SR = ROOT.RooDataSet("mc_SR", "mc_SR", tree, ROOT.RooArgSet(mass_Zprime, weight, mass_Higgs, tagger_Hbb), SR_cut, "weight")
 
-    n_bins = (fit_range_high - fit_range_low) // 50
-    binning = ROOT.RooFit.Binning(n_bins, fit_range_low, fit_range_high)
+    n_bins = (fit_bkg_high - fit_bkg_low) // 50
+    binning = ROOT.RooFit.Binning(n_bins, fit_bkg_low, fit_bkg_high)
 
     # Lets plot the signal mass distribution
     can = ROOT.TCanvas()

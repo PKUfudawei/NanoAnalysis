@@ -5,9 +5,9 @@ f = ROOT.TFile("higgsCombine.bestfit.MultiDimFit.mH125.root")
 w = f.Get("w")
 w.Print("v")
 
-fit_range_low, fit_range_high = 720, 2000
-n_bins = (fit_range_high - fit_range_low) // 50
-binning = ROOT.RooFit.Binning(n_bins, fit_range_low, fit_range_high)
+x_low, x_high = 720, 2000
+n_bins = (x_high - x_low) // 50
+binning = ROOT.RooFit.Binning(n_bins, x_low, x_high)
 
 can = ROOT.TCanvas()
 plot = w.var("mass_Zprime").frame()
