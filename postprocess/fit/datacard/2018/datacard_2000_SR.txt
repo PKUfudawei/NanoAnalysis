@@ -1,0 +1,20 @@
+Combination of SR1=datacard_2000_SR1.txt  SR2=datacard_2000_SR2.txt
+imax 2 number of bins
+jmax 1 number of processes minus 1
+kmax 0 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes background  SR1         output/2018/background/workspace_background_2000_SR1.root workspace_background:model_background
+shapes data_obs    SR1         output/2018/test_bkg_mc/workspace_bkg_mc_2000_SR1.root workspace_bkg_mc:bkg_mc
+shapes signal      SR1         output/2018/signal/workspace_signal_2000_SR1.root workspace_signal:model_signal
+shapes background  SR2         output/2018/background/workspace_background_2000_SR2.root workspace_background:model_background
+shapes data_obs    SR2         output/2018/test_bkg_mc/workspace_bkg_mc_2000_SR2.root workspace_bkg_mc:bkg_mc
+shapes signal      SR2         output/2018/signal/workspace_signal_2000_SR2.root workspace_signal:model_signal
+----------------------------------------------------------------------------------------------------------------------------------
+bin          SR1    SR2  
+observation  -1     -1   
+----------------------------------------------------------------------------------------------------------------------------------
+bin          SR1           SR1           SR2           SR2         
+process      signal        background    signal        background  
+process      0             1             0             1           
+rate         3.4146047522  1             19.780797896  1           
+----------------------------------------------------------------------------------------------------------------------------------
