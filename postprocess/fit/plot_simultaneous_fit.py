@@ -2,9 +2,9 @@
 import ROOT
 ROOT.gStyle.SetOptTitle(0)
 
-y = 2018
-mass = 2000
-sr = 'SR1'
+y = 'Run2'
+mass = 1000
+sr = 'SR2'
 
 x_low = 720
 if mass == 1000:
@@ -43,7 +43,7 @@ def main() -> None:
     plot.Draw()
 
     leg = ROOT.TLegend(0.35, 0.6, 0.85, 0.85)
-    leg.AddEntry("bkg MC", "background MC", "PE")
+    leg.AddEntry("bkg MC", "pseudo data", "PE")
     leg.AddEntry("prefit", "Prefit S+B model (r=1.00)", "L")
     leg.AddEntry("postfit", "Postfit S+B model (r=%.2g)" % r_bestfit, "L")
     leg.SetBorderSize(0)

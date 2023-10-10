@@ -1,0 +1,1 @@
+python3 parametric_fit.py -y Run2 -m 1000 -R SR1 -u 2000; python3 parametric_fit.py -y Run2 -m 1000 -R SR2 -u 2000; python3 parametric_fit.py -y Run2 -m 2000 -R SR1 -u 3000; python3 parametric_fit.py -y Run2 -m 2000 -R SR2 -u 3000; python3 parametric_fit.py -y Run2 -m 3000 -R SR1 -u 3500; python3 parametric_fit.py -y Run2 -m 3000 -R SR2 -u 3500;

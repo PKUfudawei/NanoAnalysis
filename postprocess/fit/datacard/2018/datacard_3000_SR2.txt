@@ -3,9 +3,9 @@ jmax 1  # number of backgrounds
 kmax *  # number of nuisance parameters (sources of systematic uncertainties)
 ---------------------------------------------
 
-shapes      signal          Tag0      output/2018/signal/workspace_signal_3000_SR2.root      workspace_signal:model_signal
-shapes      background     Tag0      output/2018/background/workspace_background_3000_SR2.root      workspace_background:model_background
-shapes      data_obs     Tag0      output/2018/test_bkg_mc/workspace_bkg_mc_3000_SR2.root      workspace_bkg_mc:bkg_mc
+shapes      signal          Tag0      ../../output/2018/signal/workspace_signal_3000_SR2.root      workspace_signal:model_signal
+shapes      background     Tag0      ../../output/2018/background/workspace_background_3000_SR2.root      workspace_background:model_background
+shapes      data_obs     Tag0      ../../output/2018/test_bkg_mc/workspace_bkg_mc_3000_SR2.root      workspace_bkg_mc:bkg_mc
 
 ---------------------------------------------
 bin             Tag0
@@ -14,5 +14,5 @@ observation     -1
 bin             Tag0         Tag0
 process         signal          background
 process         0            1
-rate            3.1823710194555406       1.0
+rate            2.4299620260115007       1.0
 ---------------------------------------------
