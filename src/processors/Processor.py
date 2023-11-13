@@ -148,6 +148,17 @@ class Processor(processor.ProcessorABC):
             self.object['b-jet'] = self.event.Jet[self.tag['b-jet']]
         return self.tag['b-jet']
 
+    def extra_AK4jet_tag(self, reco: bool = False) -> ak.Array:
+        raw_AK4jet = self.event.Jet
+        # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
+        # refer to https://gitlab.cern.ch/groups/cms-btv/-/wikis/SFCampaigns/UL2018
+        self.tag['extra_AK4jet'] = (
+            self.object['AK8jet'].delta_r(raw_AK4jet) > 0.8 + 0.4
+        )
+        if reco:
+            self.object['extra_AK4jet'] = self.event.Jet[self.tag['extra_AK4jet']]
+        return self.tag['extra_AK4jet']
+
     def muon_tag(self, reco: bool = False) -> ak.Array:
         raw_muon = self.event.Muon  # (event, muon)
         self.tag['muon'] = (  # (event, boolean)
@@ -300,6 +311,10 @@ class Processor(processor.ProcessorABC):
         # b veto
         # final=True means to drop events not passing all selections
         final_cut = self.pass_cut(name='b-veto', cut=(ak.sum(self.b_tag(reco=True, level='medium'), axis=1) == 0), final=True)
+        
+        # AK4 jets
+        self.variables['nAK4jet'] = ak.num(self.event.Jet, axis=1)
+        self.variables['nExtraAK4jet'] = ak.sum(self.extra_AK4jet_tag(reco=True), axis=1)
 
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
