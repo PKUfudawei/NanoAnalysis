@@ -10,7 +10,7 @@ def parse_commandline():
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2'))
     parser.add_argument('-l', '--fit_range_low', help='To specify the lower bound of fitting range', default=720, type=int)
-    parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=3500, type=int)
+    parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=4000, type=int)
     args = parser.parse_args()
     return args
 
@@ -79,16 +79,17 @@ def fit_signal(year):
     # text.Draw()
     can.SaveAs(f"../plots/fit/{year}/model_signal_{signal_mass}_{signal_region}.pdf")
 
-    if not os.path.exists(f'output/{year}/signal'):
-        os.makedirs(f'output/{year}/signal')
-    f_out = ROOT.TFile(f"output/{year}/signal/workspace_signal_{signal_mass}_{signal_region}.root", "RECREATE")
+    sig_model_dir = f'output/{year}/signal'
+    if not os.path.exists(sig_model_dir):
+        os.makedirs(sig_model_dir)
+    f_out = ROOT.TFile(f"{sig_model_dir}/workspace_signal_{signal_mass}_{signal_region}.root", "RECREATE")
     w_sig = ROOT.RooWorkspace("workspace_signal", "workspace_signal")
     getattr(w_sig, "import")(model_signal)
     w_sig.Print()
     w_sig.Write()
     f_out.Close()
 
-    with open(f'output/{year}/signal/fit_info_signal_{signal_mass}_{signal_region}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{sig_model_dir}/fit_info_signal_{signal_mass}_{signal_region}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'x0': x0.getVal(),
             'sigmaL': sigmaL.getVal(),
@@ -120,6 +121,9 @@ def background_fit(year):
     n_bins = (fit_range_up - fit_range_low) // 20
     binning = ROOT.RooFit.Binning(n_bins, fit_range_low, fit_range_up)
 
+    # mass_Higgs.setBins(n_bins)
+    # data_sideband_hist = ROOT.RooDataHist("data_sideband_hist", "data_sideband_hist", mass_Higgs, data_sideband)
+
     # Lets plot the signal mass distribution
     can = ROOT.TCanvas()
     plot = mass_Zprime.frame()
@@ -128,15 +132,22 @@ def background_fit(year):
     can.Update()
     can.SaveAs(f"../plots/fit/{year}/data_sideband_mass_Zprime.pdf")
 
-    print('Total sideband data events:', data_sideband.sumEntries())
-
+   
     p0 = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
     p1 = ROOT.RooRealVar("p1", "p2", 1, -10, 10)
     p2 = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
-    # c = ROOT.RooRealVar("c", "c", -10, -0.3, 6)
     model_background = ROOT.RooGenericPdf("model_background", "model_background", "TMath::Power(@0, @1 + @2 * TMath::Log(@0))", ROOT.RooArgList(mass_Zprime, p1, p2))
-    # model_background = ROOT.RooExponential("model_background", "model_background", mass_Zprime, c)
+    """
+    p0 = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e4)
+    p1 = ROOT.RooRealVar("p1", "p1", -0.01, -1, 0)
+    p2 = ROOT.RooRealVar("p2", "p2", -0.001, -0.1, 0)
+    model_background = ROOT.RooGenericPdf("model_background", "model_background", "@0 * TMath::Power(@3, @1) * TMath::Exp(@2 * @3)", ROOT.RooArgList(p0, p1, p2, mass_Zprime))
 
+    p0 = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
+    p1 = ROOT.RooRealVar("p1", "p1", -0.000001, -0.001, 0)
+    p2 = ROOT.RooRealVar("p2", "p2", 10, 0, 2000)
+    model_background = ROOT.RooGenericPdf("model_background", "model_background", "@0 * TMath::Power(1 + @1*@3, @2)", ROOT.RooArgList(p0, p1, p2, mass_Zprime))
+    """
     # Fit model to data sidebands
     model_background.fitTo(data_sideband, ROOT.RooFit.SumW2Error(True))
     model_background.fitTo(data_sideband, ROOT.RooFit.SumW2Error(True))
@@ -160,20 +171,22 @@ def background_fit(year):
     p1.setConstant(True)
     p2.setConstant(True)
 
-    if not os.path.exists(f'output/{year}/background'):
-        os.makedirs(f'output/{year}/background')
-    f_out = ROOT.TFile(f"./output/{year}/background/workspace_background_{signal_mass}_{signal_region}.root", "RECREATE")
+    bkg_model_dir = f'output/{year}/background/dijet2'
+    if not os.path.exists(bkg_model_dir):
+        os.makedirs(bkg_model_dir)
+    f_out = ROOT.TFile(f"{bkg_model_dir}/workspace_background_{signal_mass}_{signal_region}.root", "RECREATE")
     w_bkg = ROOT.RooWorkspace("workspace_background", "workspace_background")
     getattr(w_bkg, "import")(data_sideband)
+    # getattr(w_bkg, "import")(data_sideband_hist)
     getattr(w_bkg, "import")(background_norm)
     getattr(w_bkg, "import")(model_background)
     w_bkg.Print()
     w_bkg.Write()
     f_out.Close()
 
-    with open(f'output/{year}/background/fit_info_background_{signal_mass}_{signal_region}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{bkg_model_dir}/fit_info_background_{signal_mass}_{signal_region}.yaml', 'w', encoding='utf-8') as f:
         info = {
-            # 'p0': p0.getVal(),
+            'p0': p0.getVal(),
             'p1': p1.getVal(),
             'p2': p2.getVal(),
             'event_sum': data_sideband.sumEntries()
@@ -230,6 +243,9 @@ def get_SR_bkg_MC(year):
 
     n_bins = (fit_range_up - fit_range_low) // 20
     binning = ROOT.RooFit.Binning(n_bins, fit_range_low, fit_range_up)
+
+    # mass_Zprime.setBins(n_bins)
+    # bkg_mc_hist = ROOT.RooDataHist("data_sideband_hist", "data_sideband_hist", mass_Zprime, bkg_mc)
 
     # Lets plot the signal mass distribution
     can = ROOT.TCanvas()
