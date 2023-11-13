@@ -15,6 +15,9 @@ printf "===> Job is running on node: "; /bin/hostname
 printf "===> Job running as user: "; /usr/bin/id; voms-proxy-info
 printf "===> Job is running in directory: "; /bin/pwd
 
+## transfer root file
+rsync -r $3 .
+
 ## execute main.py
 python3 src/main.py -m $1 -p $2
 

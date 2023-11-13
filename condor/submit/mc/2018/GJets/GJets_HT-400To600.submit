@@ -12,12 +12,12 @@ JobBatchName = mc/2018/GJets/GJets_HT-400To600
 # EXECUTABLE is the program your job will run It's often useful 
 # to create a shell script to "wrap" your actual work. 
 Executable = ./Execute.sh
-Arguments = mc_2018_GJets ./src/parameters/
+Arguments = mc_2018_GJets ./src/parameters/ $(file)
 
 # Setting the should_transfer_files command explicitly enables 
 # or disables the file transfer mechanism
 should_transfer_files   = YES
-transfer_input_files    = ../src, $(file)
+transfer_input_files    = ../src, ~/.ssh
 when_to_transfer_output = ON_EXIT_OR_EVICT
 transfer_output_files   = output.parq, stats.pkl
 transfer_output_remaps  = "output.parq = output/mc/2018/GJets/GJets_HT-400To600/mc_2018_GJets-$(Process).parq; stats.pkl = output/mc/2018/GJets/GJets_HT-400To600/mc_2018_GJets-$(Process).pkl"

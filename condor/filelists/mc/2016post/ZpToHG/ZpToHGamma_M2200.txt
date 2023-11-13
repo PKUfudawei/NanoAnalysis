@@ -1,5 +1,5 @@
-https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/1.root
-https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/2.root
-https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/3.root
-https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/0.root
-https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/4.root
+farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/1.root
+farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/0.root
+farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/2.root
+farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/3.root
+farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016post/ZpToHG/ZpToHGamma_M2200/4.root

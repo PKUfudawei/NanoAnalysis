@@ -1,5 +1,5 @@
-https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2017/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/1.root
-https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2017/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/2.root
-https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2017/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/3.root
-https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2017/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/0.root
-https://stash.osgconnect.net/+dfu/customizedNanoAOD/output/mc/2017/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/4.root
+farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2017/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/1.root
+farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2017/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/0.root
+farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2017/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/2.root
+farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2017/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/3.root
+farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2017/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/4.root
