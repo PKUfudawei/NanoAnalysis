@@ -1,0 +1,21 @@
+imax 1  # number of channels
+jmax 1  # number of backgrounds
+kmax *  # number of nuisance parameters (sources of systematic uncertainties)
+---------------------------------------------
+
+shapes      signal          Tag0      ../../output/Run2/signal/workspace_signal_3500_SR1.root      workspace_signal:model_signal
+shapes      background     Tag0      ../../output/Run2/background/workspace_background_3500_SR1.root      workspace_background:multipdf_Tag0
+shapes      data_obs     Tag0      ../../output/Run2/test_bkg_mc/workspace_bkg_mc_3500_SR1.root      workspace_bkg_mc:bkg_mc
+
+---------------------------------------------
+bin             Tag0
+observation     -1
+---------------------------------------------
+bin             Tag0         Tag0
+process         signal          background
+process         0            1
+rate            0.46012633904285577       1.0
+---------------------------------------------
+lumi_13TeV      lnN          1.01      -
+---------------------------------------------
+pdfindex_Tag0         discrete

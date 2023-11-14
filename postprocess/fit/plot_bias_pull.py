@@ -8,14 +8,14 @@ ROOT.gROOT.SetBatch(True)
 def parse_commandline():
     parser = argparse.ArgumentParser(description='parametric fitting')
     parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2017', '2018', 'Run2'), default='Run2')
-    parser.add_argument('-t', '--truth_function', help='To specify which truth function', choices=('expow2', 'invpow2'))
+    # parser.add_argument('-t', '--truth_function', help='To specify which truth function', choices=('expow2', 'invpow2'))
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2'))
     args = parser.parse_args()
     return args
 
 
-def main(truth_function, signal_mass, SR, fit_function='dijet2'):
+def plot(truth_function, signal_mass, SR, fit_function='dijet2'):
     N_toys = 1000
     r_truth = 1
 
@@ -69,11 +69,21 @@ def main(truth_function, signal_mass, SR, fit_function='dijet2'):
     canv.SaveAs(f"../plots/fit/{year}/bias_pull_{name}_{signal_mass}_{SR}.pdf")
 
 
-if __name__ == "__main__":
+def main():
     args = parse_commandline()
-    m = args.signal_mass
-    truth_function = args.truth_function
-    SR = args.SR
-    os.system(f"combine -M GenerateOnly datacard/Run2/{truth_function}/datacard_{m}_{SR}.root -t 1000 -n .generate_{truth_function} --expectSignal 1 --saveToys")
-    os.system(f"combine -M MultiDimFit datacard/Run2/dijet2/datacard_{m}_{SR}.root -t 1000 -n .bias_truth_{truth_function}_fit_dijet2 --expectSignal 1 --toysFile higgsCombine.generate_{truth_function}.GenerateOnly.mH120.123456.root --algo singles;")
-    main(truth_function=truth_function, signal_mass=m, SR=SR)
+    m, SR = args.signal_mass, args.SR
+
+    #os.system(f"combine -M GenerateOnly datacard/Run2/{truth_function}/datacard_{m}_{SR}.root -t 1000 -n .generate_{truth_function} --expectSignal 1 --saveToys")
+    #os.system(f"combine -M MultiDimFit datacard/Run2/dijet2/datacard_{m}_{SR}.root -t 1000 -n .bias_truth_{truth_function}_fit_dijet2 --expectSignal 1 --toysFile higgsCombine.generate_{truth_function}.GenerateOnly.mH120.123456.root --algo singles;")
+    
+    os.system(f"combine -M GenerateOnly datacard/Run2/datacard_{m}_{SR}.txt --setParameters pdf_index=1 --toysFrequentist -t 1000 --expectSignal 1 --saveToys -m 125 --freezeParameters pdf_index")
+    os.system(f"combine -M FitDiagnostics datacard/Run2/datacard_{m}_{SR}.txt --setParameters pdf_index=0 --toysFile higgsCombineTest.GenerateOnly.mH125.123456.root -t 1000 -n .bias_truth_expow2_fit_dijet2 --rMin -10 --rMax 10 --freezeParameters pdf_index --cminDefaultMinimizerStrategy=0")
+    plot(truth_function='expow2', signal_mass=m, SR=SR)
+    
+    os.system(f"combine -M GenerateOnly datacard/Run2/datacard_{m}_{SR}.txt --setParameters pdf_index=2 --toysFrequentist -t 1000 --expectSignal 1 --saveToys -m 125 --freezeParameters pdf_index")
+    os.system(f"combine -M FitDiagnostics datacard/Run2/datacard_{m}_{SR}.txt --setParameters pdf_index=0 --toysFile higgsCombineTest.GenerateOnly.mH125.123456.root -t 1000 -n .bias_truth_invpow2_fit_dijet2 --rMin -10 --rMax 10 --freezeParameters pdf_index --cminDefaultMinimizerStrategy=0")
+    plot(truth_function='invpow2', signal_mass=m, SR=SR)
+
+
+if __name__ == "__main__":
+    main()

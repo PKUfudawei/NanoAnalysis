@@ -45,13 +45,13 @@ def fit_signal(year):
     x0 = ROOT.RooRealVar("x0", "x0", signal_mass, signal_mass - 200, signal_mass + 200)
     sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", 100, 0, 600)
     sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", 100, 0, 600)
-    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 2, 0, 7)
-    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 2, 0, 7)
-    nL = ROOT.RooRealVar("nL", "nL", 0.1, -10, 10)
-    nR = ROOT.RooRealVar("nR", "nR", -1, -10, 10)
+    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 2, 0, 8)
+    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 2, 0, 8)
+    nL = ROOT.RooRealVar("nL", "nL", 0.1, 0, 20)
+    nR = ROOT.RooRealVar("nR", "nR", 0.1, 0, 20)
 
     # Define the Gaussian with mean=MH and width=sigma
-    model_signal = ROOT.RooCrystalBall("model_signal", "model_signal", mass_Zprime, x0, sigmaL, sigmaR, alphaL, nL, sigmaR, nR)
+    model_signal = ROOT.RooCrystalBall("model_signal", "model_signal", mass_Zprime, x0, sigmaL, sigmaR, alphaL, nL, alphaR, nR)
 
     # Fit Gaussian to MC events and plot
     model_signal.fitTo(mc, ROOT.RooFit.SumW2Error(True))
@@ -121,9 +121,6 @@ def background_fit(year):
     n_bins = (fit_range_up - fit_range_low) // 20
     binning = ROOT.RooFit.Binning(n_bins, fit_range_low, fit_range_up)
 
-    # mass_Higgs.setBins(n_bins)
-    # data_sideband_hist = ROOT.RooDataHist("data_sideband_hist", "data_sideband_hist", mass_Higgs, data_sideband)
-
     # Lets plot the signal mass distribution
     can = ROOT.TCanvas()
     plot = mass_Zprime.frame()
@@ -132,63 +129,84 @@ def background_fit(year):
     can.Update()
     can.SaveAs(f"../plots/fit/{year}/data_sideband_mass_Zprime.pdf")
 
-   
-    p0 = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
-    p1 = ROOT.RooRealVar("p1", "p2", 1, -10, 10)
-    p2 = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
-    model_background = ROOT.RooGenericPdf("model_background", "model_background", "TMath::Power(@0, @1 + @2 * TMath::Log(@0))", ROOT.RooArgList(mass_Zprime, p1, p2))
-    """
-    p0 = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e4)
-    p1 = ROOT.RooRealVar("p1", "p1", -0.01, -1, 0)
-    p2 = ROOT.RooRealVar("p2", "p2", -0.001, -0.1, 0)
-    model_background = ROOT.RooGenericPdf("model_background", "model_background", "@0 * TMath::Power(@3, @1) * TMath::Exp(@2 * @3)", ROOT.RooArgList(p0, p1, p2, mass_Zprime))
 
-    p0 = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
-    p1 = ROOT.RooRealVar("p1", "p1", -0.000001, -0.001, 0)
-    p2 = ROOT.RooRealVar("p2", "p2", 10, 0, 2000)
-    model_background = ROOT.RooGenericPdf("model_background", "model_background", "@0 * TMath::Power(1 + @1*@3, @2)", ROOT.RooArgList(p0, p1, p2, mass_Zprime))
-    """
+    ## Multiple background models
+    model, p0, p1, p2 = {}, {}, {}, {}
+
+    # dijet2 model
+    p0['dijet2'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
+    p1['dijet2'] = ROOT.RooRealVar("p1", "p2", 1, -10, 10)
+    p2['dijet2'] = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
+    model['dijet2'] = ROOT.RooGenericPdf("model_background_dijet2", "model_background_dijet2", "TMath::Power(@0, @1 + @2 * TMath::Log(@0))", ROOT.RooArgList(mass_Zprime, p1['dijet2'], p2['dijet2']))
+
+    # expow2 model
+    p0['expow2'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e4)
+    p1['expow2'] = ROOT.RooRealVar("p1", "p1", -0.01, -1, 0)
+    p2['expow2'] = ROOT.RooRealVar("p2", "p2", -0.001, -0.1, 0)
+    model['expow2'] = ROOT.RooGenericPdf("model_background_expow2", "model_background_expow2", "TMath::Power(@0, @1) * TMath::Exp(@2 * @0)", ROOT.RooArgList(mass_Zprime, p1['expow2'], p2['expow2']))
+
+    # invpow2 model
+    p0['invpow2'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
+    p1['invpow2'] = ROOT.RooRealVar("p1", "p1", -0.000001, -0.001, 0)
+    p2['invpow2'] = ROOT.RooRealVar("p2", "p2", 10, 0, 2000)
+    model['invpow2'] = ROOT.RooGenericPdf("model_background_invpow2", "model_background_invpow2", "TMath::Power(1 + @1*@0, @2)", ROOT.RooArgList(mass_Zprime, p1['invpow2'], p2['invpow2']))
+
+    # Make a RooCategory object: this will control which PDF is "active"
+    category = ROOT.RooCategory("pdfindex_Tag0", "Index of Pdf which is active for Tag0")
+
+    # Make a RooArgList of the models
+    models = ROOT.RooArgList()
+
     # Fit model to data sidebands
-    model_background.fitTo(data_sideband, ROOT.RooFit.SumW2Error(True))
-    model_background.fitTo(data_sideband, ROOT.RooFit.SumW2Error(True))
+    for k in model:
+        model[k].fitTo(data_sideband, ROOT.RooFit.SumW2Error(True))
+        # model[k].fitTo(data_sideband, ROOT.RooFit.SumW2Error(True))
+        p0[k].setConstant(True)
+        p1[k].setConstant(True)
+        p2[k].setConstant(True)
+        models.add(model[k])
+
+    # Build the RooMultiPdf object
+    multipdf = ROOT.RooMultiPdf("multipdf_Tag0", "MultiPdf for Tag0", category, models)
+    
+    background_norm = ROOT.RooRealVar("multipdf_Tag0_norm", "Number of background events in Tag0", data_sideband.numEntries(), 0, 100 * data_sideband.numEntries())
+    background_norm.setConstant(False)
 
     # Let's plot the model fit to the data
-    can = ROOT.TCanvas()
-    plot = mass_Zprime.frame()
-    # We have to be careful with the normalisation as we only fit over sidebands
-    # First do an invisible plot of the full data set
-    data_sideband.plotOn(plot, binning, ROOT.RooFit.MarkerColor(0), ROOT.RooFit.LineColor(0))
-    model_background.plotOn(plot, ROOT.RooFit.LineColor(2))
-    data_sideband.plotOn(plot, binning)
-    plot.Draw()
-    can.Update()
-    can.Draw()
-    can.SaveAs(f"../plots/fit/{year}/model_background.pdf")
+    for k in model:
+        can = ROOT.TCanvas()
+        plot = mass_Zprime.frame()
+        # We have to be careful with the normalisation as we only fit over sidebands
+        # First do an invisible plot of the full data set
+        data_sideband.plotOn(plot, binning, ROOT.RooFit.MarkerColor(0), ROOT.RooFit.LineColor(0))
+        model[k].plotOn(plot, ROOT.RooFit.LineColor(2))
+        data_sideband.plotOn(plot, binning)
+        plot.Draw()
+        can.Update()
+        can.Draw()
+        can.SaveAs(f"../plots/fit/{year}/{k}_{signal_mass}_{signal_region}.pdf")
 
-    background_norm = ROOT.RooRealVar("model_background_norm", "Number of background events", data_sideband.numEntries(), 0, 100 * data_sideband.numEntries())
-    background_norm.setConstant(False)
-    p0.setConstant(True)
-    p1.setConstant(True)
-    p2.setConstant(True)
+    mass_Zprime.setBins(100)
+    data_sideband_hist = ROOT.RooDataHist("data_sideband_hist", "data_sideband_hist", mass_Zprime, data_sideband)
 
-    bkg_model_dir = f'output/{year}/background/dijet2'
+    bkg_model_dir = f'output/{year}/background'
     if not os.path.exists(bkg_model_dir):
         os.makedirs(bkg_model_dir)
     f_out = ROOT.TFile(f"{bkg_model_dir}/workspace_background_{signal_mass}_{signal_region}.root", "RECREATE")
     w_bkg = ROOT.RooWorkspace("workspace_background", "workspace_background")
     getattr(w_bkg, "import")(data_sideband)
-    # getattr(w_bkg, "import")(data_sideband_hist)
+    getattr(w_bkg, "import")(data_sideband_hist)
+    getattr(w_bkg, "import")(category)
     getattr(w_bkg, "import")(background_norm)
-    getattr(w_bkg, "import")(model_background)
+    getattr(w_bkg, "import")(multipdf)
     w_bkg.Print()
     w_bkg.Write()
     f_out.Close()
 
     with open(f'{bkg_model_dir}/fit_info_background_{signal_mass}_{signal_region}.yaml', 'w', encoding='utf-8') as f:
         info = {
-            'p0': p0.getVal(),
-            'p1': p1.getVal(),
-            'p2': p2.getVal(),
+            'p1': {k: p1[k].getVal() for k in model},
+            'p2': {k: p2[k].getVal() for k in model},
             'event_sum': data_sideband.sumEntries()
         }
         yaml.dump(info, f)
