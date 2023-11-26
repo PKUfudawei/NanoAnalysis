@@ -30,15 +30,19 @@ def main() -> None:
     if len(sys.argv) < 2:
         raise ValueError('main() needs two necessary arguments as mode, file by -m, -f respectively')
     args = parse_commandline()
+
     if args.file is None:
         for f in os.listdir('.'):
             if f.endswith('.root'):
-                args.file = f
+                file = f
                 break
+    else:
+        os.system(f"rsync {args.file} .")
+        file = os.path.join('.', args.file.split('/')[-1])
 
     # run
     t0 = time.time()
-    print(f'===> Running on file: {args.file}')
+    print(f'===> Running on file: {file}')
 
     ## processing
     run = processor.Runner(
@@ -50,7 +54,7 @@ def main() -> None:
         # maxchunks = None,
     )
     stats, metrics = run(
-        fileset={'input': [f'{args.file}']}, treename='Events',
+        fileset={'input': [f'{file}']}, treename='Events',
         processor_instance=Processor(mode=args.mode, outdir=args.outdir, param_dir=args.param_dir),
     )
 
