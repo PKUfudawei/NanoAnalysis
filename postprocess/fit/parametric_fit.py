@@ -55,7 +55,6 @@ def fit_signal(year):
 
     # Fit Gaussian to MC events and plot
     model_signal.fitTo(mc, ROOT.RooFit.SumW2Error(True))
-    model_signal.fitTo(mc, ROOT.RooFit.SumW2Error(True))
 
     x0.setConstant(True)
     sigmaL.setConstant(True)
@@ -131,7 +130,7 @@ def background_fit(year):
 
 
     ## Multiple background models
-    model, p0, p1, p2 = {}, {}, {}, {}
+    model, p0, p1, p2, p3 = {}, {}, {}, {}, {}
 
     # dijet2 model
     p0['dijet2'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
@@ -151,6 +150,27 @@ def background_fit(year):
     p2['invpow2'] = ROOT.RooRealVar("p2", "p2", 10, 0, 2000)
     model['invpow2'] = ROOT.RooGenericPdf("model_background_invpow2", "model_background_invpow2", "TMath::Power(1 + @1*@0, @2)", ROOT.RooArgList(mass_Zprime, p1['invpow2'], p2['invpow2']))
 
+    # dijet3 model
+    p0['dijet3'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
+    p1['dijet3'] = ROOT.RooRealVar("p1", "p2", 1, -10, 10)
+    p2['dijet3'] = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
+    p3['dijet3'] = ROOT.RooRealVar("p3", "p3", -0.1, -10, 10)
+    model['dijet3'] = ROOT.RooGenericPdf("model_background_dijet3", "model_background_dijet3", "TMath::Power(@0, @1 + @2 * TMath::Log(@0) + @3 * TMath::Power(TMath::Log(@0), 2))", ROOT.RooArgList(mass_Zprime, p1['dijet3'], p2['dijet3'], p3['dijet3']))
+
+    # expow3 model
+    p0['expow3'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e4)
+    p1['expow3'] = ROOT.RooRealVar("p1", "p1", -0.01, -1, 0)
+    p2['expow3'] = ROOT.RooRealVar("p2", "p2", -0.001, -0.1, 0)
+    p3['expow3'] = ROOT.RooRealVar("p3", "p3", -0.1, -1, 10)
+    model['expow3'] = ROOT.RooGenericPdf("model_background_expow3", "model_background_expow3", "TMath::Power(@0, @1) * TMath::Exp(@2 * @0 + @3 * TMath::Power(@0, 2))", ROOT.RooArgList(mass_Zprime, p1['expow3'], p2['expow3'], p3['expow3']))
+
+    # invpow3 model
+    p0['invpow3'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
+    p1['invpow3'] = ROOT.RooRealVar("p1", "p1", -0.000001, -0.001, 0)
+    p2['invpow3'] = ROOT.RooRealVar("p2", "p2", 10, 0, 2000)
+    p3['invpow3'] = ROOT.RooRealVar("p3", "p3", -0.1, -1, 10)
+    model['invpow3'] = ROOT.RooGenericPdf("model_background_invpow3", "model_background_invpow3", "TMath::Power(1 + @1*@0, @2 + @3*@0)", ROOT.RooArgList(mass_Zprime, p1['invpow3'], p2['invpow3'], p3['invpow3']))
+
     # Make a RooCategory object: this will control which PDF is "active"
     category = ROOT.RooCategory("pdfindex_Tag0", "Index of Pdf which is active for Tag0")
 
@@ -164,6 +184,8 @@ def background_fit(year):
         p0[k].setConstant(True)
         p1[k].setConstant(True)
         p2[k].setConstant(True)
+        if '3' in k:
+            p3[k].setConstant(True)
         models.add(model[k])
 
     # Build the RooMultiPdf object
@@ -205,8 +227,9 @@ def background_fit(year):
 
     with open(f'{bkg_model_dir}/fit_info_background_{signal_mass}_{signal_region}.yaml', 'w', encoding='utf-8') as f:
         info = {
-            'p1': {k: p1[k].getVal() for k in model},
-            'p2': {k: p2[k].getVal() for k in model},
+            'p1': {k: p1[k].getVal() for k in p1},
+            'p2': {k: p2[k].getVal() for k in p2},
+            'p3': {k: p3[k].getVal() for k in p3},
             'event_sum': data_sideband.sumEntries()
         }
         yaml.dump(info, f)
