@@ -17,7 +17,7 @@ Arguments = data_2016pre_SinglePhoton ./src/parameters/ $(file)
 # Setting the should_transfer_files command explicitly enables 
 # or disables the file transfer mechanism
 should_transfer_files   = YES
-transfer_input_files    = ../src, ~/.ssh
+transfer_input_files    = ../src, ../../.ssh
 when_to_transfer_output = ON_EXIT_OR_EVICT
 transfer_output_files   = output.parq, stats.pkl
 transfer_output_remaps  = "output.parq = output/data/2016pre/SinglePhoton/SinglePhoton_Run2016B/data_2016pre_SinglePhoton-$(Process).parq; stats.pkl = output/data/2016pre/SinglePhoton/SinglePhoton_Run2016B/data_2016pre_SinglePhoton-$(Process).pkl"

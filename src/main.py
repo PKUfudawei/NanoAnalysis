@@ -37,8 +37,11 @@ def main() -> None:
                 file = f
                 break
     else:
-        os.system(f"rsync {args.file} .")
-        file = os.path.join('.', args.file.split('/')[-1])
+        if ':' in args.file:
+            os.system(f"rsync {args.file} .")  
+            file = os.path.join('.', args.file.split('/')[-1])
+        else:
+            file = args.file
 
     # run
     t0 = time.time()

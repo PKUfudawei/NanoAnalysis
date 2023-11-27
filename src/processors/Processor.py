@@ -53,6 +53,8 @@ class Processor(processor.ProcessorABC):
         if self.sample_type == 'mc':  # usually skipped cuz type is restricted to data before executing this function
             return events
         elif self.sample_type == 'data':
+            if not os.path.exists(self.golden_JSON[self.year]):
+                self.golden_JSON[self.year] = os.path.join(self.param_dir, self.golden_JSON[self.year].split('/')[-1])
             lumi_mask = lumi_tools.LumiMask(self.golden_JSON[self.year])
             data_mask = lumi_mask(events.run, events.luminosityBlock)
             return events[data_mask]

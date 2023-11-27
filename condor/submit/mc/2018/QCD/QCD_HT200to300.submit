@@ -17,7 +17,7 @@ Arguments = mc_2018_QCD ./src/parameters/ $(file)
 # Setting the should_transfer_files command explicitly enables 
 # or disables the file transfer mechanism
 should_transfer_files   = YES
-transfer_input_files    = ../src, ~/.ssh
+transfer_input_files    = ../src, ../../.ssh
 when_to_transfer_output = ON_EXIT_OR_EVICT
 transfer_output_files   = output.parq, stats.pkl
 transfer_output_remaps  = "output.parq = output/mc/2018/QCD/QCD_HT200to300/mc_2018_QCD-$(Process).parq; stats.pkl = output/mc/2018/QCD/QCD_HT200to300/mc_2018_QCD-$(Process).pkl"

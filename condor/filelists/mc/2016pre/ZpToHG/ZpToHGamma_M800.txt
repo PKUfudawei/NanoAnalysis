@@ -1,8 +1,8 @@
-farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/5.root
-farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/1.root
-farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/6.root
-farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/7.root
-farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/0.root
-farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/2.root
-farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/3.root
-farm:/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/4.root
+/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/7.root
+/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/3.root
+/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/5.root
+/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/2.root
+/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/1.root
+/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/4.root
+/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/0.root
+/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M800/6.root
