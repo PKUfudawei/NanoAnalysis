@@ -103,6 +103,10 @@ def fit_signal(year):
 
 
 def background_fit(year):
+    bkg_model_dir = f'output/{year}/background'
+    if os.path.exists(f"{bkg_model_dir}/workspace_background_{signal_region}.root"):
+        return
+    
     # # Background modelling
     f = ROOT.TFile(f"input/{year}/data_Hbb.root", "r")
     # Load TTree
@@ -134,10 +138,23 @@ def background_fit(year):
 
     # dijet2 model
     p0['dijet2'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
-    p1['dijet2'] = ROOT.RooRealVar("p1", "p2", 1, -10, 10)
+    p1['dijet2'] = ROOT.RooRealVar("p1", "p2", 1, -10, 100)
     p2['dijet2'] = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
     model['dijet2'] = ROOT.RooGenericPdf("model_background_dijet2", "model_background_dijet2", "TMath::Power(@0, @1 + @2 * TMath::Log(@0))", ROOT.RooArgList(mass_Zprime, p1['dijet2'], p2['dijet2']))
 
+    # dijet3 model
+    p0['dijet3'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
+    p1['dijet3'] = ROOT.RooRealVar("p1", "p2", 1, -10, 10)
+    p2['dijet3'] = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
+    p3['dijet3'] = ROOT.RooRealVar("p3", "p3", -0.1, -10, 10)
+    model['dijet3'] = ROOT.RooGenericPdf("model_background_dijet3", "model_background_dijet3", "TMath::Power(@0, @1 + @2 * TMath::Log(@0) + @3 * TMath::Power(TMath::Log(@0), 2))", ROOT.RooArgList(mass_Zprime, p1['dijet3'], p2['dijet3'], p3['dijet3']))
+
+    # expow1 model
+    p0['expow1'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
+    p1['expow1'] = ROOT.RooRealVar("p1", "p1", -0.1, -10, 0)
+    p2['expow1'] = ROOT.RooRealVar("p2", "p2", 0.1, -10, 10)
+    model['expow1'] = ROOT.RooGenericPdf("model_background_pow2", "model_background_pow2", "TMath::Power(@0, @1)", ROOT.RooArgList(mass_Zprime, p1['expow1']))
+    
     # expow2 model
     p0['expow2'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e4)
     p1['expow2'] = ROOT.RooRealVar("p1", "p1", -0.01, -1, 0)
@@ -150,26 +167,30 @@ def background_fit(year):
     p2['invpow2'] = ROOT.RooRealVar("p2", "p2", 10, 0, 2000)
     model['invpow2'] = ROOT.RooGenericPdf("model_background_invpow2", "model_background_invpow2", "TMath::Power(1 + @1*@0, @2)", ROOT.RooArgList(mass_Zprime, p1['invpow2'], p2['invpow2']))
 
-    # dijet3 model
-    p0['dijet3'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
-    p1['dijet3'] = ROOT.RooRealVar("p1", "p2", 1, -10, 10)
-    p2['dijet3'] = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
-    p3['dijet3'] = ROOT.RooRealVar("p3", "p3", -0.1, -10, 10)
-    model['dijet3'] = ROOT.RooGenericPdf("model_background_dijet3", "model_background_dijet3", "TMath::Power(@0, @1 + @2 * TMath::Log(@0) + @3 * TMath::Power(TMath::Log(@0), 2))", ROOT.RooArgList(mass_Zprime, p1['dijet3'], p2['dijet3'], p3['dijet3']))
-
-    # expow3 model
-    p0['expow3'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e4)
-    p1['expow3'] = ROOT.RooRealVar("p1", "p1", -0.01, -1, 0)
-    p2['expow3'] = ROOT.RooRealVar("p2", "p2", -0.001, -0.1, 0)
-    p3['expow3'] = ROOT.RooRealVar("p3", "p3", -0.1, -1, 10)
-    model['expow3'] = ROOT.RooGenericPdf("model_background_expow3", "model_background_expow3", "TMath::Power(@0, @1) * TMath::Exp(@2 * @0 + @3 * TMath::Power(@0, 2))", ROOT.RooArgList(mass_Zprime, p1['expow3'], p2['expow3'], p3['expow3']))
-
     # invpow3 model
     p0['invpow3'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
     p1['invpow3'] = ROOT.RooRealVar("p1", "p1", -0.000001, -0.001, 0)
     p2['invpow3'] = ROOT.RooRealVar("p2", "p2", 10, 0, 2000)
     p3['invpow3'] = ROOT.RooRealVar("p3", "p3", -0.1, -1, 10)
     model['invpow3'] = ROOT.RooGenericPdf("model_background_invpow3", "model_background_invpow3", "TMath::Power(1 + @1*@0, @2 + @3*@0)", ROOT.RooArgList(mass_Zprime, p1['invpow3'], p2['invpow3'], p3['invpow3']))
+
+    # expow3 model
+    """
+    p0['expow3'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e4)
+    p1['expow3'] = ROOT.RooRealVar("p1", "p1", -0.01, -1, 0)
+    p2['expow3'] = ROOT.RooRealVar("p2", "p2", -0.001, -0.1, 0)
+    p3['expow3'] = ROOT.RooRealVar("p3", "p3", -0.001, -10, 1)
+    model['expow3'] = ROOT.RooGenericPdf("model_background_expow3", "model_background_expow3", "TMath::Power(@0, @1) * TMath::Exp(@2 * @0 + @3 * TMath::Power(@0, 2))", ROOT.RooArgList(mass_Zprime, p1['expow3'], p2['expow3'], p3['expow3']))
+    """
+
+    # pow3 model
+    """
+    p0['pow3'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
+    p1['pow3'] = ROOT.RooRealVar("p1", "p1", -0.1, -10, 0)
+    p2['pow3'] = ROOT.RooRealVar("p2", "p2", 0.1, -10, 10)
+    p3['pow3'] = ROOT.RooRealVar("p3", "p3", -0.1, -10, 5)
+    model['pow3'] = ROOT.RooGenericPdf("model_background_pow3", "model_background_pow3", "TMath::Power(@0, @1) + @2*TMath::Power(@0, @3)", ROOT.RooArgList(mass_Zprime, p1['pow3'], p2['pow3'], p3['pow3']))
+    """
 
     # Make a RooCategory object: this will control which PDF is "active"
     category = ROOT.RooCategory("pdfindex_Tag0", "Index of Pdf which is active for Tag0")
@@ -206,15 +227,14 @@ def background_fit(year):
         plot.Draw()
         can.Update()
         can.Draw()
-        can.SaveAs(f"../plots/fit/{year}/{k}_{signal_mass}_{signal_region}.pdf")
+        can.SaveAs(f"../plots/fit/{year}/{k}_{signal_region}.pdf")
 
     mass_Zprime.setBins(100)
     data_sideband_hist = ROOT.RooDataHist("data_sideband_hist", "data_sideband_hist", mass_Zprime, data_sideband)
 
-    bkg_model_dir = f'output/{year}/background'
     if not os.path.exists(bkg_model_dir):
         os.makedirs(bkg_model_dir)
-    f_out = ROOT.TFile(f"{bkg_model_dir}/workspace_background_{signal_mass}_{signal_region}.root", "RECREATE")
+    f_out = ROOT.TFile(f"{bkg_model_dir}/workspace_background_{signal_region}.root", "RECREATE")
     w_bkg = ROOT.RooWorkspace("workspace_background", "workspace_background")
     getattr(w_bkg, "import")(data_sideband)
     getattr(w_bkg, "import")(data_sideband_hist)
@@ -225,7 +245,7 @@ def background_fit(year):
     w_bkg.Write()
     f_out.Close()
 
-    with open(f'{bkg_model_dir}/fit_info_background_{signal_mass}_{signal_region}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{bkg_model_dir}/fit_info_background_{signal_region}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'p1': {k: p1[k].getVal() for k in p1},
             'p2': {k: p2[k].getVal() for k in p2},
@@ -236,6 +256,9 @@ def background_fit(year):
 
 
 def get_SR_data(year):
+    if os.path.exists(f"./output/{year}/workspace_data_{signal_region}.root"):
+        return
+
     # # Data in SR
     f = ROOT.TFile(f"input/{year}/data_Hbb.root", "r")
     tree = f.Get("Events")
@@ -260,7 +283,7 @@ def get_SR_data(year):
     can.Update()
     can.SaveAs(f"../plots/fit/{year}/data_SR_mass_Zprime.pdf")
 
-    f_out = ROOT.TFile(f"./output/{year}/workspace_data_{signal_mass}.root", "RECREATE")
+    f_out = ROOT.TFile(f"./output/{year}/workspace_data_{signal_region}.root", "RECREATE")
     w = ROOT.RooWorkspace("workspace_data", "workspace_data")
     getattr(w, "import")(data_SR)
     w.Print()
@@ -269,6 +292,9 @@ def get_SR_data(year):
 
 
 def get_SR_bkg_MC(year):
+    if os.path.exists(f"./output/{year}/test_bkg_mc/workspace_bkg_mc_{signal_region}.root"):
+        return
+
     # # Data in SR
     f = ROOT.TFile(f"input/{year}/mc_background.root", "r")
     tree = f.Get("Events")
@@ -294,11 +320,11 @@ def get_SR_bkg_MC(year):
     bkg_mc.plotOn(plot, binning)
     plot.Draw()
     can.Update()
-    can.SaveAs(f"../plots/fit/{year}/bkg_mc_{signal_mass}_{signal_region}_mass_Zprime.pdf")
+    can.SaveAs(f"../plots/fit/{year}/bkg_mc_{signal_region}_mass_Zprime.pdf")
 
     if not os.path.exists(f'output/{year}/test_bkg_mc'):
         os.makedirs(f'output/{year}/test_bkg_mc')
-    f_out = ROOT.TFile(f"./output/{year}/test_bkg_mc/workspace_bkg_mc_{signal_mass}_{signal_region}.root", "RECREATE")
+    f_out = ROOT.TFile(f"./output/{year}/test_bkg_mc/workspace_bkg_mc_{signal_region}.root", "RECREATE")
     w = ROOT.RooWorkspace("workspace_bkg_mc", "workspace_bkg_mc")
     getattr(w, "import")(bkg_mc)
     w.Print()

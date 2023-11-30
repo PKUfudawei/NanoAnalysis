@@ -4,8 +4,8 @@ kmax *  # number of nuisance parameters (sources of systematic uncertainties)
 ---------------------------------------------
 
 shapes      signal          Tag0      ../../output/Run2/signal/workspace_signal_3000_SR1.root      workspace_signal:model_signal
-shapes      background     Tag0      ../../output/Run2/background/workspace_background_3000_SR1.root      workspace_background:multipdf_Tag0
-shapes      data_obs     Tag0      ../../output/Run2/test_bkg_mc/workspace_bkg_mc_3000_SR1.root      workspace_bkg_mc:bkg_mc
+shapes      background     Tag0      ../../output/Run2/background/workspace_background_SR1.root      workspace_background:multipdf_Tag0
+shapes      data_obs     Tag0      ../../output/Run2/test_bkg_mc/workspace_bkg_mc_SR1.root      workspace_bkg_mc:bkg_mc
 
 ---------------------------------------------
 bin             Tag0
