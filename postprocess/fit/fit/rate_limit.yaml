@@ -1,0 +1,198 @@
+SR1:
+  700:
+    Expected +1sigma: 1.005561113357544
+    Expected +2sigma: 1.4650689363479614
+    Expected -1sigma: 0.4153861999511719
+    Expected -2sigma: 0.274383544921875
+    Expected Limit: 0.650390625
+    Observed Limit: 0.9940922766083504
+  800:
+    Expected +1sigma: 0.3390076458454132
+    Expected +2sigma: 0.46505722403526306
+    Expected -1sigma: 0.16657209396362305
+    Expected -2sigma: 0.121856689453125
+    Expected Limit: 0.236328125
+    Observed Limit: 0.3147994811573667
+  900:
+    Expected +1sigma: 0.28516438603401184
+    Expected +2sigma: 0.39436039328575134
+    Expected -1sigma: 0.13897764682769775
+    Expected -2sigma: 0.1022186279296875
+    Expected Limit: 0.1982421875
+    Observed Limit: 0.1725189112350897
+  1000:
+    Expected +1sigma: 0.2662885785102844
+    Expected +2sigma: 0.3700830340385437
+    Expected -1sigma: 0.12801361083984375
+    Expected -2sigma: 0.09466552734375
+    Expected Limit: 0.18359375
+    Observed Limit: 0.3068625448566291
+  1200:
+    Expected +1sigma: 0.2721014618873596
+    Expected +2sigma: 0.38563063740730286
+    Expected -1sigma: 0.12767958641052246
+    Expected -2sigma: 0.09325218200683594
+    Expected Limit: 0.18505859375
+    Observed Limit: 0.2690004063624584
+  1400:
+    Expected +1sigma: 0.31311196088790894
+    Expected +2sigma: 0.45289346575737
+    Expected -1sigma: 0.1426563262939453
+    Expected -2sigma: 0.1028594970703125
+    Expected Limit: 0.208984375
+    Observed Limit: 0.1029360521919819
+  1600:
+    Expected +1sigma: 0.3805360794067383
+    Expected +2sigma: 0.5615655183792114
+    Expected -1sigma: 0.1658843755722046
+    Expected -2sigma: 0.1182098388671875
+    Expected Limit: 0.248046875
+    Observed Limit: 0.17748905429903636
+  1800:
+    Expected +1sigma: 0.4728807806968689
+    Expected +2sigma: 0.7142137885093689
+    Expected -1sigma: 0.19894659519195557
+    Expected -2sigma: 0.14072418212890625
+    Expected Limit: 0.302734375
+    Observed Limit: 0.17507639733119404
+  2000:
+    Expected +1sigma: 0.6148194670677185
+    Expected +2sigma: 0.9488049149513245
+    Expected -1sigma: 0.24804043769836426
+    Expected -2sigma: 0.1713409423828125
+    Expected Limit: 0.384765625
+    Observed Limit: 0.22699531655883412
+  2200:
+    Expected +1sigma: 0.8292981386184692
+    Expected +2sigma: 1.296138882637024
+    Expected -1sigma: 0.31755566596984863
+    Expected -2sigma: 0.216522216796875
+    Expected Limit: 0.50390625
+    Observed Limit: 0.3391319233207506
+  2400:
+    Expected +1sigma: 1.1337090730667114
+    Expected +2sigma: 1.817444086074829
+    Expected -1sigma: 0.41592884063720703
+    Expected -2sigma: 0.279815673828125
+    Expected Limit: 0.67578125
+    Observed Limit: 0.5525131792561754
+  2600:
+    Expected +1sigma: 1.5893152952194214
+    Expected +2sigma: 2.5852999687194824
+    Expected -1sigma: 0.5626697540283203
+    Expected -2sigma: 0.37042236328125
+    Expected Limit: 0.9296875
+    Observed Limit: 0.721209404861894
+  3000:
+    Expected +1sigma: 3.3387768268585205
+    Expected +2sigma: 5.576196670532227
+    Expected -1sigma: 1.0964877605438232
+    Expected -2sigma: 0.698699951171875
+    Expected Limit: 1.8828125
+    Observed Limit: 1.5646646761158334
+  3500:
+    Expected +1sigma: 9.031166076660156
+    Expected +2sigma: 14.967473983764648
+    Expected -1sigma: 2.760467529296875
+    Expected -2sigma: 1.697265625
+    Expected Limit: 4.9375
+    Observed Limit: 4.425565930836726
+SR2:
+  700:
+    Expected +1sigma: 0.3651670217514038
+    Expected +2sigma: 0.5402911305427551
+    Expected -1sigma: 0.15036821365356445
+    Expected -2sigma: 0.10162353515625
+    Expected Limit: 0.234375
+    Observed Limit: 0.2708171651134693
+  800:
+    Expected +1sigma: 0.09871232509613037
+    Expected +2sigma: 0.13824878633022308
+    Expected -1sigma: 0.04699277877807617
+    Expected -2sigma: 0.034465789794921875
+    Expected Limit: 0.06787109375
+    Observed Limit: 0.12403749327066155
+  900:
+    Expected +1sigma: 0.08256377279758453
+    Expected +2sigma: 0.11666745692491531
+    Expected -1sigma: 0.03844708204269409
+    Expected -2sigma: 0.028514862060546875
+    Expected Limit: 0.05615234375
+    Observed Limit: 0.05037420477252469
+  1000:
+    Expected +1sigma: 0.07620175927877426
+    Expected +2sigma: 0.10889178514480591
+    Expected -1sigma: 0.035247802734375
+    Expected -2sigma: 0.025634765625
+    Expected Limit: 0.05126953125
+    Observed Limit: 0.03176001374071881
+  1200:
+    Expected +1sigma: 0.07783666253089905
+    Expected +2sigma: 0.11351548880338669
+    Expected -1sigma: 0.03433406352996826
+    Expected -2sigma: 0.02483367919921875
+    Expected Limit: 0.05126953125
+    Observed Limit: 0.0402364725826409
+  1400:
+    Expected +1sigma: 0.08401279151439667
+    Expected +2sigma: 0.12630607187747955
+    Expected -1sigma: 0.03548222780227661
+    Expected -2sigma: 0.024982452392578125
+    Expected Limit: 0.05419921875
+    Observed Limit: 0.05094607166533159
+  1600:
+    Expected +1sigma: 0.09596801549196243
+    Expected +2sigma: 0.14810025691986084
+    Expected -1sigma: 0.03871697187423706
+    Expected -2sigma: 0.026744842529296875
+    Expected Limit: 0.06005859375
+    Observed Limit: 0.04738517821679362
+  1800:
+    Expected +1sigma: 0.11491243541240692
+    Expected +2sigma: 0.18112270534038544
+    Expected -1sigma: 0.044002383947372437
+    Expected -2sigma: 0.030002593994140625
+    Expected Limit: 0.06982421875
+    Observed Limit: 0.04822271228028412
+  2000:
+    Expected +1sigma: 0.14057965576648712
+    Expected +2sigma: 0.2262033075094223
+    Expected -1sigma: 0.051048994064331055
+    Expected -2sigma: 0.033721923828125
+    Expected Limit: 0.0830078125
+    Observed Limit: 0.06054772058220965
+  2200:
+    Expected +1sigma: 0.18113957345485687
+    Expected +2sigma: 0.2987324297428131
+    Expected -1sigma: 0.06249874830245972
+    Expected -2sigma: 0.04100799560546875
+    Expected Limit: 0.10498046875
+    Observed Limit: 0.0853197818020675
+  2400:
+    Expected +1sigma: 0.23811298608779907
+    Expected +2sigma: 0.39635026454925537
+    Expected -1sigma: 0.07819868624210358
+    Expected -2sigma: 0.04982948303222656
+    Expected Limit: 0.13427734375
+    Observed Limit: 0.13410618538860097
+  2600:
+    Expected +1sigma: 0.31907978653907776
+    Expected +2sigma: 0.5357882976531982
+    Expected -1sigma: 0.10110387206077576
+    Expected -2sigma: 0.06283187866210938
+    Expected Limit: 0.1767578125
+    Observed Limit: 0.16366281254081008
+  3000:
+    Expected +1sigma: 0.6261157989501953
+    Expected +2sigma: 1.0243403911590576
+    Expected -1sigma: 0.1871349811553955
+    Expected -2sigma: 0.1135101318359375
+    Expected Limit: 0.337890625
+    Observed Limit: 0.3131036453834682
+  3500:
+    Expected +1sigma: 1.6124743223190308
+    Expected +2sigma: 2.593629837036133
+    Expected -1sigma: 0.45799219608306885
+    Expected -2sigma: 0.2706756591796875
+    Expected Limit: 0.85546875
+    Observed Limit: 0.8218687046194896

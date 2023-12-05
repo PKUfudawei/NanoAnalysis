@@ -6,9 +6,9 @@ ROOT.gStyle.SetOptTitle(0)
 
 def parse_commandline():
     parser = argparse.ArgumentParser(description='parametric fitting')
-    parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2017', '2018', 'Run2'))
-    parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int)
-    parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2'))
+    parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2017', '2018', 'Run2'), default='Run2')
+    parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
+    parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
     parser.add_argument('-l', '--fit_range_low', help='To specify the lower bound of fitting range', default=720, type=int)
     parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=4000, type=int)
     args = parser.parse_args()
@@ -152,12 +152,11 @@ def background_fit(year):
     # expow1 model
     p0['expow1'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e6)
     p1['expow1'] = ROOT.RooRealVar("p1", "p1", -0.1, -10, 0)
-    p2['expow1'] = ROOT.RooRealVar("p2", "p2", 0.1, -10, 10)
     model['expow1'] = ROOT.RooGenericPdf("model_background_pow2", "model_background_pow2", "TMath::Power(@0, @1)", ROOT.RooArgList(mass_Zprime, p1['expow1']))
     
     # expow2 model
     p0['expow2'] = ROOT.RooRealVar("p0", "p0", 1e3, 0, 1e4)
-    p1['expow2'] = ROOT.RooRealVar("p1", "p1", -0.01, -1, 0)
+    p1['expow2'] = ROOT.RooRealVar("p1", "p1", -0.01, -5, 0)
     p2['expow2'] = ROOT.RooRealVar("p2", "p2", -0.001, -0.1, 0)
     model['expow2'] = ROOT.RooGenericPdf("model_background_expow2", "model_background_expow2", "TMath::Power(@0, @1) * TMath::Exp(@2 * @0)", ROOT.RooArgList(mass_Zprime, p1['expow2'], p2['expow2']))
 
@@ -201,11 +200,12 @@ def background_fit(year):
     # Fit model to data sidebands
     for k in model:
         model[k].fitTo(data_sideband, ROOT.RooFit.SumW2Error(True))
-        # model[k].fitTo(data_sideband, ROOT.RooFit.SumW2Error(True))
+        model[k].fitTo(data_sideband, ROOT.RooFit.SumW2Error(True))
         p0[k].setConstant(True)
         p1[k].setConstant(True)
-        p2[k].setConstant(True)
-        if '3' in k:
+        if k in p2:
+            p2[k].setConstant(True)
+        if k in p3:
             p3[k].setConstant(True)
         models.add(model[k])
 
@@ -214,6 +214,8 @@ def background_fit(year):
     
     background_norm = ROOT.RooRealVar("multipdf_Tag0_norm", "Number of background events in Tag0", data_sideband.numEntries(), 0, 100 * data_sideband.numEntries())
     background_norm.setConstant(False)
+    background_dijet2_norm = ROOT.RooRealVar("model_background_dijet2_norm", "Number of background events in Tag0", data_sideband.numEntries(), 0, 100 * data_sideband.numEntries())
+    background_dijet2_norm.setConstant(False)
 
     # Let's plot the model fit to the data
     for k in model:
@@ -241,6 +243,8 @@ def background_fit(year):
     getattr(w_bkg, "import")(category)
     getattr(w_bkg, "import")(background_norm)
     getattr(w_bkg, "import")(multipdf)
+    getattr(w_bkg, "import")(model['dijet2'])
+    getattr(w_bkg, "import")(background_dijet2_norm)
     w_bkg.Print()
     w_bkg.Write()
     f_out.Close()
@@ -335,24 +339,28 @@ def get_SR_bkg_MC(year):
 if __name__ == "__main__":
     args = parse_commandline()
     year = args.year
-    signal_mass = args.signal_mass
-    signal_region = args.SR
-
     SR_binning = {
         'SR1': (0.7, 0.9),
         'SR2': (0.9, 2)
     }
-    tagger_cut_low, tagger_cut_high = SR_binning[signal_region]
-    fit_range_low, fit_range_up = args.fit_range_low, args.fit_range_up
+    
+    if args.signal_mass is not None and args.signal_region is not None:
+        signal_mass = args.signal_mass
+        signal_region = args.SR
+    else:
+        for signal_region in ('SR1', 'SR2'):
+            for signal_mass in [700, 800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 3000, 3500]:
+                tagger_cut_low, tagger_cut_high = SR_binning[signal_region]
+                fit_range_low, fit_range_up = args.fit_range_low, args.fit_range_up
 
-    Fit_signal = True
-    Fit_background = True
-    SR_cut = f"(mass_Higgs>110) & (mass_Higgs<140) & (tagger_Hbb>{tagger_cut_low}) & (tagger_Hbb<{tagger_cut_high})"
-    sideband_cut = f"(((mass_Higgs>50) & (mass_Higgs<70)) | ((mass_Higgs>100) & (mass_Higgs<110)) | (mass_Higgs>140)) & (tagger_Hbb>{tagger_cut_low}) & (tagger_Hbb<{tagger_cut_high})"
+                Fit_signal = True
+                Fit_background = True
+                SR_cut = f"(mass_Higgs>110) & (mass_Higgs<140) & (tagger_Hbb>{tagger_cut_low}) & (tagger_Hbb<{tagger_cut_high})"
+                sideband_cut = f"(((mass_Higgs>50) & (mass_Higgs<70)) | ((mass_Higgs>100) & (mass_Higgs<110)) | (mass_Higgs>140)) & (tagger_Hbb>{tagger_cut_low}) & (tagger_Hbb<{tagger_cut_high})"
 
-    if Fit_signal:
-        fit_signal(year)
-    if Fit_background:
-        background_fit(year)
+                if Fit_signal:
+                    fit_signal(year)
+                if Fit_background:
+                    background_fit(year)
 
-    get_SR_bkg_MC(year)
+                get_SR_bkg_MC(year)

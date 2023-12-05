@@ -36,7 +36,7 @@ def main():
         cutflow = {}
         arrays = []
         for f in os.listdir(current_path):
-            if os.path.getsize(os.path.join(current_path, f)) == 0 or not f.endswith('.pkl'):
+            if os.path.getsize(os.path.join(current_path, f)) == 0 or (not f.endswith('.pkl')) or ('-' not in f):
                 continue
 
             with open(os.path.join(current_path, f), 'rb') as file:
@@ -44,7 +44,7 @@ def main():
             for (key, value) in stats.items():
                 cutflow[key] = cutflow.get(key, 0) + value
                 continue
-            if stats['final'] != 0:
+            if 'final' in stats and stats['final'] != 0:
                 arrays.append(ak.from_parquet(os.path.join(current_path, f.replace('pkl', 'parq'))))
 
         print(f'==> Merging parquet and pickle files in {current_path}')

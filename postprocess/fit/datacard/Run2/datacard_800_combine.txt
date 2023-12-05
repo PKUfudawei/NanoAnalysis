@@ -1,0 +1,21 @@
+Combination of SR1=datacard/Run2/datacard_800_SR1.txt  SR2=datacard/Run2/datacard_800_SR2.txt
+imax 2 number of bins
+jmax 1 number of processes minus 1
+kmax 1 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes background  SR1         datacard/Run2/../../output/Run2/background/workspace_background_SR1.root workspace_background:model_background_dijet2 # multipdf_Tag0
+shapes data_obs    SR1         datacard/Run2/../../output/Run2/test_bkg_mc/workspace_bkg_mc_SR1.root workspace_bkg_mc:bkg_mc
+shapes signal      SR1         datacard/Run2/../../output/Run2/signal/workspace_signal_800_SR1.root workspace_signal:model_signal
+shapes background  SR2         datacard/Run2/../../output/Run2/background/workspace_background_SR2.root workspace_background:model_background_dijet2 # multipdf_Tag0
+shapes data_obs    SR2         datacard/Run2/../../output/Run2/test_bkg_mc/workspace_bkg_mc_SR2.root workspace_bkg_mc:bkg_mc
+shapes signal      SR2         datacard/Run2/../../output/Run2/signal/workspace_signal_800_SR2.root workspace_signal:model_signal
+----------------------------------------------------------------------------------------------------------------------------------
+bin          SR1    SR2  
+observation  -1     -1   
+----------------------------------------------------------------------------------------------------------------------------------
+bin                             SR1             SR1             SR2             SR2           
+process                         signal          background      signal          background    
+process                         0               1               0               1             
+rate                            82.5609230085   1               169.0607706978  1             
+----------------------------------------------------------------------------------------------------------------------------------
+lumi_13TeV              lnN     1.01            -               1.01            -             
