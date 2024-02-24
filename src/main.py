@@ -59,19 +59,18 @@ def main() -> None:
         if i.endswith('.parq'):
             result.append(ak.from_parquet(os.path.join(args.outdir, i)))
 
-    if len(result) > 1:
+    if len(result) >= 1:
         result = ak.concatenate(result, axis=0)
-    elif len(result) == 1:
-        result = result[0]
+        ak.to_parquet(result, destination=os.path.join(args.outdir, 'output.parq'))
     else:
-        result = ak.Array({})
+        with open(os.path.join(args.outdir, 'output.parq'), 'w') as f:
+            pass
 
-    ak.to_parquet(result, destination=os.path.join(args.outdir, 'output.parq'))
     with open(os.path.join(args.outdir, 'stats.pkl'), 'wb') as f:
         pickle.dump(stats, f)
 
     print()
-    print(f'===> Removed {os.system("rm -rf *Events*.parq")} intermediate parquets')
+    print(f'===> Removed {os.system("rm -rf *_*_*.parq")} intermediate parquets')
     print(f'===> Time for full-processing: {(time.time() - t0)/60} mins')
     print('===> Statistics:\n', stats)
 
