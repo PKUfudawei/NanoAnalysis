@@ -8,8 +8,7 @@ import pickle
 import uproot
 
 
-from coffea import processor
-from coffea.nanoevents import NanoAODSchema
+from coffea.nanoevents import NanoEventsFactory, NanoAODSchema
 from processors.Processor import Processor
 
 
@@ -48,18 +47,11 @@ def main() -> None:
     print(f'===> Running on file: {file}')
 
     ## processing
-    run = processor.Runner(
-        executor=processor.FuturesExecutor(compression=None, workers=args.ncpu),
-        schema=NanoAODSchema,
-        savemetrics=True,
-        xrootdtimeout=60 * 30,
-        # chunksize = 100_000,
-        # maxchunks = None,
-    )
-    stats, metrics = run(
-        fileset={'input': [f'{file}']}, treename='Events',
-        processor_instance=Processor(mode=args.mode, outdir=args.outdir, param_dir=args.param_dir),
-    )
+    events = NanoEventsFactory.from_root(
+        {file: 'Events'}, schemaclass=NanoAODSchema, delayed=False
+    ).events()
+    p = Processor(outdir=args.outdir, mode=args.mode, param_dir=args.param_dir)
+    stats = p.process(events)
 
     ## post-processing
     result = []
@@ -74,14 +66,13 @@ def main() -> None:
     else:
         result = ak.Array({})
 
-    ak.to_parquet(result, where=os.path.join(args.outdir, 'output.parq'))
+    ak.to_parquet(result, destination=os.path.join(args.outdir, 'output.parq'))
     with open(os.path.join(args.outdir, 'stats.pkl'), 'wb') as f:
         pickle.dump(stats, f)
 
     print()
     print(f'===> Removed {os.system("rm -rf *Events*.parq")} intermediate parquets')
     print(f'===> Time for full-processing: {(time.time() - t0)/60} mins')
-    print('===> Metrics:\n', metrics)
     print('===> Statistics:\n', stats)
 
 

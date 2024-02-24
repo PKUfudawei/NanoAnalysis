@@ -4,10 +4,8 @@ echo "===> Home Directory:"; echo $HOME
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
 ## configure python environment
-echo "===> Initializing CMSSW_12_5_5"; cmsrel CMSSW_12_5_5; cd CMSSW_12_5_5/src; cmsenv; cd -
+echo "===> Initializing CMSSW_12_4_19"; cmsrel CMSSW_12_4_19; cd CMSSW_12_4_19/src; cmsenv; cd -
 echo "===> Python3 information: "; which python3; which pip3
-echo "===> Python installing/upgrading modules"
-pip3 install coffea
 
 ## print environment info
 printf "===> Start time: "; /bin/date

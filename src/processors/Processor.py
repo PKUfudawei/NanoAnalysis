@@ -19,7 +19,6 @@ class Processor(processor.ProcessorABC):
         self.variables = {}
         self.cutflow = {}
         self.cuts = PackedSelection()
-        self._accumulator = processor.defaultdict_accumulator()
 
         self.param_dir = os.path.abspath(param_dir)
         with open(os.path.join(self.param_dir, 'triggers.yaml'), 'r', encoding='utf-8') as f:
@@ -251,6 +250,8 @@ class Processor(processor.ProcessorABC):
                     array = np.sign(getattr(self.event, 'genWeight', ak.ones_like(self.event.event)))
                 elif obj == 'event' and var == 'weight':
                     array = self.add_weight()  # sign(genWeight) * PU_weight
+                else:
+                    array = self.event[var]
 
                 self.variables[f'{obj}_{var}'] = array
 
@@ -259,9 +260,9 @@ class Processor(processor.ProcessorABC):
                 self.variables[f'AK8jet_{field}'] = self.object['AK8jet'][field]
 
     def to_parquet(self, array: ak.Array) -> None:
-        tokens = self.event.behavior["__events_factory__"]._partition_key.split('/')
-        name = '_'.join([(t if 'Events' not in t else 'Events') for t in tokens])
-        ak.to_parquet(array=array, where=os.path.join(self.outdir, f'{name}.parq'))
+        start_event = self.event[0]
+        name = f'{start_event.run}_{start_event.luminosityBlock}_{start_event.event}'
+        ak.to_parquet(array=array, destination=os.path.join(self.outdir, f'{name}.parq'))
 
     def preselect_HGamma(self):
         # at least pass one trigger
@@ -321,7 +322,7 @@ class Processor(processor.ProcessorABC):
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
             'photon': {'pt', 'eta', 'phi', 'mass', 'cutBased', 'sieie'},
-            'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight'},
+            'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight', 'LHEScaleWeight'},
             'photon+jet': {'pt', 'eta', 'phi', 'mass'},
         })
 
@@ -366,9 +367,5 @@ class Processor(processor.ProcessorABC):
             self.to_parquet(array=ak.Array(self.variables))
         return self.cutflow
 
-    @property  # transform method into attribute and make it unchangable to hide _accumulator
-    def accumulator(self):
-        return self._accumulator
-
-    def postprocess(self, accumulator):
-        return super().postprocess(accumulator)
+    def postprocess(self):
+        pass
