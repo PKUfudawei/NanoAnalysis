@@ -7,7 +7,7 @@ source /cvmfs/cms.cern.ch/cmsset_default.sh
 echo "===> Initializing CMSSW_12_4_19"; cmsrel CMSSW_12_4_19; cd CMSSW_12_4_19/src; cmsenv; cd -
 echo "===> Python3 information: "; which python3; which pip3
 echo "===> Python installing/upgrading modules"
-pip3 install coffea
+pip3 install -i https://mirrors.pku.edu.cn/pypi/web/simple coffea
 
 ## print environment info
 printf "===> Start time: "; /bin/date
