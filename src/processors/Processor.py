@@ -224,14 +224,8 @@ class Processor(processor.ProcessorABC):
             (self.object['AK8jet'].phi > self.HEM_parameters['phi']['min'] - 0.4) &
             (self.object['AK8jet'].phi < self.HEM_parameters['phi']['max'] + 0.4)
         )
-        photon_in_HEM = (
-            (self.object['photon'].eta > self.HEM_parameters['eta']['min']) &
-            (self.object['photon'].eta < self.HEM_parameters['eta']['max']) &
-            (self.object['photon'].phi > self.HEM_parameters['phi']['min']) &
-            (self.object['photon'].phi < self.HEM_parameters['phi']['max'])
-        )
 
-        return ~(event_in_HEM & (ak.any(jet_in_HEM, axis=1) | ak.any(photon_in_HEM, axis=1)))
+        return ~(event_in_HEM & (ak.any(jet_in_HEM, axis=1)))
 
     def store_variables(self, vars: dict):
         for obj in vars.keys():
@@ -250,7 +244,7 @@ class Processor(processor.ProcessorABC):
                 self.variables[f'{obj}_{var}'] = array
 
         for field in self.event.FatJet.fields:
-            if 'ParticleNet' in field or 'deep' in field or 'inclParT' in field or 'particleNet' in field or 'btag' in field:
+            if 'ParticleNet' in field or 'particleNet' in field:
                 self.variables[f'AK8jet_{field}'] = self.object['AK8jet'][field]
 
     def to_parquet(self, array: ak.Array) -> None:
@@ -283,6 +277,7 @@ class Processor(processor.ProcessorABC):
         if Wqq_score.ndim == 1:
             return ak.fill_none(Wqq_score, value=False)
         Wqq_index = ak.argsort(Wqq_score, axis=1, ascending=False)  # (W1, W2, g)
+        self.variables['AK8jet_Wqq_score'] = Wqq_score
         self.object['AK8jet'] = self.object['AK8jet'][Wqq_index]
         self.pass_cut(name='Wqq_tagging', cut=self.Wqq_tagging(Wqq_score))
 
@@ -292,19 +287,20 @@ class Processor(processor.ProcessorABC):
 
         # AK4 jets
         self.variables['nAK4jet'] = ak.num(self.event.Jet, axis=1)
-
+        self.object['R'] = self.object['AK8jet'][:, 0] + self.object['AK8jet'][:, 1]
+        self.object['gKK'] = self.object['AK8jet'][:, 0] + self.object['AK8jet'][:, 1] + self.object['AK8jet'][:, 2]
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
-            'photon': {'pt', 'eta', 'phi', 'mass', 'cutBased', 'sieie'},
             'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight', 'LHEScaleWeight'},
-            'photon+jet': {'pt', 'eta', 'phi', 'mass'},
+            'R': {'pt', 'eta', 'phi', 'mass'},
+            'gKK': {'pt', 'eta', 'phi', 'mass'},
         })
 
         # Additional vars by special computing
         self.variables['event_No.'] = getattr(self.event, 'event', ak.ones_like(self.event.event))
         m_AK8 = self.object['AK8jet']['msoftdrop']
-        self.variables['m_85'] = ak.sqrt((m_AK8[:, 0] - 85)**2 + (m_AK8[:, 1] - 85)**2)
-        self.variables['m_90'] = ak.sqrt((m_AK8[:, 0] - 90)**2 + (m_AK8[:, 1] - 90)**2)
+        self.variables['m_85'] = np.sqrt((m_AK8[:, 0] - 85)**2 + (m_AK8[:, 1] - 85)**2)
+        self.variables['m_90'] = np.sqrt((m_AK8[:, 0] - 90)**2 + (m_AK8[:, 1] - 90)**2)
         self.variables['nMuon'] = ak.sum(self.muon_tag(reco=False), axis=1)
         self.variables['nElectron'] = ak.sum(self.electron_tag(reco=False), axis=1)
 
