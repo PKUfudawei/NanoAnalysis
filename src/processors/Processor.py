@@ -143,22 +143,13 @@ class Processor(processor.ProcessorABC):
         WP = {'loose': 0.0490, 'medium': 0.2783, 'tight': 0.7100}
         self.tag['b-jet'] = (
             (raw_AK4jet.btagDeepFlavB > WP[level]) &
-            (self.object['AK8jet'].delta_r(raw_AK4jet) > 0.8 + 0.4)
+            (raw_AK4jet.pt > 30) &
+            (abs(raw_AK4jet.eta) < 2.4)
         )
         if reco:
             self.object['b-jet'] = self.event.Jet[self.tag['b-jet']]
         return self.tag['b-jet']
 
-    def extra_AK4jet_tag(self, reco: bool = False) -> ak.Array:
-        raw_AK4jet = self.event.Jet
-        # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
-        # refer to https://gitlab.cern.ch/groups/cms-btv/-/wikis/SFCampaigns/UL2018
-        self.tag['extra_AK4jet'] = (
-            self.object['AK8jet'].delta_r(raw_AK4jet) > 0.8 + 0.4
-        )
-        if reco:
-            self.object['extra_AK4jet'] = self.event.Jet[self.tag['extra_AK4jet']]
-        return self.tag['extra_AK4jet']
 
     def muon_tag(self, reco: bool = False) -> ak.Array:
         raw_muon = self.event.Muon  # (event, muon)
@@ -167,7 +158,7 @@ class Processor(processor.ProcessorABC):
             (raw_muon.highPtId == 2) &
             (raw_muon.tkRelIso < 0.1) &  # Tracker-based relative isolation dR=0.3 for highPt, trkIso/tunePpt
             (abs(raw_muon.eta) < 2.4) &
-            (raw_muon.pt > 20)  # I don't use `muon_corrected_pt` coming from ROOT.RoccoR
+            (raw_muon.pt > 20)
         )
         if reco:
             self.object['muon'] = self.event.Muon[self.tag['muon']]
@@ -178,39 +169,42 @@ class Processor(processor.ProcessorABC):
         self.tag['electron'] = (  # (event, boolean)
             (raw_electron.cutBased_HEEP == True) &  # cut-based HEEP ID
             (abs(raw_electron.eta) < 2.5) &
-            (raw_electron.pt > 20)
+            (raw_electron.pt > 35)
         )
         if reco:
             self.object['electron'] = self.event.Electron[self.tag['electron']]
         return self.tag['electron']
 
-    def photon_tag(self, reco: bool = False) -> ak.Array:
-        raw_photon = self.event.Photon  # (event, photon), >=1 photon per event
-        self.tag['photon'] = (  # (event, boolean)
-            (raw_photon.pt > 200) &
-            ((abs(raw_photon.eta) < 1.4442) | ((abs(raw_photon.eta) > 1.566) & (abs(raw_photon.eta) < 2.4))) &
-            raw_photon.mvaID_WP90 &  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariatePhotonIdentificationRun2
-            (~raw_photon.pixelSeed) &
-            (raw_photon.electronVeto == True)
-        )
-        if reco:
-            self.object['photon'] = self.event.Photon[self.tag['photon']]
-        return self.tag['photon']
-
     def AK8jet_tag(self, reco: bool = False) -> ak.Array:
         raw_AK8jet = self.event.FatJet  # (event, fatjet), >=1 AK8 jet per event
         self.tag['AK8jet'] = (  # (event, boolean)
-            (raw_AK8jet.pt > 250) &
-            (abs(raw_AK8jet.eta) < 2.6) &
-            (raw_AK8jet.msoftdrop > 30) &  # Corrected soft drop mass with PUPPI
+            (ak.num(raw_AK8jet, axis=1) >= 3) &
+            (raw_AK8jet.pt > 200) &
+            (abs(raw_AK8jet.eta) < 2.4) &
             (raw_AK8jet.jetId & 2 > 0) &
-            (raw_AK8jet.jetId & 4 > 0)
+            ak.any(raw_AK8jet.pt > 400, axis=1) &
+            (ak.sum(raw_AK8jet.pt[:, :3], axis=1) > 1100)
             # Jet ID flags bit1 is loose (always false in 2017 since it does not exist),
             # bit2 is tight, bit3 is tightLepVeto
         )
         if reco:
-            self.object['AK8jet'] = self.event.FatJet[self.tag['AK8jet']]
+            self.object['AK8jet'] = self.event.FatJet[self.tag['AK8jet']][:, :3]
         return self.tag['AK8jet']
+    
+    def Wqq_tagging(self, Wqq_score) -> ak.Array:
+        delta_eta_01 = abs(self.object['AK8jet'].eta[:, 0] - self.object['AK8jet'].eta[:, 1])
+        delta_eta_02 = abs(self.object['AK8jet'].eta[:, 0] - self.object['AK8jet'].eta[:, 2])
+        delta_eta_12 = abs(self.object['AK8jet'].eta[:, 1] - self.object['AK8jet'].eta[:, 2])
+        self.tag['Wqq'] = (
+            (ak.sum(Wqq_score>0.8, axis=1) >= 2) &
+            (self.object['AK8jet']['msoftdrop'][:, 0] > 50) &
+            (self.object['AK8jet']['msoftdrop'][:, 1] > 50) &
+            (delta_eta_01 < 3) &
+            (delta_eta_02 < 3) &
+            (delta_eta_12 < 3)
+        )
+        return self.tag['Wqq']
+        
 
     def HEM_tag(self) -> ak.Array:  # jet shape: (event, jet), jet = AK8jet or AK4jet
         if self.year != '2018':
@@ -264,7 +258,7 @@ class Processor(processor.ProcessorABC):
         name = f'{start_event.run}_{start_event.luminosityBlock}_{start_event.event}'
         ak.to_parquet(array=array, destination=os.path.join(self.outdir, f'{name}.parq'))
 
-    def preselect_HGamma(self):
+    def preselect_gKK(self):
         # at least pass one trigger
         self.pass_cut(name='triggered', cut=self.triggered(method='any'))
 
@@ -272,52 +266,32 @@ class Processor(processor.ProcessorABC):
         self.pass_cut(name='filtered', cut=self.filtered(method='all'))
 
         # Muon veto
-        # self.pass_cut(name='muon-veto', cut=(ak.sum(self.muon_tag(reco=False), axis=1)==0))
+        self.pass_cut(name='muon-veto', cut=(ak.sum(self.muon_tag(reco=False), axis=1)==0))
 
         # Electron veto
-        # self.pass_cut(name='electron-veto', cut=(ak.sum(self.electron_tag(reco=False), axis=1)==0))
-
-        # Photon == 1
-        self.pass_cut(name='photon', cut=(ak.sum(self.photon_tag(reco=True), axis=1) == 1))
+        self.pass_cut(name='electron-veto', cut=(ak.sum(self.electron_tag(reco=False), axis=1)==0))
 
         # AK8 jet >=1
-        self.pass_cut(name='AK8jet', cut=(ak.sum(self.AK8jet_tag(reco=True), axis=1) > 0))
+        self.pass_cut(name='AK8jet', cut=(ak.sum(self.AK8jet_tag(reco=True), axis=1) > 2))
 
         # HEM filter
         self.pass_cut(name='2018_HEM_correction', cut=self.HEM_tag())
 
-        # Photon-Jet cleaning, a very special part so no function definition here
-        pj_pair = ak.cartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
-        pj_index_pair = ak.argcartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
-        pj_dr = pj_pair.photon.delta_r(pj_pair.AK8jet)
-        pj_clean = (pj_dr > 1.1)
-        photon_index, jet_index = pj_index_pair.photon[pj_clean], pj_index_pair.AK8jet[pj_clean]
-
-        self.object['photon'] = self.object['photon'][photon_index]
-        self.object['AK8jet'] = self.object['AK8jet'][jet_index]
-        self.pass_cut(name='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1) > 0))
-
-        Higgs_score = ak.sum([self.object['AK8jet'][f] for f in self.event.FatJet.fields if f.startswith('inclParTMDV1_probH')], axis=0, mask_identity=True)
-        if Higgs_score.ndim == 1:
-            return ak.fill_none(Higgs_score, value=False)
-
-        Higgs_candidate = ak.argmax(Higgs_score, axis=1, keepdims=True, mask_identity=False)
-        Higgs_candidate = ak.mask(Higgs_candidate, mask=ak.firsts(Higgs_candidate) >= 0, valid_when=True)
-        self.variables['AK8jet_rankToHiggsMass'] = ak.argsort(ak.argsort(abs(self.object['AK8jet'].msoftdrop - 125), axis=1), axis=1)
-        self.object['AK8jet'] = self.object['AK8jet'][Higgs_candidate]
-        self.variables['AK8jet_rankToHiggsMass'] = ak.firsts(self.variables['AK8jet_rankToHiggsMass'][Higgs_candidate], axis=1)
-
-        self.object['photon'] = ak.firsts(self.object['photon'], axis=1)  # exactly 1 photon per event
-        self.object['AK8jet'] = ak.firsts(self.object['AK8jet'], axis=1)  # exactly 1 Higgs candidate per event
-        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
+        # Wqq tagging
+        QCD_score = ak.sum([self.object['AK8jet'][f] for f in self.event.FatJet.fields if f.startswith('ParticleNetraw_probQCD')], axis=0, mask_identity=True)
+        Wqq_score = self.object['AK8jet']['ParticleNetraw_probWqq'] / (self.object['AK8jet']['ParticleNetraw_probWqq'] + QCD_score)
+        if Wqq_score.ndim == 1:
+            return ak.fill_none(Wqq_score, value=False)
+        Wqq_index = ak.argsort(Wqq_score, axis=1, ascending=False)  # (W1, W2, g)
+        self.object['AK8jet'] = self.object['AK8jet'][Wqq_index]
+        self.pass_cut(name='Wqq_tagging', cut=self.Wqq_tagging(Wqq_score))
 
         # b veto
         # final=True means to drop events not passing all selections
-        final_cut = self.pass_cut(name='b-veto', cut=(ak.sum(self.b_tag(reco=True, level='medium'), axis=1) == 0), final=True)
-        
+        final_cut = self.pass_cut(name='b-veto', cut=(ak.sum(self.b_tag(reco=False, level='tight'), axis=1) == 0), final=True)
+
         # AK4 jets
         self.variables['nAK4jet'] = ak.num(self.event.Jet, axis=1)
-        self.variables['nExtraAK4jet'] = ak.sum(self.extra_AK4jet_tag(reco=True), axis=1)
 
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'},
@@ -328,13 +302,9 @@ class Processor(processor.ProcessorABC):
 
         # Additional vars by special computing
         self.variables['event_No.'] = getattr(self.event, 'event', ak.ones_like(self.event.event))
-        self.variables['photon-jet_deltaR'] = self.object['AK8jet'].delta_r(self.object['photon'])
-        self.variables['MET+photon_mT'] = np.sqrt(
-            2 * self.object['photon'].pt * self.event.MET.pt * (1 - np.cos(self.object['photon'].phi - self.event.MET.phi))
-        )
-        self.variables['MET+AK8jet_mT'] = np.sqrt(
-            2 * self.object['AK8jet'].pt * self.event.MET.pt * (1 - np.cos(self.object['AK8jet'].phi - self.event.MET.phi))
-        )
+        m_AK8 = self.object['AK8jet']['msoftdrop']
+        self.variables['m_85'] = ak.sqrt((m_AK8[:, 0] - 85)**2 + (m_AK8[:, 1] - 85)**2)
+        self.variables['m_90'] = ak.sqrt((m_AK8[:, 0] - 90)**2 + (m_AK8[:, 1] - 90)**2)
         self.variables['nMuon'] = ak.sum(self.muon_tag(reco=False), axis=1)
         self.variables['nElectron'] = ak.sum(self.electron_tag(reco=False), axis=1)
 
@@ -350,17 +320,7 @@ class Processor(processor.ProcessorABC):
             self.cutflow['n_events'] = ak.sum(np.sign(self.event.genWeight))
 
         # process
-        final_cut = self.preselect_HGamma()
-
-        # gen-macthing
-        if self.sample_type == 'mc':
-            gen = GenMatch(events=self.event)
-            if self.channel in self.channel_info['signal']:
-                self.variables.update(gen.HGamma())
-            elif self.channel in self.channel_info['fake_photon']:
-                final_cut = self.pass_cut(name='no prompt photon', cut=gen.all_fake_photon(), final=True)
-            elif self.channel in self.channel_info['true_photon']:
-                final_cut = self.pass_cut(name='any prompt photon', cut=gen.any_true_photon(), final=True)
+        final_cut = self.preselect_gKK()
 
         # store output
         if any(final_cut):
