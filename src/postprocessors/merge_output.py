@@ -58,7 +58,10 @@ def main():
 
         print(f'===> Finish merging parquet and pickle files in {current_path}')
         os.system(f"rm -rf {current_path}/*.pkl {current_path}/*.parq")
-        os.system(f"mv {current_path}/{mode}.parquet {current_path}/{mode}.parq")
+        if cutflow['final'] > 0:
+            os.system(f"mv {current_path}/{mode}.parquet {current_path}/{mode}.parq")
+        else:
+            print("No events passed final cut! Continue...")
 
 
 if __name__ == "__main__":
