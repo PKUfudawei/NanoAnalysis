@@ -4,10 +4,17 @@ echo "===> Home Directory:"; echo $HOME
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
 ## configure python environment
-echo "===> Initializing CMSSW_12_4_19"; cmsrel CMSSW_12_4_19; cd CMSSW_12_4_19/src; cmsenv; cd -
+export cmssw=CMSSW_12_5_5
+echo "===> Initializing $cmssw"; cmsrel $cmssw; cd $cmssw/src; cmsenv; cd -
 echo "===> Python3 information: "; which python3; which pip3
 echo "===> Python installing/upgrading modules"
+for((i=1;i<=2;i++))
+do
 pip3 install -i https://mirrors.pku.edu.cn/pypi/web/simple coffea
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple coffea
+pip3 install -i https://pypi.mirrors.ustc.edu.cn/simple coffea
+pip3 install -i https://mirrors.aliyun.com/pypi/simple/ coffea
+done
 
 ## print environment info
 printf "===> Start time: "; /bin/date
