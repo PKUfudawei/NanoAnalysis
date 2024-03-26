@@ -392,22 +392,9 @@ class Processor(processor.ProcessorABC):
         # final=True means to drop events not passing all selections
         final_cut = self.pass_cut(name='b-veto', cut=(ak.sum(self.b_tag(reconstruct=True, level='medium'), axis=1) == 0))
 
-        # photon+jet mass up and down
-        for i in self.AK8jet_corrections:
-            for j in ('up', 'down'):
-                self.object['AK8jet']['pt'] = self.object['AK8jet'][f'pt_{i}_{j}']
-                self.object['AK8jet']['mass'] = self.object['AK8jet'][f'mass_{i}_{j}']
-                self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
-                self.variables[f'photon+jet_mass_{i}_{j}'] = self.object['photon+jet'].mass
-        self.object['AK8jet']['pt'] = self.object['AK8jet']['pt_nominal']
-        self.object['AK8jet']['mass'] = self.object['AK8jet']['mass_nominal']
-        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
-
-        # AK4 jets
+        # Store variables
         self.variables['nAK4jet'] = ak.num(self.event.Jet, axis=1)
         self.variables['nExtraAK4jet'] = ak.sum(self.extra_AK4jet_tag(reconstruct=True), axis=1)
-
-        # Additional vars by special computing
         self.variables['event_No.'] = getattr(self.event, 'event', ak.ones_like(self.event.event))
         self.variables['photon-jet_deltaR'] = self.object['AK8jet'].delta_r(self.object['photon'])
         self.variables['MET+photon_mT'] = np.sqrt(
@@ -418,10 +405,21 @@ class Processor(processor.ProcessorABC):
         )
         self.variables['nMuon'] = ak.sum(self.muon_tag(reconstruct=False), axis=1)
         self.variables['nElectron'] = ak.sum(self.electron_tag(reconstruct=False), axis=1)
+
         if self.sample_type == 'mc':
             self.variables['PUWeight_nominal'], self.variables['PUWeight_up'], self.variables['PUWeight_down'] = self.calculate_PU_SF()
             self.variables['LHEScaleWeight'] = self.event.LHEScaleWeight
             self.variables['LHEPdfWeight'] = self.event.LHEPdfWeight
+            for i in self.AK8jet_corrections:
+                for j in ('up', 'down'):
+                    self.object['AK8jet']['pt'] = self.object['AK8jet'][f'pt_{i}_{j}']
+                    self.object['AK8jet']['mass'] = self.object['AK8jet'][f'mass_{i}_{j}']
+                    self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
+                    self.variables[f'photon+jet_mass_{i}_{j}'] = self.object['photon+jet'].mass
+            self.object['AK8jet']['pt'] = self.object['AK8jet']['pt_nominal']
+            self.object['AK8jet']['mass'] = self.object['AK8jet']['mass_nominal']
+
+        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
         
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'} | (set(self.object['AK8jet'].fields) - set(self.event.FatJet.fields)),
