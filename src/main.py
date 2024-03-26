@@ -10,6 +10,7 @@ import uproot
 
 from coffea.nanoevents import NanoEventsFactory, NanoAODSchema
 from processors.Processor import Processor
+from processors.TriggerProcessor import TriggerProcessor
 
 
 def parse_commandline():

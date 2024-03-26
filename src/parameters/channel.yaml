@@ -1,6 +1,7 @@
 data:
     - EGamma
     - SinglePhoton
+    - SingleMuon
 signal:
     - ZpToHG
 background:
