@@ -204,6 +204,9 @@ class Processor(processor.ProcessorABC):
         return self.tag['photon']
 
     def AK8jet_correction(self, AK8jet):
+        if len(AK8jet) == 0:
+            return AK8jet
+
         extract = extractor()
         uncertainty_dir = os.path.join(self.param_dir, 'uncertainty', self.year)
         for f in os.listdir(uncertainty_dir):
@@ -316,6 +319,34 @@ class Processor(processor.ProcessorABC):
         return np.divide(nData, nMC), np.divide(nData_up, nMC), np.divide(nData_down, nMC)
 
     def store_variables(self, vars: dict):
+        self.variables['nAK4jet'] = ak.num(self.event.Jet, axis=1)
+        self.variables['nExtraAK4jet'] = ak.sum(self.extra_AK4jet_tag(reconstruct=True), axis=1)
+        self.variables['event_No.'] = getattr(self.event, 'event', ak.ones_like(self.event.event))
+        self.variables['photon-jet_deltaR'] = self.object['AK8jet'].delta_r(self.object['photon'])
+        self.variables['MET+photon_mT'] = np.sqrt(
+            2 * self.object['photon'].pt * self.event.MET.pt * (1 - np.cos(self.object['photon'].phi - self.event.MET.phi))
+        )
+        self.variables['MET+AK8jet_mT'] = np.sqrt(
+            2 * self.object['AK8jet'].pt * self.event.MET.pt * (1 - np.cos(self.object['AK8jet'].phi - self.event.MET.phi))
+        )
+        self.variables['nMuon'] = ak.sum(self.muon_tag(reconstruct=False), axis=1)
+        self.variables['nElectron'] = ak.sum(self.electron_tag(reconstruct=False), axis=1)
+
+        if self.sample_type == 'mc':
+            self.variables['PUWeight_nominal'], self.variables['PUWeight_up'], self.variables['PUWeight_down'] = self.calculate_PU_SF()
+            self.variables['LHEScaleWeight'] = self.event.LHEScaleWeight
+            self.variables['LHEPdfWeight'] = self.event.LHEPdfWeight
+            for i in self.AK8jet_corrections:
+                for j in ('up', 'down'):
+                    self.object['AK8jet']['pt'] = self.object['AK8jet'][f'pt_{i}_{j}']
+                    self.object['AK8jet']['mass'] = self.object['AK8jet'][f'mass_{i}_{j}']
+                    self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
+                    self.variables[f'photon+jet_mass_{i}_{j}'] = self.object['photon+jet'].mass
+            self.object['AK8jet']['pt'] = self.object['AK8jet']['pt_nominal']
+            self.object['AK8jet']['mass'] = self.object['AK8jet']['mass_nominal']
+
+        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
+
         for obj, vars in vars.items():
             for var in vars:
                 if obj != 'event':
@@ -381,54 +412,17 @@ class Processor(processor.ProcessorABC):
 
         Higgs_candidate = ak.argmax(Higgs_score, axis=1, keepdims=True, mask_identity=False)
         Higgs_candidate = ak.mask(Higgs_candidate, mask=ak.firsts(Higgs_candidate) >= 0, valid_when=True)
-        self.variables['AK8jet_rankToHiggsMass'] = ak.argsort(ak.argsort(abs(self.object['AK8jet'].msoftdrop - 125), axis=1), axis=1)
+        # self.variables['AK8jet_rankToHiggsMass'] = ak.argsort(ak.argsort(abs(self.object['AK8jet'].msoftdrop - 125), axis=1), axis=1)
         self.object['AK8jet'] = self.object['AK8jet'][Higgs_candidate]
-        self.variables['AK8jet_rankToHiggsMass'] = ak.firsts(self.variables['AK8jet_rankToHiggsMass'][Higgs_candidate], axis=1)
+        # self.variables['AK8jet_rankToHiggsMass'] = ak.firsts(self.variables['AK8jet_rankToHiggsMass'][Higgs_candidate], axis=1)
 
         self.object['photon'] = ak.firsts(self.object['photon'], axis=1)  # exactly 1 photon per event
         self.object['AK8jet'] = ak.firsts(self.object['AK8jet'], axis=1)  # exactly 1 Higgs candidate per event
 
         # b veto
-        # final=True means to drop events not passing all selections
-        final_cut = self.pass_cut(name='b-veto', cut=(ak.sum(self.b_tag(reconstruct=True, level='medium'), axis=1) == 0))
+        self.pass_cut(name='b-veto', cut=(ak.sum(self.b_tag(reconstruct=True, level='medium'), axis=1) == 0))
 
-        # Store variables
-        self.variables['nAK4jet'] = ak.num(self.event.Jet, axis=1)
-        self.variables['nExtraAK4jet'] = ak.sum(self.extra_AK4jet_tag(reconstruct=True), axis=1)
-        self.variables['event_No.'] = getattr(self.event, 'event', ak.ones_like(self.event.event))
-        self.variables['photon-jet_deltaR'] = self.object['AK8jet'].delta_r(self.object['photon'])
-        self.variables['MET+photon_mT'] = np.sqrt(
-            2 * self.object['photon'].pt * self.event.MET.pt * (1 - np.cos(self.object['photon'].phi - self.event.MET.phi))
-        )
-        self.variables['MET+AK8jet_mT'] = np.sqrt(
-            2 * self.object['AK8jet'].pt * self.event.MET.pt * (1 - np.cos(self.object['AK8jet'].phi - self.event.MET.phi))
-        )
-        self.variables['nMuon'] = ak.sum(self.muon_tag(reconstruct=False), axis=1)
-        self.variables['nElectron'] = ak.sum(self.electron_tag(reconstruct=False), axis=1)
-
-        if self.sample_type == 'mc':
-            self.variables['PUWeight_nominal'], self.variables['PUWeight_up'], self.variables['PUWeight_down'] = self.calculate_PU_SF()
-            self.variables['LHEScaleWeight'] = self.event.LHEScaleWeight
-            self.variables['LHEPdfWeight'] = self.event.LHEPdfWeight
-            for i in self.AK8jet_corrections:
-                for j in ('up', 'down'):
-                    self.object['AK8jet']['pt'] = self.object['AK8jet'][f'pt_{i}_{j}']
-                    self.object['AK8jet']['mass'] = self.object['AK8jet'][f'mass_{i}_{j}']
-                    self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
-                    self.variables[f'photon+jet_mass_{i}_{j}'] = self.object['photon+jet'].mass
-            self.object['AK8jet']['pt'] = self.object['AK8jet']['pt_nominal']
-            self.object['AK8jet']['mass'] = self.object['AK8jet']['mass_nominal']
-
-        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
-        
-        self.store_variables(vars={
-            'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'} | (set(self.object['AK8jet'].fields) - set(self.event.FatJet.fields)),
-            'photon': {'pt', 'eta', 'phi', 'mass', 'cutBased', 'sieie'} | (set(self.object['photon'].fields) - set(self.event.Photon.fields)),
-            'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight'},
-            'photon+jet': {'pt', 'eta', 'phi', 'mass'},
-        })
-
-        return final_cut
+        return self.cutflow['final']
 
     def process(self, events: NanoEventsArray) -> dict:
         # initialize
@@ -439,8 +433,18 @@ class Processor(processor.ProcessorABC):
             self.event = events
             self.cutflow['n_events'] = ak.sum(np.sign(self.event.genWeight))
 
-        # process
-        final_cut = self.preselect_HGamma()
+        # pass pre-selection
+        N_preselect = self.preselect_HGamma()
+        if N_preselect == 0:
+            return self.cutflow
+
+        # store variables
+        self.store_variables(vars={
+            'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'} | (set(self.object['AK8jet'].fields) - set(self.event.FatJet.fields)),
+            'photon': {'pt', 'eta', 'phi', 'mass', 'cutBased', 'sieie'} | (set(self.object['photon'].fields) - set(self.event.Photon.fields)),
+            'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight'},
+            'photon+jet': {'pt', 'eta', 'phi', 'mass'},
+        })
 
         # gen-macthing
         if self.sample_type == 'mc':
@@ -448,12 +452,12 @@ class Processor(processor.ProcessorABC):
             if self.channel in self.channel_info['signal']:
                 self.variables.update(gen.HGamma())
             elif self.channel in self.channel_info['fake_photon']:
-                final_cut = self.pass_cut(name='no prompt photon', cut=gen.all_fake_photon())
+                self.pass_cut(name='no prompt photon', cut=gen.all_fake_photon())
             elif self.channel in self.channel_info['true_photon']:
-                final_cut = self.pass_cut(name='any prompt photon', cut=gen.any_true_photon())
+                self.pass_cut(name='any prompt photon', cut=gen.any_true_photon())
 
         # store output
-        if any(final_cut):
+        if self.cutflow['final'] > 0:
             self.to_parquet(array=ak.Array(self.variables))
         return self.cutflow
 

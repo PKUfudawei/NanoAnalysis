@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-import argparse
-import os
+import argparse, os, glob
 
 
 def parse_commandline():
@@ -31,11 +30,10 @@ def main():
     os.system("which condor_submit")
     input("====> Are you ready to submit condor jobs?")
 
-    os.system(f"""
-        for jdl in submit/{args.type}/{args.year}/{args.channel}/{args.job}.submit
-            do condor_submit $jdl
-        done
-    """)
+    for jdl in glob.glob(f'submit/{args.type}/{args.year}/{args.channel}/{args.job}.submit'):
+        log = jdl.replace('.submit', '/*').replace('submit', 'log')
+        os.system(f"rm -rf {log}")
+        os.system(f"condor_submit {jdl}")
 
 
 if __name__ == "__main__":

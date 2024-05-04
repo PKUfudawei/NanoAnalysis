@@ -6,14 +6,12 @@ source /cvmfs/cms.cern.ch/cmsset_default.sh
 ## configure python environment
 export cmssw=CMSSW_12_5_5
 echo "===> Initializing $cmssw"; cmsrel $cmssw; cd $cmssw/src; cmsenv; cd -
+
+pip3 install -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple --user
 echo "===> Python3 information: "; which python3; which pip3
 echo "===> Python installing/upgrading modules"
-for((i=1;i<=2;i++))
-do
-pip3 install -i https://mirrors.pku.edu.cn/pypi/web/simple coffea
-pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple coffea
-pip3 install -i https://pypi.mirrors.ustc.edu.cn/simple coffea
-pip3 install -i https://mirrors.aliyun.com/pypi/simple/ coffea
+for i in {1..3}; do
+python3 -m pip install -U coffea -i https://pypi.tuna.tsinghua.edu.cn/simple --user
 done
 
 ## print environment info
