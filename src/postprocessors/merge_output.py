@@ -36,25 +36,31 @@ def main():
         cutflow = {}
         arrays = []
         for f in os.listdir(current_path):
-            if os.path.getsize(os.path.join(current_path, f)) == 0 or (not f.endswith('.pkl')) or ('-' not in f):
+            f = os.path.join(current_path, f)
+            if os.path.getsize(f) == 0 or (not f.endswith('.pkl')) or ('-' not in f):
                 continue
-
-            with open(os.path.join(current_path, f), 'rb') as file:
+            output = f.replace('pkl', 'parq')
+            if os.path.getsize(output) == 0:
+                continue
+            # now f is pickle file
+            with open(f, 'rb') as file:
                 stats = pickle.load(file)
             for (key, value) in stats.items():
                 cutflow[key] = cutflow.get(key, 0) + value
                 continue
-            if 'final' in stats and stats['final'] != 0:
-                arrays.append(ak.from_parquet(os.path.join(current_path, f.replace('pkl', 'parq'))))
+            
+            output = f.replace('pkl', 'parq')
+            if 'final' in stats and stats['final'] != 0 and os.path.getsize(output) == 0:
+                arrays.append(ak.from_parquet(output))
 
         print(f'==> Merging parquet and pickle files in {current_path}')
         cutflow = {key: int(value) for (key, value) in cutflow.items()}
         if len(cutflow.keys()) > 0:
             with open(os.path.join(current_path, f'{mode}.yaml'), 'w', encoding='utf-8') as file:
                 yaml.dump(cutflow, file)
-        output_file = os.path.join(current_path, f'{mode}.parquet')
+        merged_file = os.path.join(current_path, f'{mode}.parquet')
         if len(arrays) > 0:
-            ak.to_parquet(ak.concatenate(arrays, axis=0), output_file)
+            ak.to_parquet(ak.concatenate(arrays, axis=0), merged_file)
 
         print(f'===> Finish merging parquet and pickle files in {current_path}')
         os.system(f"rm -rf {current_path}/*.pkl {current_path}/*.parq")
