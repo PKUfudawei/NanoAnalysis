@@ -1,6 +1,1 @@
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/3.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/6.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/0.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/5.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/1.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/2.root
+/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZJetsToNuNu/ZJetsToNuNu_HT-2500ToInf/merged_0.root

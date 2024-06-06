@@ -10,7 +10,7 @@ echo "===> Initializing $cmssw"; cmsrel $cmssw; cd $cmssw/src; cmsenv; cd -
 pip3 install -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple --user
 echo "===> Python3 information: "; which python3; which pip3
 echo "===> Python installing/upgrading modules"
-for i in {1..3}; do
+for i in {1..4}; do
 python3 -m pip install -U coffea -i https://pypi.tuna.tsinghua.edu.cn/simple --user
 done
 

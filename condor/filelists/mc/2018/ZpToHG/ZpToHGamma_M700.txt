@@ -1,9 +1,1 @@
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZpToHG/ZpToHGamma_M700/27.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZpToHG/ZpToHGamma_M700/17.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZpToHG/ZpToHGamma_M700/26.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZpToHG/ZpToHGamma_M700/20.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZpToHG/ZpToHGamma_M700/24.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZpToHG/ZpToHGamma_M700/28.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZpToHG/ZpToHGamma_M700/8.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZpToHG/ZpToHGamma_M700/9.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZpToHG/ZpToHGamma_M700/2.root
+/data/bond/fudawei/public/customizedNanoAOD/output/mc/2018/ZpToHG/ZpToHGamma_M700/merged_0.root

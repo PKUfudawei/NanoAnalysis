@@ -1,3 +1,1 @@
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M2400/1.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M2400/0.root
-/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M2400/2.root
+/data/bond/fudawei/public/customizedNanoAOD/output/mc/2016pre/ZpToHG/ZpToHGamma_M2400/merged_0.root
