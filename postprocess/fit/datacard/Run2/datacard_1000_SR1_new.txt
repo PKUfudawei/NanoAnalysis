@@ -16,6 +16,6 @@ process         signal          background
 process         0            1
 rate            74.92690686472893       1.0
 ---------------------------------------------
-lumi_13TeV      lnN          1.01      -
+lumi_13TeV      lnN          1.025      1.025
 ---------------------------------------------
 # pdfindex_Tag0         discrete

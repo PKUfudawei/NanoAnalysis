@@ -9,7 +9,7 @@ def parse_commandline():
     parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2017', '2018', 'Run2'), default='Run2')
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
-    parser.add_argument('-l', '--fit_range_low', help='To specify the lower bound of fitting range', default=720, type=int)
+    parser.add_argument('-l', '--fit_range_low', help='To specify the lower bound of fitting range', default=650, type=int)
     parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=4000, type=int)
     args = parser.parse_args()
     return args
@@ -102,7 +102,7 @@ def fit_signal(year):
         yaml.dump(info, f)
 
 
-def background_fit(year):
+def fit_background(year):
     bkg_model_dir = f'output/{year}/background'
     if os.path.exists(f"{bkg_model_dir}/workspace_background_{signal_region}.root"):
         return
@@ -344,7 +344,7 @@ if __name__ == "__main__":
         'SR2': (0.9, 2)
     }
     
-    if args.signal_mass is not None and args.signal_region is not None:
+    if args.signal_mass is not None and args.SR is not None:
         signal_mass = args.signal_mass
         signal_region = args.SR
     else:
@@ -361,6 +361,6 @@ if __name__ == "__main__":
                 if Fit_signal:
                     fit_signal(year)
                 if Fit_background:
-                    background_fit(year)
+                    fit_background(year)
 
                 get_SR_bkg_MC(year)
