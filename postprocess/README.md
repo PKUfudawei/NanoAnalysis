@@ -20,5 +20,5 @@ Now we have prepared the python3 and jupyter environment. Every time we connect 
 
 1. Connect to lxplus via ssh on vscode, please follow the tutorial "[Remote Development using SSH](https://code.visualstudio.com/docs/remote/ssh)".
 
-2. Open NanoAnalysis/postprocess/Analyze.ipynb and run it cell by cell (keyboard shortcut: Shift+Enter).
+2. Open `NanoAnalysis/postprocess/Analyze.ipynb` and run it cell by cell (keyboard shortcut: Shift+Enter).
 
