@@ -9,11 +9,11 @@ def parse_commandline():
     parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2017', '2018', 'Run2'), default='Run2')
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
-    parser.add_argument('-l', '--fit_range_low', help='To specify the lower bound of fitting range', default=650, type=int)
+    parser.add_argument('-d', '--fit_range_down', help='To specify the lower bound of fitting range', default=650, type=int)
     parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=4000, type=int)
     args = parser.parse_args()
     return args
-
+                     
 
 def fit_signal(year):
     # # Signal modelling
@@ -22,7 +22,7 @@ def fit_signal(year):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", signal_mass, fit_range_low, fit_range_up)
+    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", signal_mass, fit_range_down, fit_range_up)
     weight = ROOT.RooRealVar("weight", "weight", 0, -10, 10)
     mass_Higgs = ROOT.RooRealVar("mass_Higgs", "mass_Higgs", 125, 0, 999)
     tagger_Hbb = ROOT.RooRealVar("tagger_Hbb", "tagger_Hbb", 0, 0, 2)
@@ -43,15 +43,25 @@ def fit_signal(year):
 
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", signal_mass, signal_mass - 200, signal_mass + 200)
+    nuisance_mean = ROOT.RooRealVar("nuisance_mean", "nuisance_mean", 0, -5, 5)
+    nuisance_mean.setConstant(True)
+    mean = ROOT.RooFormulaVar("mean", "mean", "@0*(1+0.0035*@1)", ROOT.RooArgList(x0, nuisance_mean))
     sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", 100, 0, 600)
+    nuisance_sigmaL = ROOT.RooRealVar("nuisance_sigmaL", "nuisance_sigmaL", 0, -5, 5)
+    nuisance_sigmaL.setConstant(True)
+    widthL = ROOT.RooFormulaVar("widthL", "widthL", "@0*(1+0.02*@1)", ROOT.RooArgList(sigmaL, nuisance_sigmaL))
     sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", 100, 0, 600)
+    nuisance_sigmaR = ROOT.RooRealVar("nuisance_sigmaR", "nuisance_sigmaR", 0, -5, 5)
+    nuisance_sigmaR.setConstant(True)
+    widthR = ROOT.RooFormulaVar("widthR", "widthR", "@0*(1+0.027*@1)", ROOT.RooArgList(sigmaR, nuisance_sigmaR))
+
     alphaL = ROOT.RooRealVar("alphaL", "alphaL", 2, 0, 8)
     alphaR = ROOT.RooRealVar("alphaR", "alphaR", 2, 0, 8)
     nL = ROOT.RooRealVar("nL", "nL", 0.1, 0, 20)
     nR = ROOT.RooRealVar("nR", "nR", 0.1, 0, 20)
 
     # Define the Gaussian with mean=MH and width=sigma
-    model_signal = ROOT.RooCrystalBall("model_signal", "model_signal", mass_Zprime, x0, sigmaL, sigmaR, alphaL, nL, alphaR, nR)
+    model_signal = ROOT.RooCrystalBall("model_signal", "model_signal", mass_Zprime, mean, widthL, widthR, alphaL, nL, alphaR, nR)
 
     # Fit Gaussian to MC events and plot
     model_signal.fitTo(mc, ROOT.RooFit.SumW2Error(True))
@@ -104,8 +114,6 @@ def fit_signal(year):
 
 def fit_background(year):
     bkg_model_dir = f'output/{year}/background'
-    if os.path.exists(f"{bkg_model_dir}/workspace_background_{signal_region}.root"):
-        return
     
     # # Background modelling
     f = ROOT.TFile(f"input/{year}/data_Hbb.root", "r")
@@ -113,7 +121,7 @@ def fit_background(year):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_range_low, fit_range_up)
+    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_range_down, fit_range_up)
     weight = ROOT.RooRealVar("weight", "weight", 1, -10, 10)
     mass_Higgs = ROOT.RooRealVar("mass_Higgs", "mass_Higgs", 125, 0, 999)
     tagger_Hbb = ROOT.RooRealVar("tagger_Hbb", "tagger_Hbb", 0, 0, 2)
@@ -121,8 +129,8 @@ def fit_background(year):
     # Convert to RooDataSet
     data_sideband = ROOT.RooDataSet("data_sideband", "data_sideband", tree, ROOT.RooArgSet(mass_Zprime, weight, mass_Higgs, tagger_Hbb), sideband_cut, "weight")
 
-    n_bins = (fit_range_up - fit_range_low) // 20
-    binning = ROOT.RooFit.Binning(n_bins, fit_range_low, fit_range_up)
+    n_bins = (fit_range_up - fit_range_down) // 20
+    binning = ROOT.RooFit.Binning(n_bins, fit_range_down, fit_range_up)
 
     # Lets plot the signal mass distribution
     can = ROOT.TCanvas()
@@ -260,15 +268,12 @@ def fit_background(year):
 
 
 def get_SR_data(year):
-    if os.path.exists(f"./output/{year}/workspace_data_{signal_region}.root"):
-        return
-
     # # Data in SR
     f = ROOT.TFile(f"input/{year}/data_Hbb.root", "r")
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_range_low, fit_range_up)
+    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_range_down, fit_range_up)
     weight = ROOT.RooRealVar("weight", "weight", 0, -10, 10)
     mass_Higgs = ROOT.RooRealVar("mass_Higgs", "mass_Higgs", 125, 0, 500)
     tagger_Hbb = ROOT.RooRealVar("tagger_Hbb", "tagger_Hbb", 0, 0, 2)
@@ -276,8 +281,8 @@ def get_SR_data(year):
     # Convert to RooDataSet
     data_SR = ROOT.RooDataSet("data_SR", "data_SR", tree, ROOT.RooArgSet(mass_Zprime, weight, mass_Higgs, tagger_Hbb), SR_cut, "weight")
 
-    n_bins = (fit_range_up - fit_range_low) // 20
-    binning = ROOT.RooFit.Binning(n_bins, fit_range_low, fit_range_up)
+    n_bins = (fit_range_up - fit_range_down) // 20
+    binning = ROOT.RooFit.Binning(n_bins, fit_range_down, fit_range_up)
 
     # Lets plot the signal mass distribution
     can = ROOT.TCanvas()
@@ -296,15 +301,12 @@ def get_SR_data(year):
 
 
 def get_SR_bkg_MC(year):
-    if os.path.exists(f"./output/{year}/test_bkg_mc/workspace_bkg_mc_{signal_region}.root"):
-        return
-
     # # Data in SR
     f = ROOT.TFile(f"input/{year}/mc_background.root", "r")
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_range_low, fit_range_up)
+    mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", 1500, fit_range_down, fit_range_up)
     weight = ROOT.RooRealVar("weight", "weight", 0, -999, 999)
     mass_Higgs = ROOT.RooRealVar("mass_Higgs", "mass_Higgs", 125, 0, 500)
     tagger_Hbb = ROOT.RooRealVar("tagger_Hbb", "tagger_Hbb", 0, 0, 2)
@@ -312,8 +314,8 @@ def get_SR_bkg_MC(year):
     # Convert to RooDataSet
     bkg_mc = ROOT.RooDataSet("bkg_mc", "bkg_mc", tree, ROOT.RooArgSet(mass_Zprime, weight, mass_Higgs, tagger_Hbb), SR_cut, "weight")
 
-    n_bins = (fit_range_up - fit_range_low) // 20
-    binning = ROOT.RooFit.Binning(n_bins, fit_range_low, fit_range_up)
+    n_bins = (fit_range_up - fit_range_down) // 20
+    binning = ROOT.RooFit.Binning(n_bins, fit_range_down, fit_range_up)
 
     # mass_Zprime.setBins(n_bins)
     # bkg_mc_hist = ROOT.RooDataHist("data_sideband_hist", "data_sideband_hist", mass_Zprime, bkg_mc)
@@ -351,12 +353,12 @@ if __name__ == "__main__":
         for signal_region in ('SR1', 'SR2'):
             for signal_mass in [700, 800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 3000, 3500]:
                 tagger_cut_low, tagger_cut_high = SR_binning[signal_region]
-                fit_range_low, fit_range_up = args.fit_range_low, args.fit_range_up
+                fit_range_down, fit_range_up = args.fit_range_down, args.fit_range_up
 
                 Fit_signal = True
                 Fit_background = True
-                SR_cut = f"(mass_Higgs>110) & (mass_Higgs<140) & (tagger_Hbb>{tagger_cut_low}) & (tagger_Hbb<{tagger_cut_high})"
-                sideband_cut = f"(((mass_Higgs>50) & (mass_Higgs<70)) | ((mass_Higgs>100) & (mass_Higgs<110)) | (mass_Higgs>140)) & (tagger_Hbb>{tagger_cut_low}) & (tagger_Hbb<{tagger_cut_high})"
+                SR_cut = f"(mass_Higgs>110) & (mass_Higgs<145) & (tagger_Hbb>{tagger_cut_low}) & (tagger_Hbb<{tagger_cut_high})"
+                sideband_cut = f"(((mass_Higgs>50) & (mass_Higgs<70)) | ((mass_Higgs>100) & (mass_Higgs<110)) | (mass_Higgs>145)) & (tagger_Hbb>{tagger_cut_low}) & (tagger_Hbb<{tagger_cut_high})"
 
                 if Fit_signal:
                     fit_signal(year)

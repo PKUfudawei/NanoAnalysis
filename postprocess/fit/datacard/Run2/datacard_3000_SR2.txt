@@ -16,11 +16,13 @@ process         signal          background
 process         0            1
 rate            6.414854750035389       1.0
 ---------------------------------------------
-lumi_13TeV      lnN          1.016      -
-photonID        lnN          1.021      -
+lumi_13TeV      lnN         1.016       -
+photonID        lnN         1.021       -
 PDF             lnN         1.093       -
 QCD_scale       lnN         0.909/1.106 -
-Hbb_tagger      lnN         1.05        -
-trigger_SF      lnN         1.025       -
+---------------------------------------------
+nuisance_mean   param   0.0     1.0 
+nuisance_sigmaL param   0.0     1.0
+nuisance_sigmaR param   0.0     1.0
 ---------------------------------------------
 # pdfindex_Tag0         discrete
