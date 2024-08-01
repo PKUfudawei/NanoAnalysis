@@ -3,8 +3,6 @@ import os
 for file in set(os.listdir('datacard/Run2/')):
     if file.endswith('.txt') and 'SR1' in file:
         mass = int(file.split('_')[1])
-        if mass%1000 != 0:
-            continue
         os.system(f"combineCards.py SR1=datacard/Run2/{file} SR2=datacard/Run2/{file.replace('SR1', 'SR2')} > datacard/Run2/{file.replace('SR1', 'combine')}")
 
 for file in os.listdir('datacard/Run2/'):

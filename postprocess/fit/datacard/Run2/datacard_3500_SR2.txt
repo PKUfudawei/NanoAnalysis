@@ -14,7 +14,7 @@ observation     -1
 bin             Tag0         Tag0
 process         signal          background
 process         0            1
-rate            2.3894846132271956       1.0
+rate			3.246			1.0
 ---------------------------------------------
 lumi_13TeV      lnN         1.016       -
 photonID        lnN         1.021       -

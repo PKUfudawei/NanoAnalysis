@@ -1,0 +1,294 @@
+Observed Limit: r < 3.0778
+Expected  2.5%: r < 0.0034
+Expected 16.0%: r < 0.0064
+Expected 50.0%: r < 0.0122
+Expected 84.0%: r < 0.0243
+Expected 97.5%: r < 0.0367
+datacard_700_combine
+Observed Limit: r < 15.5669
+Expected  2.5%: r < 0.0182
+Expected 16.0%: r < 0.0329
+Expected 50.0%: r < 0.0630
+Expected 84.0%: r < 0.1227
+Expected 97.5%: r < 0.1910
+datacard_2400_combine
+Observed Limit: r < 4.0293
+Expected  2.5%: r < 0.0065
+Expected 16.0%: r < 0.0114
+Expected 50.0%: r < 0.0220
+Expected 84.0%: r < 0.0423
+Expected 97.5%: r < 0.0664
+datacard_1000_SR1
+Observed Limit: r < 1.3284
+Expected  2.5%: r < 0.0057
+Expected 16.0%: r < 0.0094
+Expected 50.0%: r < 0.0190
+Expected 84.0%: r < 0.0360
+Expected 97.5%: r < 0.0576
+datacard_700_SR2
+Observed Limit: r < 25.9834
+Expected  2.5%: r < 0.0393
+Expected 16.0%: r < 0.0697
+Expected 50.0%: r < 0.1343
+Expected 84.0%: r < 0.2606
+Expected 97.5%: r < 0.4072
+datacard_2000_SR1
+Observed Limit: r < 1.5615
+Expected  2.5%: r < 0.0020
+Expected 16.0%: r < 0.0033
+Expected 50.0%: r < 0.0063
+Expected 84.0%: r < 0.0124
+Expected 97.5%: r < 0.0189
+datacard_900_combine
+Observed Limit: r < 5.3994
+Expected  2.5%: r < 0.0086
+Expected 16.0%: r < 0.0152
+Expected 50.0%: r < 0.0288
+Expected 84.0%: r < 0.0564
+Expected 97.5%: r < 0.0871
+datacard_1200_SR1
+Observed Limit: r < 27.1414
+Expected  2.5%: r < 0.0545
+Expected 16.0%: r < 0.0974
+Expected 50.0%: r < 0.1885
+Expected 84.0%: r < 0.3703
+Expected 97.5%: r < 0.5715
+datacard_3000_combine
+Observed Limit: r < 11.5635
+Expected  2.5%: r < 0.0130
+Expected 16.0%: r < 0.0235
+Expected 50.0%: r < 0.0449
+Expected 84.0%: r < 0.0875
+Expected 97.5%: r < 0.1362
+datacard_2200_combine
+Observed Limit: r < 3.8206
+Expected  2.5%: r < 0.0062
+Expected 16.0%: r < 0.0108
+Expected 50.0%: r < 0.0210
+Expected 84.0%: r < 0.0404
+Expected 97.5%: r < 0.0635
+datacard_800_SR1
+Observed Limit: r < 8.3632
+Expected  2.5%: r < 0.0325
+Expected 16.0%: r < 0.0576
+Expected 50.0%: r < 0.1108
+Expected 84.0%: r < 0.2160
+Expected 97.5%: r < 0.3361
+datacard_2600_SR2
+Observed Limit: r < 7.8987
+Expected  2.5%: r < 0.0123
+Expected 16.0%: r < 0.0222
+Expected 50.0%: r < 0.0425
+Expected 84.0%: r < 0.0821
+Expected 97.5%: r < 0.1288
+datacard_1400_SR1
+Observed Limit: r < 0.8820
+Expected  2.5%: r < 0.0034
+Expected 16.0%: r < 0.0064
+Expected 50.0%: r < 0.0122
+Expected 84.0%: r < 0.0235
+Expected 97.5%: r < 0.0367
+datacard_1200_SR2
+Observed Limit: r < 17.1761
+Expected  2.5%: r < 0.0266
+Expected 16.0%: r < 0.0472
+Expected 50.0%: r < 0.0908
+Expected 84.0%: r < 0.1763
+Expected 97.5%: r < 0.2754
+datacard_1800_SR1
+Observed Limit: r < 55.1755
+Expected  2.5%: r < 0.0601
+Expected 16.0%: r < 0.1065
+Expected 50.0%: r < 0.2051
+Expected 84.0%: r < 0.3996
+Expected 97.5%: r < 0.6219
+datacard_2200_SR1
+Observed Limit: r < 675.8281
+Expected  2.5%: r < 0.8733
+Expected 16.0%: r < 1.5574
+Expected 50.0%: r < 3.0625
+Expected 84.0%: r < 6.1631
+Expected 97.5%: r < 9.2880
+datacard_3500_SR1
+Observed Limit: r < 60.7174
+Expected  2.5%: r < 0.1465
+Expected 16.0%: r < 0.2612
+Expected 50.0%: r < 0.5137
+Expected 84.0%: r < 1.0296
+Expected 97.5%: r < 1.5578
+datacard_3500_combine
+Observed Limit: r < 0.6883
+Expected  2.5%: r < 0.0026
+Expected 16.0%: r < 0.0047
+Expected 50.0%: r < 0.0093
+Expected 84.0%: r < 0.0184
+Expected 97.5%: r < 0.0279
+datacard_800_SR2
+Observed Limit: r < 21.8285
+Expected  2.5%: r < 0.0260
+Expected 16.0%: r < 0.0462
+Expected 50.0%: r < 0.0889
+Expected 84.0%: r < 0.1732
+Expected 97.5%: r < 0.2695
+datacard_2600_combine
+Observed Limit: r < 11.7212
+Expected  2.5%: r < 0.0181
+Expected 16.0%: r < 0.0323
+Expected 50.0%: r < 0.0625
+Expected 84.0%: r < 0.1208
+Expected 97.5%: r < 0.1895
+datacard_1600_SR1
+Observed Limit: r < 1.6026
+Expected  2.5%: r < 0.0065
+Expected 16.0%: r < 0.0118
+Expected 50.0%: r < 0.0220
+Expected 84.0%: r < 0.0426
+Expected 97.5%: r < 0.0664
+datacard_1600_SR2
+Observed Limit: r < 250.7970
+Expected  2.5%: r < 0.1316
+Expected 16.0%: r < 0.2333
+Expected 50.0%: r < 0.4492
+Expected 84.0%: r < 0.8754
+Expected 97.5%: r < 1.3622
+datacard_2600_SR1
+Observed Limit: r < 70.7616
+Expected  2.5%: r < 0.1760
+Expected 16.0%: r < 0.3139
+Expected 50.0%: r < 0.6172
+Expected 84.0%: r < 1.2322
+Expected 97.5%: r < 1.8717
+datacard_3500_SR2
+Observed Limit: r < 1.1964
+Expected  2.5%: r < 0.0048
+Expected 16.0%: r < 0.0087
+Expected 50.0%: r < 0.0161
+Expected 84.0%: r < 0.0318
+Expected 97.5%: r < 0.0487
+datacard_1400_SR2
+Observed Limit: r < 5.9806
+Expected  2.5%: r < 0.0235
+Expected 16.0%: r < 0.0416
+Expected 50.0%: r < 0.0801
+Expected 84.0%: r < 0.1560
+Expected 97.5%: r < 0.2428
+datacard_2400_SR2
+Observed Limit: r < 17.8546
+Expected  2.5%: r < 0.0666
+Expected 16.0%: r < 0.1191
+Expected 50.0%: r < 0.2305
+Expected 84.0%: r < 0.4509
+Expected 97.5%: r < 0.6989
+datacard_3000_SR2
+Observed Limit: r < 1.6526
+Expected  2.5%: r < 0.0020
+Expected 16.0%: r < 0.0033
+Expected 50.0%: r < 0.0063
+Expected 84.0%: r < 0.0124
+Expected 97.5%: r < 0.0189
+datacard_1000_combine
+Observed Limit: r < 6.7792
+Expected  2.5%: r < 0.0109
+Expected 16.0%: r < 0.0196
+Expected 50.0%: r < 0.0376
+Expected 84.0%: r < 0.0721
+Expected 97.5%: r < 0.1140
+datacard_700_SR1
+Observed Limit: r < 3.7495
+Expected  2.5%: r < 0.0059
+Expected 16.0%: r < 0.0108
+Expected 50.0%: r < 0.0200
+Expected 84.0%: r < 0.0395
+Expected 97.5%: r < 0.0605
+datacard_900_SR1
+Observed Limit: r < 1.6520
+Expected  2.5%: r < 0.0020
+Expected 16.0%: r < 0.0033
+Expected 50.0%: r < 0.0063
+Expected 84.0%: r < 0.0124
+Expected 97.5%: r < 0.0189
+datacard_800_combine
+Observed Limit: r < 0.6471
+Expected  2.5%: r < 0.0026
+Expected 16.0%: r < 0.0047
+Expected 50.0%: r < 0.0093
+Expected 84.0%: r < 0.0173
+Expected 97.5%: r < 0.0279
+datacard_900_SR2
+Observed Limit: r < 5.7448
+Expected  2.5%: r < 0.0068
+Expected 16.0%: r < 0.0119
+Expected 50.0%: r < 0.0229
+Expected 84.0%: r < 0.0442
+Expected 97.5%: r < 0.0694
+datacard_1800_combine
+Observed Limit: r < 4.2712
+Expected  2.5%: r < 0.0167
+Expected 16.0%: r < 0.0298
+Expected 50.0%: r < 0.0576
+Expected 84.0%: r < 0.1123
+Expected 97.5%: r < 0.1747
+datacard_2200_SR2
+Observed Limit: r < 675.8281
+Expected  2.5%: r < 0.3015
+Expected 16.0%: r < 0.5390
+Expected 50.0%: r < 1.0430
+Expected 84.0%: r < 2.0574
+Expected 97.5%: r < 3.1628
+datacard_3000_SR1
+Observed Limit: r < 4.1112
+Expected  2.5%: r < 0.0048
+Expected 16.0%: r < 0.0087
+Expected 50.0%: r < 0.0161
+Expected 84.0%: r < 0.0315
+Expected 97.5%: r < 0.0487
+datacard_1600_combine
+Observed Limit: r < 2.1537
+Expected  2.5%: r < 0.0023
+Expected 16.0%: r < 0.0042
+Expected 50.0%: r < 0.0083
+Expected 84.0%: r < 0.0165
+Expected 97.5%: r < 0.0250
+datacard_1200_combine
+Observed Limit: r < 3.0516
+Expected  2.5%: r < 0.0120
+Expected 16.0%: r < 0.0217
+Expected 50.0%: r < 0.0415
+Expected 84.0%: r < 0.0802
+Expected 97.5%: r < 0.1258
+datacard_2000_SR2
+Observed Limit: r < 2.9813
+Expected  2.5%: r < 0.0034
+Expected 16.0%: r < 0.0062
+Expected 50.0%: r < 0.0122
+Expected 84.0%: r < 0.0227
+Expected 97.5%: r < 0.0367
+datacard_1400_combine
+Observed Limit: r < 2.2285
+Expected  2.5%: r < 0.0091
+Expected 16.0%: r < 0.0156
+Expected 50.0%: r < 0.0308
+Expected 84.0%: r < 0.0587
+Expected 97.5%: r < 0.0933
+datacard_1800_SR2
+Observed Limit: r < 8.0809
+Expected  2.5%: r < 0.0094
+Expected 16.0%: r < 0.0164
+Expected 50.0%: r < 0.0317
+Expected 84.0%: r < 0.0613
+Expected 97.5%: r < 0.0962
+datacard_2000_combine
+Observed Limit: r < 112.4322
+Expected  2.5%: r < 0.0870
+Expected 16.0%: r < 0.1542
+Expected 50.0%: r < 0.2969
+Expected 84.0%: r < 0.5785
+Expected 97.5%: r < 0.9002
+datacard_2400_SR1
+Observed Limit: r < 0.6817
+Expected  2.5%: r < 0.0026
+Expected 16.0%: r < 0.0047
+Expected 50.0%: r < 0.0093
+Expected 84.0%: r < 0.0184
+Expected 97.5%: r < 0.0279
+datacard_1000_SR2

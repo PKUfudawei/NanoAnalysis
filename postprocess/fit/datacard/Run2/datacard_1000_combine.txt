@@ -13,15 +13,15 @@ shapes signal      SR2         datacard/Run2/../../output/Run2/signal/workspace_
 bin          SR1          SR2        
 observation  -1           -1         
 ----------------------------------------------------------------------------------------------------------------------------------
-bin                             SR1             SR1             SR2             SR2           
-process                         signal          background      signal          background    
-process                         0               1               0               1             
-rate                            74.9269068647   1               166.9841967735  1             
+bin                             SR1          SR1          SR2          SR2        
+process                         signal       background   signal       background 
+process                         0            1            0            1          
+rate                            87.982       1            202.742      1          
 ----------------------------------------------------------------------------------------------------------------------------------
-PDF                     lnN     1.03            -               1.031           -             
-QCD_scale               lnN     0.965/1.037     -               0.966/1.036     -             
-lumi_13TeV              lnN     1.016           -               1.016           -             
-photonID                lnN     1.021           -               1.021           -             
+PDF                     lnN     1.03         -            1.031        -          
+QCD_scale               lnN     0.965/1.037  -            0.966/1.036  -          
+lumi_13TeV              lnN     1.016        -            1.016        -          
+photonID                lnN     1.021        -            1.021        -          
 nuisance_mean  param  0.0 1.0
 nuisance_sigmaL  param  0.0 1.0
 nuisance_sigmaR  param  0.0 1.0
