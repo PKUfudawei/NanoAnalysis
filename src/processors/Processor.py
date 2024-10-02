@@ -330,6 +330,8 @@ class Processor(processor.ProcessorABC):
         )
         self.variable['nMuon'] = ak.sum(self.muon_tag(reconstruct=False), axis=1)
         self.variable['nElectron'] = ak.sum(self.electron_tag(reconstruct=False), axis=1)
+        for i in ['Nom', 'Up', 'Dn']:
+            self.variable[f'L1PreFiringWeight_{i}'] = self.event['L1PreFiringWeight'][i]
 
         if self.sample_type == 'mc':
             self.variable['PUWeight_nominal'], self.variable['PUWeight_up'], self.variable['PUWeight_down'] = self.calculate_PU_SF()
@@ -450,7 +452,6 @@ class Processor(processor.ProcessorABC):
             'photon': {'pt', 'eta', 'phi', 'mass', 'cutBased', 'sieie'} | (set(self.object['photon'].fields) - set(self.event.Photon.fields)),
             'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight'},
             'photon+jet': {'pt', 'eta', 'phi', 'mass'},
-            #'L1PreFiringWeight': {'Nom', 'Up', 'Dn'},
         })
 
         # gen-macthing

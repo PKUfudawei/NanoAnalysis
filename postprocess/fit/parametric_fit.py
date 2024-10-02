@@ -27,7 +27,7 @@ def fit_signal(year, signal_mass, SR):
 
     # Define mass and weight variables
     mass_Zprime = ROOT.RooRealVar("mass_Zprime", "mass_Zprime", signal_mass, fit_range_down, fit_range_up)
-    weight = ROOT.RooRealVar("weight", "weight", 0, -10, 10)
+    weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     mass_Higgs = ROOT.RooRealVar("mass_Higgs", "mass_Higgs", 125, 0, 999)
     tagger_Hbb = ROOT.RooRealVar("tagger_Hbb", "tagger_Hbb", 0, 0, 2)
 
