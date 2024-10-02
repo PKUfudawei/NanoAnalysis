@@ -1,0 +1,10 @@
+/eos/user/d/dfu/ZGamma/2017/ZGamma_M2800/miniAOD_0.root
+/eos/user/d/dfu/ZGamma/2017/ZGamma_M2800/miniAOD_1.root
+/eos/user/d/dfu/ZGamma/2017/ZGamma_M2800/miniAOD_2.root
+/eos/user/d/dfu/ZGamma/2017/ZGamma_M2800/miniAOD_3.root
+/eos/user/d/dfu/ZGamma/2017/ZGamma_M2800/miniAOD_4.root
+/eos/user/d/dfu/ZGamma/2017/ZGamma_M2800/miniAOD_5.root
+/eos/user/d/dfu/ZGamma/2017/ZGamma_M2800/miniAOD_6.root
+/eos/user/d/dfu/ZGamma/2017/ZGamma_M2800/miniAOD_7.root
+/eos/user/d/dfu/ZGamma/2017/ZGamma_M2800/miniAOD_8.root
+/eos/user/d/dfu/ZGamma/2017/ZGamma_M2800/miniAOD_9.root

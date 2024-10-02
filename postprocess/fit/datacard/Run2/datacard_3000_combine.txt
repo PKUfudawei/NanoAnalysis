@@ -1,0 +1,31 @@
+Combination of SR1=datacard/Run2/datacard_3000_SR1.txt  SR2=datacard/Run2/datacard_3000_SR2.txt
+imax 2 number of bins
+jmax 1 number of processes minus 1
+kmax 9 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes background  SR1         datacard/Run2/../../output/Run2/background/workspace_background_SR1.root workspace_background:multipdf
+shapes data_obs    SR1         datacard/Run2/../../output/Run2/data/workspace_data_SR1.root workspace_data:data_SR
+shapes signal      SR1         datacard/Run2/../../output/Run2/signal/workspace_signal_3000_SR1.root workspace_signal:model_signal
+shapes background  SR2         datacard/Run2/../../output/Run2/background/workspace_background_SR2.root workspace_background:multipdf
+shapes data_obs    SR2         datacard/Run2/../../output/Run2/data/workspace_data_SR2.root workspace_data:data_SR
+shapes signal      SR2         datacard/Run2/../../output/Run2/signal/workspace_signal_3000_SR2.root workspace_signal:model_signal
+----------------------------------------------------------------------------------------------------------------------------------
+bin          SR1          SR2        
+observation  -1           -1         
+----------------------------------------------------------------------------------------------------------------------------------
+bin                             SR1          SR1          SR2          SR2        
+process                         signal       background   signal       background 
+process                         0            1            0            1          
+rate                            1            1            1            1          
+----------------------------------------------------------------------------------------------------------------------------------
+Hbb_SF                  lnN     0.951/1.049  -            0.943/1.058  -          
+PDF                     lnN     1.127        -            1.093        -          
+QCD_scale               lnN     0.908/1.107  -            0.909/1.106  -          
+lumi_13TeV              lnN     1.016        -            1.016        -          
+photonID                lnN     1.021        -            1.021        -          
+trigger_SF              lnN     0.995/1.005  -            0.995/1.005  -          
+JES           param  0.0 1.0
+JER           param  0.0 1.0
+Pile-up       param  0.0 1.0
+pdfindex_SR1  discrete
+pdfindex_SR2  discrete
