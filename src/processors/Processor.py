@@ -230,15 +230,15 @@ class Processor(processor.ProcessorABC):
         name_map['Rho'] = 'rho'
 
         AK8jet['is_real'] = (~np.isnan(ak.fill_none(AK8jet.matched_gen.pt, np.nan)))*1
-        AK8jet["pt_raw"] = (1 - AK8jet.rawFactor) * AK8jet.pt
-        AK8jet["mass_raw"] = (1 - AK8jet.rawFactor) * AK8jet.mass
-        AK8jet["pt_gen"] = ak.values_astype(ak.fill_none(AK8jet.matched_gen.pt, 0), np.float32)
-        AK8jet["rho"] = ak.broadcast_arrays(self.event.fixedGridRhoFastjetAll, AK8jet.pt)[0]
+        AK8jet['pt_raw'] = (1 - AK8jet.rawFactor) * AK8jet.pt
+        AK8jet['mass_raw'] = (1 - AK8jet.rawFactor) * AK8jet.mass
+        AK8jet['pt_gen'] = ak.values_astype(ak.fill_none(AK8jet.matched_gen.pt, 0), np.float32)
+        AK8jet.rho = ak.broadcast_arrays(self.event.fixedGridRhoFastjetAll, AK8jet.pt)[0]
         corrected_AK8jet = CorrectedJetsFactory(name_map, jec_stack).build(AK8jet).compute()
-        AK8jet["pt"] = corrected_AK8jet["pt"]
-        AK8jet["pt_nominal"] = corrected_AK8jet["pt"]
-        AK8jet["mass"] = corrected_AK8jet["mass"]
-        AK8jet["mass_nominal"] = corrected_AK8jet["mass"]
+        AK8jet.pt = corrected_AK8jet["pt"]
+        AK8jet.pt_nominal = corrected_AK8jet["pt"]
+        AK8jet.mass = corrected_AK8jet["mass"]
+        AK8jet.mass_nominal = corrected_AK8jet["mass"]
 
         self.AK8jet_corrections = set()
         for i in corrected_AK8jet.fields:
@@ -257,11 +257,11 @@ class Processor(processor.ProcessorABC):
             raw_AK8jet = self.AK8jet_correction(raw_AK8jet)
 
         self.tag['AK8jet'] = (  # (event, boolean)
-            (raw_AK8jet['pt'] > 250) &
-            (abs(raw_AK8jet['eta']) < 2.6) &
-            (raw_AK8jet['msoftdrop'] > 30) &  # Corrected soft drop mass with PUPPI
-            (raw_AK8jet['jetId'] & 2 > 0) &
-            (raw_AK8jet['jetId'] & 4 > 0)
+            (raw_AK8jet.pt > 250) &
+            (abs(raw_AK8jet.eta) < 2.6) &
+            (raw_AK8jet.msoftdrop > 30) &  # Corrected soft drop mass with PUPPI
+            (raw_AK8jet.jetId & 2 > 0) &
+            (raw_AK8jet.jetId & 4 > 0)
             # Jet ID flags bit1 is loose (always false in 2017 since it does not exist),
             # bit2 is tight, bit3 is tightLepVeto
         )
@@ -341,12 +341,12 @@ class Processor(processor.ProcessorABC):
                 self.variable['LHEPdfWeight'] = self.event.LHEPdfWeight
             for i in self.AK8jet_corrections:
                 for j in ('up', 'down'):
-                    self.object['AK8jet']['pt'] = self.object['AK8jet'][f'pt_{i}_{j}']
-                    self.object['AK8jet']['mass'] = self.object['AK8jet'][f'mass_{i}_{j}']
+                    self.object['AK8jet'].pt = self.object['AK8jet'][f'pt_{i}_{j}']
+                    self.object['AK8jet'].mass = self.object['AK8jet'][f'mass_{i}_{j}']
                     self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
                     self.variable[f'photon+jet_mass_{i}_{j}'] = self.object['photon+jet'].mass
-            self.object['AK8jet']['pt'] = self.object['AK8jet']['pt_nominal']
-            self.object['AK8jet']['mass'] = self.object['AK8jet']['mass_nominal']
+            self.object['AK8jet'].pt = self.object['AK8jet'].pt_nominal
+            self.object['AK8jet'].mass = self.object['AK8jet'].mass_nominal
 
         self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
 
