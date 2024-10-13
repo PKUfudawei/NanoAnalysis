@@ -7,19 +7,19 @@ SinglePhoton: -1
 GJets:
   GJets_HT-40To100: 18540.0
   GJets_HT-100To200: 8644.0
-  GJets_HT-200To400: 2183.0
-  GJets_HT-400To600: 260.2
-  GJets_HT-600ToInf: 86.58
+  GJets_HT-200To400: 2173.0
+  GJets_HT-400To600: 260.7
+  GJets_HT-600ToInf: 86.55
 QCD:
   QCD_HT50to100: 185300000.0
   QCD_HT100to200: 23590000.0
   QCD_HT200to300: 1551000.0
   QCD_HT300to500: 323400.0
-  QCD_HT500to700: 30140.0
-  QCD_HT700to1000: 6344.0
-  QCD_HT1000to1500: 1092.0
-  QCD_HT1500to2000: 99.76
-  QCD_HT2000toInf: 20.35
+  QCD_HT500to700: 30980.0
+  QCD_HT700to1000: 6364.0
+  QCD_HT1000to1500: 1117.0
+  QCD_HT1500to2000: 108.4
+  QCD_HT2000toInf: 22.36
 TTGJets:
   TTGJets: 3.757
 TTJets:
@@ -62,6 +62,13 @@ ZJetsToQQ:
   ZJetsToQQ_HT-400to600: 114.2
   ZJetsToQQ_HT-600to800: 25.34
   ZJetsToQQ_HT-800toInf: 12.99
+ST:
+  ST_t-channel_top: 136.02 # B2G-20-010
+  ST_t-channel_antitop: 80.95 # B2G-20-010
+  ST_tW_top: 35.85 # AN-20-180
+  ST_tW_antitop: 35.85 # AN-20-180
+  ST_s-channel_4f_hadronicDecays: 11.24
+  ST_s-channel_4f_leptonDecays: 3.74
 ZpToHG:
   ZpToHGamma_M600: 0.0472
   ZpToHGamma_M700: 0.03787
@@ -78,27 +85,20 @@ ZpToHG:
   ZpToHGamma_M2600: 0.001057
   ZpToHGamma_M3000: 0.0005056
   ZpToHGamma_M3500: 0.0001897
-ST:
-  ST_t-channel_top: 136.02 # B2G-20-010
-  ST_t-channel_antitop: 80.95 # B2G-20-010
-  ST_tW_top: 35.85 # AN-20-180
-  ST_tW_antitop: 35.85 # AN-20-180
-  ST_s-channel_4f_hadronicDecays: 11.24
-  ST_s-channel_4f_leptonDecays: 3.74
 GluGluToZG:
-  GluGluSpin0ToZGamma_ZToQQ_M_600: 2.417e-09
-  GluGluSpin0ToZGamma_ZToQQ_M_700: 4.692e-10
-  GluGluSpin0ToZGamma_ZToQQ_M_800: 1.11e-10
-  GluGluSpin0ToZGamma_ZToQQ_M_900: 3.07e-11
-  GluGluSpin0ToZGamma_ZToQQ_M_1000: 9.692e-12
-  GluGluSpin0ToZGamma_ZToQQ_M_1200: 1.397e-12
-  GluGluSpin0ToZGamma_ZToQQ_M_1400: 2.917e-13
-  GluGluSpin0ToZGamma_ZToQQ_M_1600: 7.817e-14
-  GluGluSpin0ToZGamma_ZToQQ_M_1800: 2.917e-13
-  GluGluSpin0ToZGamma_ZToQQ_M_2000: 9.012e-15
-  GluGluSpin0ToZGamma_ZToQQ_M_2200: 3.508e-15
-  GluGluSpin0ToZGamma_ZToQQ_M_2400: 1.449e-15
-  GluGluSpin0ToZGamma_ZToQQ_M_2600: 6.236e-16
+  GluGluSpin0ToZGamma_ZToQQ_M_600: 0.0472
+  GluGluSpin0ToZGamma_ZToQQ_M_700: 0.03787
+  GluGluSpin0ToZGamma_ZToQQ_M_800: 0.03052
+  GluGluSpin0ToZGamma_ZToQQ_M_900: 0.02468
+  GluGluSpin0ToZGamma_ZToQQ_M_1000: 0.02011
+  GluGluSpin0ToZGamma_ZToQQ_M_1200: 0.0135
+  GluGluSpin0ToZGamma_ZToQQ_M_1400: 0.009228
+  GluGluSpin0ToZGamma_ZToQQ_M_1600: 0.00637
+  GluGluSpin0ToZGamma_ZToQQ_M_1800: 0.004422
+  GluGluSpin0ToZGamma_ZToQQ_M_2000: 0.003093
+  GluGluSpin0ToZGamma_ZToQQ_M_2200: 0.00216
+  GluGluSpin0ToZGamma_ZToQQ_M_2400: 0.00151
+  GluGluSpin0ToZGamma_ZToQQ_M_2600: 0.001057
   GluGluSpin0ToZGamma_ZToQQ_M_2800: 2.799e-16
-  GluGluSpin0ToZGamma_ZToQQ_M_3000: 1.297e-16
-  GluGluSpin0ToZGamma_ZToQQ_M_3500: 2.13e-17
+  GluGluSpin0ToZGamma_ZToQQ_M_3000: 0.0005056
+  GluGluSpin0ToZGamma_ZToQQ_M_3500: 0.0001897
