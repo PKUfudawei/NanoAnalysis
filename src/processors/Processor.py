@@ -156,7 +156,7 @@ class Processor(processor.ProcessorABC):
             (raw_muon.highPtId == 2) &
             (raw_muon.tkRelIso < 0.1) &  # Tracker-based relative isolation dR=0.3 for highPt, trkIso/tunePpt
             (abs(raw_muon.eta) < 2.4) &
-            (raw_muon.pt > 20)  # I don't use `muon_corrected_pt` coming from ROOT.RoccoR
+            (raw_muon.pt > 20)
         )
         if reconstruct:
             self.object['muon'] = self.event.Muon[self.tag['muon']]
@@ -173,7 +173,7 @@ class Processor(processor.ProcessorABC):
             self.object['electron'] = self.event.Electron[self.tag['electron']]
         return self.tag['electron']
 
-    def photon_correction(self, photon, level='Medium'):
+    def photon_correction(self, photon, level='wp90'):
         # https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaSFJSON
         with open(os.path.join(self.param_dir, 'uncertainty/photon_json.yaml'), 'r', encoding='utf-8') as f:
             photon_json = yaml.safe_load(f)
@@ -229,6 +229,8 @@ class Processor(processor.ProcessorABC):
         name_map['massRaw'] = 'mass_raw'
         name_map['Rho'] = 'PU_rho'
 
+        AK8jet['pt_original'] = AK8jet.pt
+        AK8jet['mass_original'] = AK8jet.mass
         AK8jet['is_real'] = (~np.isnan(ak.fill_none(AK8jet.matched_gen.pt, np.nan)))*1
         AK8jet['pt_raw'] = (1 - AK8jet.rawFactor) * AK8jet.pt
         AK8jet['mass_raw'] = (1 - AK8jet.rawFactor) * AK8jet.mass
@@ -236,9 +238,9 @@ class Processor(processor.ProcessorABC):
         AK8jet['PU_rho'] = ak.broadcast_arrays(self.event.fixedGridRhoFastjetAll, AK8jet)[0]
 
         corrected_AK8jet = CorrectedJetsFactory(name_map, jec_stack).build(AK8jet).compute()
-        AK8jet['pt'] = corrected_AK8jet.pt
+        AK8jet['pt'] = AK8jet.pt
         AK8jet['pt_nominal'] = corrected_AK8jet.pt
-        AK8jet['mass'] = corrected_AK8jet.mass
+        AK8jet['mass'] = AK8jet.mass
         AK8jet['mass_nominal'] = corrected_AK8jet.mass
 
         self.AK8jet_corrections = set()
