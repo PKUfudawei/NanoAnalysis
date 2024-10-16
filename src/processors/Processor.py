@@ -406,10 +406,10 @@ class Processor(processor.ProcessorABC):
         self.object['AK8jet']['Xbb_tagger'] = self.object['AK8jet']['inclParTMDV2_probHbb'] / (
             self.object['AK8jet']['inclParTMDV2_probHbb'] + self.object['AK8jet']['QCD_score']
         )
-        if self.object['AK8jet']['Hbb_tagger'].ndim == 1:
+        if self.object['AK8jet']['Xbb_tagger'].ndim == 1:
             return ak.fill_none(self.object['AK8jet']['Xbb_tagger'], value=False)
 
-        Higgs_candidate = ak.argmax(self.object['AK8jet']['Hbb_tagger'], axis=1, keepdims=True, mask_identity=False)
+        Higgs_candidate = ak.argmax(self.object['AK8jet']['Xbb_tagger'], axis=1, keepdims=True, mask_identity=False)
         Higgs_candidate = ak.mask(Higgs_candidate, mask=(ak.firsts(Higgs_candidate) >= 0), valid_when=True)
         self.object['AK8jet'] = self.object['AK8jet'][Higgs_candidate]
         self.object['photon'] = ak.firsts(self.object['photon'], axis=1)  # exactly 1 photon per event
