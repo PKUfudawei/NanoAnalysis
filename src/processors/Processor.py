@@ -238,9 +238,7 @@ class Processor(processor.ProcessorABC):
         AK8jet['PU_rho'] = ak.broadcast_arrays(self.event.fixedGridRhoFastjetAll, AK8jet)[0]
 
         corrected_AK8jet = CorrectedJetsFactory(name_map, jec_stack).build(AK8jet).compute()
-        AK8jet['pt'] = AK8jet.pt
         AK8jet['pt_nominal'] = corrected_AK8jet.pt
-        AK8jet['mass'] = AK8jet.mass
         AK8jet['mass_nominal'] = corrected_AK8jet.mass
 
         self.AK8jet_corrections = set()
@@ -289,10 +287,10 @@ class Processor(processor.ProcessorABC):
             event_in_HEM = np.random.rand(len(self.event)) < 0.632
 
         jet_in_HEM = (
-            (self.object['AK8jet']['eta'] > self.HEM_parameters['eta']['min'] - 0.4) &  # deltaR=R_jet/2
-            (self.object['AK8jet']['eta'] < self.HEM_parameters['eta']['max'] + 0.4) &
-            (self.object['AK8jet']['phi'] > self.HEM_parameters['phi']['min'] - 0.4) &
-            (self.object['AK8jet']['phi'] < self.HEM_parameters['phi']['max'] + 0.4)
+            (self.object['AK8jet'].eta > self.HEM_parameters['eta']['min'] - 0.4) &  # deltaR=R_jet/2
+            (self.object['AK8jet'].eta < self.HEM_parameters['eta']['max'] + 0.4) &
+            (self.object['AK8jet'].phi > self.HEM_parameters['phi']['min'] - 0.4) &
+            (self.object['AK8jet'].phi < self.HEM_parameters['phi']['max'] + 0.4)
         )
         photon_in_HEM = (
             (self.object['photon'].eta > self.HEM_parameters['eta']['min']) &
@@ -348,10 +346,8 @@ class Processor(processor.ProcessorABC):
                     self.object['AK8jet']['mass'] = self.object['AK8jet'][f'mass_{i}_{j}']
                     self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
                     self.variable[f'photon+jet_mass_{i}_{j}'] = self.object['photon+jet'].mass
-            self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_nominal
-            self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_nominal
-
-        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
+            self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_original
+            self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_original
 
         for obj, vars in vars.items():
             for var in vars:
@@ -407,11 +403,11 @@ class Processor(processor.ProcessorABC):
             self.object['AK8jet'][f'{qcd}b']+self.object['AK8jet'][f'{qcd}bb']+self.object['AK8jet'][f'{qcd}c']+
             self.object['AK8jet'][f'{qcd}cc']+self.object['AK8jet'][f'{qcd}others']
         )
-        self.object['AK8jet']['Hbb_tagger'] = self.object['AK8jet']['inclParTMDV2_probHbb'] / (
+        self.object['AK8jet']['Xbb_tagger'] = self.object['AK8jet']['inclParTMDV2_probHbb'] / (
             self.object['AK8jet']['inclParTMDV2_probHbb'] + self.object['AK8jet']['QCD_score']
         )
         if self.object['AK8jet']['Hbb_tagger'].ndim == 1:
-            return ak.fill_none(self.object['AK8jet']['Hbb_tagger'], value=False)
+            return ak.fill_none(self.object['AK8jet']['Xbb_tagger'], value=False)
 
         Higgs_candidate = ak.argmax(self.object['AK8jet']['Hbb_tagger'], axis=1, keepdims=True, mask_identity=False)
         Higgs_candidate = ak.mask(Higgs_candidate, mask=(ak.firsts(Higgs_candidate) >= 0), valid_when=True)
@@ -424,6 +420,7 @@ class Processor(processor.ProcessorABC):
 
         # Photon-Jet Delta_R
         self.variable['photon-jet_deltaR'] = self.object['AK8jet'].delta_r(self.object['photon'])
+        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
         #pj_pair = ak.cartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
         #pj_index_pair = ak.argcartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
         #pj_dr = pj_pair.photon.delta_r(pj_pair.AK8jet)

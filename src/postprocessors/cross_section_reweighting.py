@@ -60,7 +60,7 @@ def main():
         n_raw_events += stats['n_events']
         print(f'==> Finish parsing yaml files with n_raw_events={n_raw_events}')
 
-        cross_section_reweighting(output_file, eval(LUMI[year]), eval(str(X_SECTION[channel][dataset])), n_raw_events)
+        cross_section_reweighting(output_file, LUMI[year], eval(str(X_SECTION[channel][dataset])), n_raw_events)
         print(f'===> Finish postprocessing parquet files with lumi={LUMI[year]}, x-section={X_SECTION[channel][dataset]}')
 
 
