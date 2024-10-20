@@ -33,7 +33,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
 
     # Convert to RooDataSet
 
-    mc = ROOT.RooDataSet("signal_Hbb", "signal_Hbb", tree, ROOT.RooArgSet(fit_mass, weight, mass_AK8, tagger), SR_cut, "weight")
+    mc = ROOT.RooDataSet("signal", "signal", tree, ROOT.RooArgSet(fit_mass, weight, mass_AK8, tagger), SR_cut, "weight")
 
     # Lets plot the signal mass distribution
     can = ROOT.TCanvas()
@@ -322,13 +322,12 @@ if __name__ == "__main__":
         )"""
         SR_cut = f"""(
             (mass_AK8>{mass_low}) & (mass_AK8<{mass_high}) & 
-            (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high}
+            (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
         )"""
+        get_SR_data(year, SR)
+        if Fit_background:
+            fit_background(year, CR)
         for m in signal_mass:
             for fatjet in ['H', 'Z']:
                 if Fit_signal:
                     fit_signal(year, fatjet, m, SR)
-                if Fit_background:
-                    fit_background(year, CR)
-
-                get_SR_data(year, SR)
