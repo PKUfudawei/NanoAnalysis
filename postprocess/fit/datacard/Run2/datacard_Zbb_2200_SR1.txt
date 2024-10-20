@@ -3,7 +3,7 @@ jmax 1  # number of backgrounds
 kmax *  # number of nuisance parameters (sources of systematic uncertainties)
 ---------------------------------------------
 shapes      signal          Tag0      ../../output/Run2/signal/workspace_signal_Zbb_2200_SR1.root      workspace_signal:model_signal
-shapes      background     Tag0      ../../output/Run2/background/workspace_background_CR1.root      workspace_background:multipdf
+shapes      background     Tag0      ../../output/Run2/background/ workspace_data_CR1.root      workspace_background:multipdf
 shapes      data_obs     Tag0      ../../output/Run2/data/workspace_data_SR1.root      workspace_data:data_SR
 
 ---------------------------------------------
