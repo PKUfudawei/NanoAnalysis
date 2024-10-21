@@ -12,7 +12,7 @@ from coffea.nanoevents.methods.base import NanoEventsArray
 from .GenMatch import GenMatch
 
 
-class Processor(processor.ProcessorABC):
+class TriggerProcessor(processor.ProcessorABC):
     def __init__(self, mode: str, param_dir: str, outdir: str) -> None:
         super().__init__()
         self.event = None
@@ -346,17 +346,8 @@ class Processor(processor.ProcessorABC):
         ak.to_parquet(array=array, destination=os.path.join(self.outdir, f'{name}.parq'))
 
     def preselect_HGamma(self):
-        # at least pass one trigger
-        self.pass_cut(name='triggered', cut=self.triggered(method='any'))
-
         # pass all needed flags
         self.pass_cut(name='filtered', cut=self.filtered(method='all'))
-
-        # Muon veto
-        # self.pass_cut(name='muon-veto', cut=(ak.sum(self.muon_tag(reconstruct=False), axis=1)==0))
-
-        # Electron veto
-        # self.pass_cut(name='electron-veto', cut=(ak.sum(self.electron_tag(reconstruct=False), axis=1)==0))
 
         # Photon == 1
         self.pass_cut(name='photon', cut=(ak.sum(self.photon_tag(reconstruct=True), axis=1) == 1))
@@ -365,6 +356,9 @@ class Processor(processor.ProcessorABC):
 
         # HEM filter
         self.pass_cut(name='2018_HEM_correction', cut=self.HEM_tag())
+
+        self.object['photon'] = ak.firsts(self.object['photon'], axis=1)  # exactly 1 photon per event
+        self.variable['triggered'] = self.triggered(method='any')
 
         return self.cutflow['final']
 

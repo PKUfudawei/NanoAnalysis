@@ -39,7 +39,7 @@ def main() -> None:
                 break
     else:
         if ':' in args.file:
-            os.system(f"rsync {args.file} .")  
+            os.system(f"xrdcp {args.file} .")  
             file = os.path.join('.', args.file.split('/')[-1])
         else:
             file = args.file
