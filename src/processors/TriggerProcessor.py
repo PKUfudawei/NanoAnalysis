@@ -12,14 +12,14 @@ from coffea.nanoevents.methods.base import NanoEventsArray
 from .GenMatch import GenMatch
 
 
-class TriggerProcessor(processor.ProcessorABC):
+class Processor(processor.ProcessorABC):
     def __init__(self, mode: str, param_dir: str, outdir: str) -> None:
         super().__init__()
         self.event = None
         self.weight = None  # should be coffea.processor.Weights while self.weight.weight() should be an array
         self.tag = {}
         self.object = {}
-        self.variables = {}
+        self.variable = {}
         self.cutflow = {}
 
         self.param_dir = os.path.abspath(param_dir)
@@ -61,14 +61,14 @@ class TriggerProcessor(processor.ProcessorABC):
             self.pile_up = yaml.safe_load(f)
 
         self.weight.add('genWeight', weight=np.sign(getattr(self.event, 'genWeight', ak.ones_like(self.event.event))))
-        correction = correctionlib.CorrectionSet.from_file(self.pile_up['json'][self.year])[self.pile_up['key'][self.year]]
-        weight = correction.evaluate(np.array(self.event.Pileup.nPU), "nominal")
-        weightUp = correction.evaluate(np.array(self.event.Pileup.nPU), "up")
-        weightDown = correction.evaluate(np.array(self.event.Pileup.nPU), "down")
-        self.variables['event_pu_nominal'] = weight
-        self.variables['event_pu_up'] = weightUp
-        self.variables['event_pu_down'] = weightDown
-        self.weight.add('pile-up', weight=weight, weightUp=weightUp, weightDown=weightDown)
+        #correction = correctionlib.CorrectionSet.from_file(self.pile_up['json'][self.year])[self.pile_up['key'][self.year]]
+        #weight = correction.evaluate(np.array(self.event.Pileup.nPU), "nominal")
+        #weightUp = correction.evaluate(np.array(self.event.Pileup.nPU), "up")
+        #weightDown = correction.evaluate(np.array(self.event.Pileup.nPU), "down")
+        self.weight.add('pile-up', weight=self.variable['PUWeight_nominal'], weightUp=self.variable['PUWeight_up'], weightDown=self.variable['PUWeight_down'])
+        if 'L1PreFiringWeight' in self.event.fields:
+            self.weight.add('L1_prefiring', weight=self.event['L1PreFiringWeight']['Nom'])
+        self.weight.add('photonID_SF', weight=self.object['photon']['SF_nominal'])
 
         return self.weight.weight()
 
@@ -83,8 +83,8 @@ class TriggerProcessor(processor.ProcessorABC):
         self.event = self.event[cut]
         for obj in self.object:
             self.object[obj] = self.object[obj][cut]
-        for var in self.variables:
-            self.variables[var] = self.variables[var][cut]
+        for var in self.variable:
+            self.variable[var] = self.variable[var][cut]
         return cut
 
     def triggered(self, method: str = 'any') -> ak.Array:
@@ -128,11 +128,12 @@ class TriggerProcessor(processor.ProcessorABC):
             raise ValueError("Processor.b_tag(): level must be in ['loose', 'medium', 'tight']")
 
         raw_AK4jet = self.event.Jet
-        # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
-        # refer to https://gitlab.cern.ch/groups/cms-btv/-/wikis/SFCampaigns/UL2018
-        WP = {'loose': 0.0490, 'medium': 0.2783, 'tight': 0.7100}
+        with open(os.path.join(self.param_dir, 'deepJet_b.yaml'), 'r', encoding='utf-8') as f:
+            WP = yaml.safe_load(f)
         self.tag['b-jet'] = (
-            (raw_AK4jet.btagDeepFlavB > WP[level]) &
+            (raw_AK4jet.pt > 30) &
+            (abs(raw_AK4jet.eta) < 2.5) & 
+            (raw_AK4jet.btagDeepFlavB > WP[str(self.year)][level]) &
             (self.object['AK8jet'].delta_r(raw_AK4jet) > 0.8 + 0.4)
         )
         if reconstruct:
@@ -141,8 +142,6 @@ class TriggerProcessor(processor.ProcessorABC):
 
     def extra_AK4jet_tag(self, reconstruct: bool = False) -> ak.Array:
         raw_AK4jet = self.event.Jet
-        # Working Points -- loose: 0.0490, medium: 0.2783, tight: 0.7100
-        # refer to https://gitlab.cern.ch/groups/cms-btv/-/wikis/SFCampaigns/UL2018
         self.tag['extra_AK4jet'] = (
             self.object['AK8jet'].delta_r(raw_AK4jet) > 0.8 + 0.4
         )
@@ -157,7 +156,7 @@ class TriggerProcessor(processor.ProcessorABC):
             (raw_muon.highPtId == 2) &
             (raw_muon.tkRelIso < 0.1) &  # Tracker-based relative isolation dR=0.3 for highPt, trkIso/tunePpt
             (abs(raw_muon.eta) < 2.4) &
-            (raw_muon.pt > 20)  # I don't use `muon_corrected_pt` coming from ROOT.RoccoR
+            (raw_muon.pt > 20)
         )
         if reconstruct:
             self.object['muon'] = self.event.Muon[self.tag['muon']]
@@ -174,7 +173,7 @@ class TriggerProcessor(processor.ProcessorABC):
             self.object['electron'] = self.event.Electron[self.tag['electron']]
         return self.tag['electron']
 
-    def photon_correction(self, photon):
+    def photon_correction(self, photon, level='wp90'):
         # https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaSFJSON
         with open(os.path.join(self.param_dir, 'uncertainty/photon_json.yaml'), 'r', encoding='utf-8') as f:
             photon_json = yaml.safe_load(f)
@@ -184,9 +183,9 @@ class TriggerProcessor(processor.ProcessorABC):
         else:
             json_year = self.year
 
-        photon['SF_nominal'] = correction['UL-Photon-ID-SF'].evaluate(json_year, 'sf', 'Medium', photon.eta,  photon.pt)
-        photon['SF_up'] = correction['UL-Photon-ID-SF'].evaluate(json_year, 'sfup', 'Medium', photon.eta,  photon.pt)
-        photon['SF_down'] = correction['UL-Photon-ID-SF'].evaluate(json_year, 'sfdown', 'Medium', photon.eta,  photon.pt)
+        photon['SF_nominal'] = correction['UL-Photon-ID-SF'].evaluate(json_year, 'sf', level, photon.eta,  photon.pt)
+        photon['SF_up'] = correction['UL-Photon-ID-SF'].evaluate(json_year, 'sfup', level, photon.eta,  photon.pt)
+        photon['SF_down'] = correction['UL-Photon-ID-SF'].evaluate(json_year, 'sfdown', level, photon.eta,  photon.pt)
 
         return photon
 
@@ -204,6 +203,9 @@ class TriggerProcessor(processor.ProcessorABC):
         return self.tag['photon']
 
     def AK8jet_correction(self, AK8jet):
+        if len(AK8jet) == 0:
+            return AK8jet
+
         extract = extractor()
         uncertainty_dir = os.path.join(self.param_dir, 'uncertainty', self.year)
         for f in os.listdir(uncertainty_dir):
@@ -225,18 +227,19 @@ class TriggerProcessor(processor.ProcessorABC):
         name_map['ptGenJet'] = 'pt_gen'
         name_map['ptRaw'] = 'pt_raw'
         name_map['massRaw'] = 'mass_raw'
-        name_map['Rho'] = 'rho'
-    
+        name_map['Rho'] = 'PU_rho'
+
+        AK8jet['pt_original'] = AK8jet.pt
+        AK8jet['mass_original'] = AK8jet.mass
         AK8jet['is_real'] = (~np.isnan(ak.fill_none(AK8jet.matched_gen.pt, np.nan)))*1
-        AK8jet["pt_raw"] = (1 - AK8jet.rawFactor) * AK8jet.pt
-        AK8jet["mass_raw"] = (1 - AK8jet.rawFactor) * AK8jet.mass
-        AK8jet["pt_gen"] = ak.values_astype(ak.fill_none(AK8jet.matched_gen.pt, 0), np.float32)
-        AK8jet["rho"] = ak.broadcast_arrays(self.event.fixedGridRhoFastjetAll, AK8jet.pt)[0]
+        AK8jet['pt_raw'] = (1 - AK8jet.rawFactor) * AK8jet.pt
+        AK8jet['mass_raw'] = (1 - AK8jet.rawFactor) * AK8jet.mass
+        AK8jet['pt_gen'] = ak.values_astype(ak.fill_none(AK8jet.matched_gen.pt, 0), np.float32)
+        AK8jet['PU_rho'] = ak.broadcast_arrays(self.event.fixedGridRhoFastjetAll, AK8jet)[0]
+
         corrected_AK8jet = CorrectedJetsFactory(name_map, jec_stack).build(AK8jet).compute()
-        AK8jet["pt"] = corrected_AK8jet.pt
-        AK8jet["pt_nominal"] = corrected_AK8jet.pt
-        AK8jet["mass"] = corrected_AK8jet.mass
-        AK8jet["mass_nominal"] = corrected_AK8jet.mass
+        AK8jet['pt_nominal'] = corrected_AK8jet.pt
+        AK8jet['mass_nominal'] = corrected_AK8jet.mass
 
         self.AK8jet_corrections = set()
         for i in corrected_AK8jet.fields:
@@ -263,9 +266,10 @@ class TriggerProcessor(processor.ProcessorABC):
             # Jet ID flags bit1 is loose (always false in 2017 since it does not exist),
             # bit2 is tight, bit3 is tightLepVeto
         )
+        
         if reconstruct:
             self.object['AK8jet'] = raw_AK8jet[self.tag['AK8jet']]
-
+            self.variable['nAK8jet'] = ak.num(self.object['AK8jet'], axis=1)
         return self.tag['AK8jet']
 
     def HEM_tag(self) -> ak.Array:  # jet shape: (event, jet), jet = AK8jet or AK4jet
@@ -280,14 +284,8 @@ class TriggerProcessor(processor.ProcessorABC):
                 (self.event.run <= self.HEM_parameters['2018']['RunD']['end'])
             )
         elif self.sample_type == 'mc':  # RunC & RunD is 63.2% of 2018
-            event_in_HEM = ak.Array([random.random() < 0.632 for _ in range(len(self.event))])
+            event_in_HEM = np.random.rand(len(self.event)) < 0.632
 
-        jet_in_HEM = (
-            (self.object['AK8jet'].eta > self.HEM_parameters['eta']['min'] - 0.4) &  # deltaR=R_jet/2
-            (self.object['AK8jet'].eta < self.HEM_parameters['eta']['max'] + 0.4) &
-            (self.object['AK8jet'].phi > self.HEM_parameters['phi']['min'] - 0.4) &
-            (self.object['AK8jet'].phi < self.HEM_parameters['phi']['max'] + 0.4)
-        )
         photon_in_HEM = (
             (self.object['photon'].eta > self.HEM_parameters['eta']['min']) &
             (self.object['photon'].eta < self.HEM_parameters['eta']['max']) &
@@ -295,7 +293,7 @@ class TriggerProcessor(processor.ProcessorABC):
             (self.object['photon'].phi < self.HEM_parameters['phi']['max'])
         )
 
-        return ~(event_in_HEM & (ak.any(jet_in_HEM, axis=1) | ak.any(photon_in_HEM, axis=1)))
+        return ~(event_in_HEM & ak.any(photon_in_HEM, axis=1))
 
     def calculate_PU_SF(self):
         with open(os.path.join(self.param_dir, 'uncertainty/pile-up_files.yaml'), 'r', encoding='utf-8') as f:
@@ -316,6 +314,17 @@ class TriggerProcessor(processor.ProcessorABC):
         return np.divide(nData, nMC), np.divide(nData_up, nMC), np.divide(nData_down, nMC)
 
     def store_variables(self, vars: dict):
+        self.variable['event_No.'] = getattr(self.event, 'event', ak.ones_like(self.event.event))
+        for i in ['Nom', 'Up', 'Dn']:
+            self.variable[f'L1PreFiringWeight_{i}'] = self.event['L1PreFiringWeight'][i]
+
+        if self.sample_type == 'mc':
+            self.variable['PUWeight_nominal'], self.variable['PUWeight_up'], self.variable['PUWeight_down'] = self.calculate_PU_SF()
+            if 'LHEScaleWeight' in self.event.fields:
+                self.variable['LHEScaleWeight'] = self.event.LHEScaleWeight
+            if 'LHEPdfWeight' in self.event.fields:
+                self.variable['LHEPdfWeight'] = self.event.LHEPdfWeight
+
         for obj, vars in vars.items():
             for var in vars:
                 if obj != 'event':
@@ -325,15 +334,11 @@ class TriggerProcessor(processor.ProcessorABC):
                 elif obj == 'event' and var == 'genWeight':
                     array = np.sign(getattr(self.event, 'genWeight', ak.ones_like(self.event.event)))
                 elif obj == 'event' and var == 'weight':
-                    array = self.add_weight()  # sign(genWeight) * PU_weight
+                    array = self.add_weight()
                 elif obj == 'event':
                     array = self.event[var]
-                if f'{obj}_{var}' not in self.variables:
-                    self.variables[f'{obj}_{var}'] = array
-
-        for field in self.event.FatJet.fields:
-            if 'ParticleNet' in field or 'deep' in field or 'inclParT' in field or 'particleNet' in field or 'btag' in field:
-                self.variables[f'AK8jet_{field}'] = self.object['AK8jet'][field]
+                if f'{obj}_{var}' not in self.variable:
+                    self.variable[f'{obj}_{var}'] = array
 
     def to_parquet(self, array: ak.Array) -> None:
         start_event = self.event[0]
@@ -341,6 +346,9 @@ class TriggerProcessor(processor.ProcessorABC):
         ak.to_parquet(array=array, destination=os.path.join(self.outdir, f'{name}.parq'))
 
     def preselect_HGamma(self):
+        # at least pass one trigger
+        self.pass_cut(name='triggered', cut=self.triggered(method='any'))
+
         # pass all needed flags
         self.pass_cut(name='filtered', cut=self.filtered(method='all'))
 
@@ -355,80 +363,10 @@ class TriggerProcessor(processor.ProcessorABC):
         if self.sample_type == 'mc':
             self.object['photon'] = self.photon_correction(self.object['photon'])
 
-        # AK8 jet >=1
-        self.pass_cut(name='AK8jet', cut=(ak.sum(self.AK8jet_tag(reconstruct=True), axis=1) > 0))
-
         # HEM filter
         self.pass_cut(name='2018_HEM_correction', cut=self.HEM_tag())
 
-        # Photon-Jet cleaning, a very special part so no function definition here
-        pj_pair = ak.cartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
-        pj_index_pair = ak.argcartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
-        pj_dr = pj_pair.photon.delta_r(pj_pair.AK8jet)
-        pj_clean = (pj_dr > 1.1)
-        photon_index, jet_index = pj_index_pair.photon[pj_clean], pj_index_pair.AK8jet[pj_clean]
-
-        self.object['photon'] = self.object['photon'][photon_index]
-        self.object['AK8jet'] = self.object['AK8jet'][jet_index]
-        self.pass_cut(name='photon-jet_cleaning', cut=(ak.sum(pj_clean, axis=-1) > 0))
-
-        Higgs_score = self.object['AK8jet']['particleNet_HbbvsQCD']
-        if Higgs_score.ndim == 1:
-            return ak.fill_none(Higgs_score, value=False)
-
-        Higgs_candidate = ak.argmax(Higgs_score, axis=1, keepdims=True, mask_identity=False)
-        Higgs_candidate = ak.mask(Higgs_candidate, mask=ak.firsts(Higgs_candidate) >= 0, valid_when=True)
-        self.variables['AK8jet_rankToHiggsMass'] = ak.argsort(ak.argsort(abs(self.object['AK8jet'].msoftdrop - 125), axis=1), axis=1)
-        self.object['AK8jet'] = self.object['AK8jet'][Higgs_candidate]
-        self.variables['AK8jet_rankToHiggsMass'] = ak.firsts(self.variables['AK8jet_rankToHiggsMass'][Higgs_candidate], axis=1)
-
-        self.object['photon'] = ak.firsts(self.object['photon'], axis=1)  # exactly 1 photon per event
-        self.object['AK8jet'] = ak.firsts(self.object['AK8jet'], axis=1)  # exactly 1 Higgs candidate per event
-
-        # b veto
-        # final=True means to drop events not passing all selections
-        final_cut = self.pass_cut(name='b-veto', cut=(ak.sum(self.b_tag(reconstruct=True, level='medium'), axis=1) == 0))
-
-        # Store variables
-        self.variables['nAK4jet'] = ak.num(self.event.Jet, axis=1)
-        self.variables['nExtraAK4jet'] = ak.sum(self.extra_AK4jet_tag(reconstruct=True), axis=1)
-        self.variables['event_No.'] = getattr(self.event, 'event', ak.ones_like(self.event.event))
-        self.variables['photon-jet_deltaR'] = self.object['AK8jet'].delta_r(self.object['photon'])
-        self.variables['MET+photon_mT'] = np.sqrt(
-            2 * self.object['photon'].pt * self.event.MET.pt * (1 - np.cos(self.object['photon'].phi - self.event.MET.phi))
-        )
-        self.variables['MET+AK8jet_mT'] = np.sqrt(
-            2 * self.object['AK8jet'].pt * self.event.MET.pt * (1 - np.cos(self.object['AK8jet'].phi - self.event.MET.phi))
-        )
-        self.variables['nMuon'] = ak.sum(self.muon_tag(reconstruct=False), axis=1)
-        self.variables['nElectron'] = ak.sum(self.electron_tag(reconstruct=False), axis=1)
-
-        if self.sample_type == 'mc':
-            self.variables['PUWeight_nominal'], self.variables['PUWeight_up'], self.variables['PUWeight_down'] = self.calculate_PU_SF()
-            self.variables['LHEScaleWeight'] = self.event.LHEScaleWeight
-            self.variables['LHEPdfWeight'] = self.event.LHEPdfWeight
-            for i in self.AK8jet_corrections:
-                for j in ('up', 'down'):
-                    self.object['AK8jet']['pt'] = self.object['AK8jet'][f'pt_{i}_{j}']
-                    self.object['AK8jet']['mass'] = self.object['AK8jet'][f'mass_{i}_{j}']
-                    self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
-                    self.variables[f'photon+jet_mass_{i}_{j}'] = self.object['photon+jet'].mass
-            self.object['AK8jet']['pt'] = self.object['AK8jet']['pt_nominal']
-            self.object['AK8jet']['mass'] = self.object['AK8jet']['mass_nominal']
-
-        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
-        
-        self.store_variables(vars={
-            'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop'} | (set(self.object['AK8jet'].fields) - set(self.event.FatJet.fields)),
-            'photon': {'pt', 'eta', 'phi', 'mass', 'cutBased', 'sieie'} | (set(self.object['photon'].fields) - set(self.event.Photon.fields)),
-            'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight'},
-            'photon+jet': {'pt', 'eta', 'phi', 'mass'},
-        })
-        
-        # at least pass one trigger
-        self.variables['triggered'] = self.triggered(method='any')
-
-        return final_cut
+        return self.cutflow['final']
 
     def process(self, events: NanoEventsArray) -> dict:
         # initialize
@@ -439,22 +377,32 @@ class TriggerProcessor(processor.ProcessorABC):
             self.event = events
             self.cutflow['n_events'] = ak.sum(np.sign(self.event.genWeight))
 
-        # process
-        final_cut = self.preselect_HGamma()
+        # pass pre-selection
+        N_preselect = self.preselect_HGamma()
+        if N_preselect == 0:
+            return self.cutflow
+
+        # store variables
+        self.store_variables(vars={
+            'photon': {'pt', 'eta', 'phi', 'mass', 'cutBased', 'sieie'} | (set(self.object['photon'].fields) - set(self.event.Photon.fields)),
+            'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight'},
+        })
 
         # gen-macthing
         if self.sample_type == 'mc':
             gen = GenMatch(events=self.event)
-            if self.channel in self.channel_info['signal']:
-                self.variables.update(gen.HGamma())
+            if self.channel in self.channel_info['signal'] and self.channel == 'ZpToHG':
+                self.variable.update(gen.HGamma())
+            elif self.channel in self.channel_info['signal'] and self.channel == 'GluGluToZG':
+                self.variable.update(gen.ZGamma())
             elif self.channel in self.channel_info['fake_photon']:
-                final_cut = self.pass_cut(name='no prompt photon', cut=gen.all_fake_photon())
+                self.pass_cut(name='no prompt photon', cut=gen.all_fake_photon())
             elif self.channel in self.channel_info['true_photon']:
-                final_cut = self.pass_cut(name='any prompt photon', cut=gen.any_true_photon())
+                self.pass_cut(name='any prompt photon', cut=gen.any_true_photon())
 
         # store output
-        if any(final_cut):
-            self.to_parquet(array=ak.Array(self.variables))
+        if self.cutflow['final'] > 0:
+            self.to_parquet(array=ak.Array(self.variable))
         return self.cutflow
 
     def postprocess(self):

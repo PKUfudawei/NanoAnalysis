@@ -315,19 +315,21 @@ if __name__ == "__main__":
     for SR in signal_region:
         CR = SR.replace('S', 'C')
         tagger_cut_low, tagger_cut_high = tagger_cut[SR]
+        CR_cut = f"""(
+            (((mass_AK8>50) & (mass_AK8<75)) | (mass_AK8>145)) & 
+            (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
+        )"""
+        if Fit_background:
+            fit_background(year, CR)
+
         for fatjet in ['H', 'Z']:
             mass_low, mass_high = mass_SR[fatjet]
-            CR_cut = f"""(
-                (((mass_AK8>50) & (mass_AK8<75)) | (mass_AK8>145)) & 
-                (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
-            )"""
             SR_cut = f"""(
                 (mass_AK8>{mass_low}) & (mass_AK8<{mass_high}) & 
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
             )"""
             get_SR_data(year, SR)
-            if Fit_background:
-                fit_background(year, CR)
+            
             for m in signal_mass:
                 if Fit_signal:
                     fit_signal(year, fatjet, m, SR)

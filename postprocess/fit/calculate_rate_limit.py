@@ -9,6 +9,6 @@ for file in os.listdir('datacard/Run2/'):
     if not file.endswith('.txt'):
         continue
     mass = int(file.split('_')[2])
-    os.system(f"combine -M AsymptoticLimits datacard/Run2/{file} -n f{file.split('.')[0].replace('datacard_', '.')}")
+    os.system(f"combine -M AsymptoticLimits datacard/Run2/{file} -n f{file.split('.')[0].replace('datacard_', '.')} --run blind --setParameters pdfindex_CR1=0,pdfindex_CR2=0 --freezeParameters pdfindex_CR1,pdfindex_CR2")
     #os.system(f"combine -M MultiDimFit datacard/Run2/{file} -n f{file.split('.')[0].replace('datacard_', '.')} -t -1 --expectSignal 1")
     print(f'Above: {file}')
