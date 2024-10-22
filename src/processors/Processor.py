@@ -69,6 +69,7 @@ class Processor(processor.ProcessorABC):
         if 'L1PreFiringWeight' in self.event.fields:
             self.weight.add('L1_prefiring', weight=self.event['L1PreFiringWeight']['Nom'])
         self.weight.add('photonID_SF', weight=self.object['photon']['SF_nominal'])
+        self.weight.add('photon_CSEV_SF', weight=self.object['photon']['CSEV_SF_nominal'])
 
         return self.weight.weight()
 
@@ -186,6 +187,9 @@ class Processor(processor.ProcessorABC):
         photon['SF_nominal'] = correction['UL-Photon-ID-SF'].evaluate(json_year, 'sf', level, photon.eta,  photon.pt)
         photon['SF_up'] = correction['UL-Photon-ID-SF'].evaluate(json_year, 'sfup', level, photon.eta,  photon.pt)
         photon['SF_down'] = correction['UL-Photon-ID-SF'].evaluate(json_year, 'sfdown', level, photon.eta,  photon.pt)
+        photon['CSEV_SF_nominal'] = correction['UL-Photon-CSEV-SF'].evaluate(json_year, 'sf', 'MVA', 'EBInc')
+        photon['CSEV_SF_up'] = correction['UL-Photon-CSEV-SF'].evaluate(json_year, 'sfup', 'MVA', 'EBInc')
+        photon['CSEV_SF_down'] = correction['UL-Photon-CSEV-SF'].evaluate(json_year, 'sfdown', 'MVA', 'EBInc')
 
         return photon
 
@@ -195,7 +199,6 @@ class Processor(processor.ProcessorABC):
             (raw_photon.pt > 200) &
             ((abs(raw_photon.eta) < 1.4442) | ((abs(raw_photon.eta) > 1.566) & (abs(raw_photon.eta) < 2.4))) &
             raw_photon.mvaID_WP90 &  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariatePhotonIdentificationRun2
-            (~raw_photon.pixelSeed) &
             (raw_photon.electronVeto == True)
         )
         if reconstruct:

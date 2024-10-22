@@ -195,7 +195,6 @@ class TriggerProcessor(processor.ProcessorABC):
             (raw_photon.pt > 200) &
             ((abs(raw_photon.eta) < 1.4442) | ((abs(raw_photon.eta) > 1.566) & (abs(raw_photon.eta) < 2.4))) &
             raw_photon.mvaID_WP90 &  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariatePhotonIdentificationRun2
-            (~raw_photon.pixelSeed) &
             (raw_photon.electronVeto == True)
         )
         if reconstruct:
@@ -350,7 +349,7 @@ class TriggerProcessor(processor.ProcessorABC):
         self.pass_cut(name='filtered', cut=self.filtered(method='all'))
 
         # Photon == 1
-        self.pass_cut(name='photon', cut=(ak.sum(self.photon_tag(reconstruct=True), axis=1) == 1))
+        self.pass_cut(name='photon', cut=(ak.sum(self.photon_tag(reconstruct=True), axis=1) >= 1))
         if self.sample_type == 'mc':
             self.object['photon'] = self.photon_correction(self.object['photon'])
 
