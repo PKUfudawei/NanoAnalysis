@@ -1,0 +1,10 @@
+json:
+    '2016pre': /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/2016preVFP_UL/puWeights.json.gz
+    '2016post': /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/2016postVFP_UL/puWeights.json.gz
+    '2017': /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/2017_UL/puWeights.json.gz
+    '2018': /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/2018_UL/puWeights.json.gz
+key:
+    '2016pre': Collisions16_UltraLegacy_goldenJSON
+    '2016post': Collisions16_UltraLegacy_goldenJSON
+    '2017': Collisions17_UltraLegacy_goldenJSON
+    '2018': Collisions18_UltraLegacy_goldenJSON

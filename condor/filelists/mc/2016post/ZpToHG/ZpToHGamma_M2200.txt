@@ -1,0 +1,5 @@
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL16MiniAODv2/ZprimeToHGamma-M-2200_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_v17-v2/70000/02D06794-7BF0-7E41-A169-AC7937C50202.root
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL16MiniAODv2/ZprimeToHGamma-M-2200_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_v17-v2/70000/0CB9393A-F18B-D644-87FF-6E0664D9C3B5.root
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL16MiniAODv2/ZprimeToHGamma-M-2200_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_v17-v2/70000/2BE18020-AD7F-8140-BCFE-F39EA87D3819.root
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL16MiniAODv2/ZprimeToHGamma-M-2200_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_v17-v2/70000/A54B10C4-F01F-5442-B87D-F3631E7E418F.root
+root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL16MiniAODv2/ZprimeToHGamma-M-2200_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_v17-v2/70000/F2256853-2674-0F4D-834D-47D5B7EF5D63.root
