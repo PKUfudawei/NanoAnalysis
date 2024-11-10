@@ -15,9 +15,10 @@ def parse_commanline():
     return args
 
 
-def merge(cutflow, array_list, yaml_file, parquet_file):
+def merge(cutflow, array_list, yaml_file, parquet_file, merge_input):
     if not os.path.exists(yaml_file) or os.path.getsize(yaml_file) == 0:
         return cutflow, array_list
+    merge_input.append(yaml_file)
 
     with open(yaml_file, 'r', encoding='utf-8') as f:
         new_cutflow = yaml.safe_load(f)
@@ -25,8 +26,9 @@ def merge(cutflow, array_list, yaml_file, parquet_file):
         cutflow[key] = cutflow.get(key, 0) + int(value)
     if os.path.exists(parquet_file) and os.path.getsize(parquet_file) != 0 and new_cutflow.get('final', 0) > 0:
         array_list.append(ak.from_parquet(parquet_file))
+        merge_input.append(parquet_file)
 
-    return cutflow, array_list
+    return cutflow, array_list, merge_input
 
 def merge_files(indir, outdir):
     print(indir)
@@ -36,16 +38,18 @@ def merge_files(indir, outdir):
 
     cutflow = {}
     arrays = []
+    merge_input = []
 
-    for f in glob.glob(os.path.join(indir, '*.yml')):
-        cutflow, arrays = merge(cutflow, arrays, f, f.replace('yml', 'parq'))
+    for yml_file in glob.glob(os.path.join(indir, '*.yml')):
+        parq_file = yml_file.replace('yml', 'parq')
+        cutflow, arrays, merge_input = merge(cutflow, arrays, yml_file, parq_file, merge_input)
     
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     else:
         merged_yaml = os.path.join(outdir, f'{mode}.yaml')
         merged_parquet = os.path.join(outdir, f'{mode}.parquet')
-        cutflow, arrays = merge(cutflow, arrays, merged_yaml, merged_parquet)
+        cutflow, arrays, merge_input = merge(cutflow, arrays, merged_yaml, merged_parquet, merge_input)
 
     if len(cutflow.keys()) > 0:
         with open(merged_yaml+'.new', 'w', encoding='utf-8') as file:
@@ -59,7 +63,8 @@ def merge_files(indir, outdir):
     
 
     print('\tFinished.')
-    os.system(f"rm -rf {os.path.join(indir, '*.yml')} {os.path.join(indir, '*.parq')} {merged_yaml} {merged_parquet}")
+    for f in merge_input:
+        os.remove(f)
     os.rename(merged_yaml+'.new', merged_yaml)
     os.rename(merged_parquet+'.new', merged_parquet)
 
