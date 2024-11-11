@@ -17,7 +17,7 @@ def parse_commanline():
 
 def merge(cutflow, array_list, yaml_file, parquet_file, merge_input):
     if not os.path.exists(yaml_file) or os.path.getsize(yaml_file) == 0:
-        return cutflow, array_list
+        return cutflow, array_list, merge_input
     merge_input.append(yaml_file)
 
     with open(yaml_file, 'r', encoding='utf-8') as f:
@@ -43,7 +43,7 @@ def merge_files(indir, outdir):
     for yml_file in glob.glob(os.path.join(indir, '*.yml')):
         parq_file = yml_file.replace('yml', 'parq')
         cutflow, arrays, merge_input = merge(cutflow, arrays, yml_file, parq_file, merge_input)
-    
+
     merged_yaml = os.path.join(outdir, f'{mode}.yaml')
     merged_parquet = os.path.join(outdir, f'{mode}.parquet')
     if not os.path.exists(outdir):
