@@ -13,6 +13,7 @@ printf "===> Start time: "; /bin/date
 printf "===> Job is running on node: "; /bin/hostname
 printf "===> Job running as user: "; /usr/bin/id; voms-proxy-info
 printf "===> Job is running in directory: "; /bin/pwd
+printf "===> Running on file: "; echo $3
 
 ## generate customized NanoAOD file
 wget https://raw.githubusercontent.com/PKUfudawei/customizedNanoAOD/master/main.py; mv main.py customized_NanoAOD.py

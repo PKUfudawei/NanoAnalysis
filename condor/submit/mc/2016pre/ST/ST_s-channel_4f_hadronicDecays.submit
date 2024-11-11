@@ -19,8 +19,8 @@ Arguments = mc_2016pre_ST ./src/parameters/ $(file)
 should_transfer_files   = YES
 transfer_input_files    = ../src
 when_to_transfer_output = ON_EXIT_OR_EVICT
-transfer_output_files   = output.parq, stats.pkl
-transfer_output_remaps  = "output.parq = output/mc/2016pre/ST/ST_s-channel_4f_hadronicDecays/mc_2016pre_ST-$(Process).parq; stats.pkl = output/mc/2016pre/ST/ST_s-channel_4f_hadronicDecays/mc_2016pre_ST-$(Process).pkl"
+transfer_output_files   = output.parq, stats.yml
+transfer_output_remaps  = "output.parq = output/mc/2016pre/ST/ST_s-channel_4f_hadronicDecays/mc_2016pre_ST-$(Process).parq; stats.yml = output/mc/2016pre/ST/ST_s-channel_4f_hadronicDecays/mc_2016pre_ST-$(Process).yml"
 #output_destination = output_test/mc/2016pre/ST/ST_s-channel_4f_hadronicDecays/ ## not tested yet
 
 # If one wants to use local condor batch to analyze user/group skims 

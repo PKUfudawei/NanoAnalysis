@@ -19,8 +19,8 @@ Arguments = data_2016pre_SinglePhoton ./src/parameters/ $(file)
 should_transfer_files   = YES
 transfer_input_files    = ../src
 when_to_transfer_output = ON_EXIT_OR_EVICT
-transfer_output_files   = output.parq, stats.pkl
-transfer_output_remaps  = "output.parq = output/data/2016pre/SinglePhoton/SinglePhoton_Run2016B-ver1/data_2016pre_SinglePhoton-$(Process).parq; stats.pkl = output/data/2016pre/SinglePhoton/SinglePhoton_Run2016B-ver1/data_2016pre_SinglePhoton-$(Process).pkl"
+transfer_output_files   = output.parq, stats.yml
+transfer_output_remaps  = "output.parq = output/data/2016pre/SinglePhoton/SinglePhoton_Run2016B-ver1/data_2016pre_SinglePhoton-$(Process).parq; stats.yml = output/data/2016pre/SinglePhoton/SinglePhoton_Run2016B-ver1/data_2016pre_SinglePhoton-$(Process).yml"
 #output_destination = output_test/data/2016pre/SinglePhoton/SinglePhoton_Run2016B-ver1/ ## not tested yet
 
 # If one wants to use local condor batch to analyze user/group skims 
