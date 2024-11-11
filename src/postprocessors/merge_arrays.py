@@ -78,7 +78,7 @@ def main():
     input_dirs = os.path.join(args.indir, args.sample_type, args.year, args.channel, args.job)
 
     for input_dir in set(glob.glob(input_dirs)):
-        output_dir = os.path.join(args.outdir, *input_dir.split('/')[-4])
+        output_dir = os.path.join(args.outdir, *input_dir.split('/')[-4:])
         merge_files(indir=input_dir, outdir=output_dir)
 
 
