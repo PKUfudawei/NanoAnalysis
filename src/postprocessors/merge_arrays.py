@@ -44,29 +44,31 @@ def merge_files(indir, outdir):
         parq_file = yml_file.replace('yml', 'parq')
         cutflow, arrays, merge_input = merge(cutflow, arrays, yml_file, parq_file, merge_input)
     
+    merged_yaml = os.path.join(outdir, f'{mode}.yaml')
+    merged_parquet = os.path.join(outdir, f'{mode}.parquet')
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     else:
-        merged_yaml = os.path.join(outdir, f'{mode}.yaml')
-        merged_parquet = os.path.join(outdir, f'{mode}.parquet')
         cutflow, arrays, merge_input = merge(cutflow, arrays, merged_yaml, merged_parquet, merge_input)
 
     if len(cutflow.keys()) > 0:
+        print('\tMerging cutflows...')
         with open(merged_yaml+'.new', 'w', encoding='utf-8') as file:
             yaml.dump(cutflow, file)
-    if cutflow.get('final', 0) == 0:
-        print('\tNo events passed final cut!')
-    elif len(arrays) > 0:
-        print('\tMerging arrays and cutflows...')
+    if cutflow.get('final', 0) > 0 and len(arrays) > 0:
+        print('\tMerging arrays...')
         ak.to_parquet(ak.concatenate(arrays, axis=0), merged_parquet+'.new')
-        print(f'\tMegred files are stored in {outdir}')
+    else:
+        print('\tNo events passed final cut!')
     
 
-    print('\tFinished.')
+    print(f'\tFinished, merged files are stored in {outdir}')
     for f in merge_input:
         os.remove(f)
-    os.rename(merged_yaml+'.new', merged_yaml)
-    os.rename(merged_parquet+'.new', merged_parquet)
+    if os.path.exists(merged_yaml+'.new'):
+        os.rename(merged_yaml+'.new', merged_yaml)
+    if os.path.exists(merged_parquet+'.new'):
+        os.rename(merged_parquet+'.new', merged_parquet)
 
 
 def main():
