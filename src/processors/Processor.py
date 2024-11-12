@@ -75,9 +75,9 @@ class Processor(processor.ProcessorABC):
 
     def pass_cut(self, name: str, cut: ak.Array) -> ak.Array:
         if self.sample_type == 'data':
-            self.cutflow[name] = int(ak.sum(cut))
+            self.cutflow[name] = ak.sum(cut)
         elif self.sample_type == 'mc':
-            self.cutflow[name] = int(ak.sum(np.sign(self.event.genWeight[cut])))
+            self.cutflow[name] = ak.sum(np.sign(self.event.genWeight[cut]))
 
         # update events and all objects after passing cut
         self.cutflow['final'] = self.cutflow[name]

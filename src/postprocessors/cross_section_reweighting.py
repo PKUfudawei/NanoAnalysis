@@ -49,7 +49,7 @@ def main():
         sample_type, year, channel, dataset = folder.split('/')[-4:]
 
         stats_file = os.path.join(folder, '_'.join(folder.split('/')[-4:-1]))+'.yaml'
-        output_file = stats_file.replace('yaml', 'parq')
+        output_file = stats_file.replace('yaml', 'parquet')
         if not os.path.exists(stats_file) or not os.path.exists(output_file) or os.path.getsize(stats_file) == 0 or os.path.getsize(output_file) == 0:
             print(f'\tEmpty directory!')
             continue
