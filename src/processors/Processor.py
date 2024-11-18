@@ -355,8 +355,7 @@ class Processor(processor.ProcessorABC):
         self.variable['PUWeight_nominal'], self.variable['PUWeight_up'], self.variable['PUWeight_down'] = self.calculate_PU_SF()    
 
         for i in ['Nom', 'Up', 'Dn']:
-            if f'L1PreFiringWeight_{i}' in self.event.fields:
-                self.variable[f'L1PreFiringWeight_{i}'] = self.event['L1PreFiringWeight'][i]
+            self.variable[f'L1PreFiringWeight_{i}'] = self.event['L1PreFiringWeight'][i]
         if 'LHEScaleWeight' in self.event.fields:
             self.variable['LHEScaleWeight'] = self.event.LHEScaleWeight
         if 'LHEPdfWeight' in self.event.fields:

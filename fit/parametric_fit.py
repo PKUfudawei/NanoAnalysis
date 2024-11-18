@@ -16,9 +16,8 @@ def parse_commandline():
                      
 
 def fit_signal(year, fatjet, signal_mass, SR):
-    with open('../../src/parameters/uncertainty/shape_uncertainties.yaml', 'r', encoding='utf-8') as f:
+    with open('/../src/parameters/uncertainty/shape_uncertainties.yaml', 'r', encoding='utf-8') as f:
         shape_uncertainties = yaml.safe_load(f)
-
     
     # # Signal modelling
     f = ROOT.TFile(f"input/{year}/signal_{fatjet}bb_{signal_mass}.root", "r")
@@ -28,12 +27,12 @@ def fit_signal(year, fatjet, signal_mass, SR):
     # Define mass and weight variables
     fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", signal_mass, fit_range_down, fit_range_up)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
-    mass_AK8 = ROOT.RooRealVar("mass_AK8", "mass_AK8", 125, 0, 999)
+    jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
 
     # Convert to RooDataSet
 
-    mc = ROOT.RooDataSet("signal", "signal", tree, ROOT.RooArgSet(fit_mass, weight, mass_AK8, tagger), SR_cut, "weight")
+    mc = ROOT.RooDataSet("signal", "signal", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), SR_cut, "weight")
 
     # Lets plot the signal mass distribution
     can = ROOT.TCanvas()
@@ -43,7 +42,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
     can.Update()
     if not os.path.exists(f'../plots/fit/{year}'):
         os.makedirs(f'../plots/fit/{year}')
-    can.SaveAs(f"../plots/fit/{year}/signal_{fatjet}bb_{signal_mass}_fit_mass.pdf")
+    can.SaveAs(f"../plots/fit/{year}/{fatjet}bb_{signal_mass}_fit_mass.pdf")
 
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", signal_mass, signal_mass - 200, signal_mass + 200)
@@ -69,8 +68,8 @@ def fit_signal(year, fatjet, signal_mass, SR):
         ROOT.RooArgList(sigmaR, JES, JER, PU))
 
     # Define the Gaussian with mean=MH and width=sigma
-    model_signal = ROOT.RooCrystalBall("model_signal", "model_signal", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
-    signal_norm = ROOT.RooRealVar("model_signal_norm", "Number of signal events in Tag0", mc.sumEntries(), 0, 100*mc.sumEntries())
+    model_signal = ROOT.RooCrystalBall("model_bbgamma", "model_bbgamma", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
+    signal_norm = ROOT.RooRealVar("model_bbgamma_norm", f"Number of signal events in Tag {fatjet}bb+gamma", mc.sumEntries(), 0, 100*mc.sumEntries())
 
     # Fit Gaussian to MC events and plot
     model_signal.fitTo(mc, ROOT.RooFit.SumW2Error(True))
@@ -96,12 +95,12 @@ def fit_signal(year, fatjet, signal_mass, SR):
     # hist = ROOT.RooDataHist("hist", "hist", fit_mass, mc)
     # print("==> chi^2/ndf = ", ROOT.RooChi2Var('chi2/ndf', 'chi2/ndf', model_signal, hist))
     # text.Draw()
-    can.SaveAs(f"../plots/fit/{year}/model_signal_{fatjet}bb_{signal_mass}_{SR}.pdf")
+    can.SaveAs(f"../plots/fit/{year}/model_{fatjet}bb_{signal_mass}_{SR}.pdf")
 
-    sig_model_dir = f'output/{year}/signal'
+    sig_model_dir = f'workspace/{year}/signal'
     if not os.path.exists(sig_model_dir):
         os.makedirs(sig_model_dir)
-    f_out = ROOT.TFile(f"{sig_model_dir}/workspace_signal_{fatjet}bb_{signal_mass}_{SR}.root", "RECREATE")
+    f_out = ROOT.TFile(f"{sig_model_dir}/{fatjet}bb_{signal_mass}_{SR}.root", "RECREATE")
     w_sig = ROOT.RooWorkspace("workspace_signal", "workspace_signal")
     getattr(w_sig, "import")(model_signal)
     getattr(w_sig, "import")(signal_norm)
@@ -128,7 +127,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
 
 
 def fit_background(year, CR):
-    bkg_model_dir = f'output/{year}/background'
+    bkg_model_dir = f'workspace/{year}/background'
     
     # # Background modelling
     f = ROOT.TFile(f"input/{year}/data.root", "r")
@@ -138,12 +137,12 @@ def fit_background(year, CR):
     # Define mass and weight variables
     fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", 1500, fit_range_down, fit_range_up)
     weight = ROOT.RooRealVar("weight", "weight", 1, -10, 10)
-    mass_AK8 = ROOT.RooRealVar("mass_AK8", "mass_AK8", 125, 0, 999)
+    jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
 
     # Convert to RooDataSet
-    data_CR = ROOT.RooDataSet("data_CR", "data_CR", tree, ROOT.RooArgSet(fit_mass, weight, mass_AK8, tagger), CR_cut, "weight")
-    data_SR = ROOT.RooDataSet("data_SR", "data_SR", tree, ROOT.RooArgSet(fit_mass, weight, mass_AK8, tagger), SR_cut, "weight")
+    data_CR = ROOT.RooDataSet("data_CR", "data_CR", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), CR_cut, "weight")
+    data_SR = ROOT.RooDataSet("data_SR", "data_SR", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), SR_cut, "weight")
 
     n_bins = (fit_range_up - fit_range_down) // 20
     binning = ROOT.RooFit.Binning(n_bins, fit_range_down, fit_range_up)
@@ -260,11 +259,11 @@ def get_SR_data(year, SR):
     # Define mass and weight variables
     fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", 1500, fit_range_down, fit_range_up)
     weight = ROOT.RooRealVar("weight", "weight", 0, -10, 10)
-    mass_AK8 = ROOT.RooRealVar("mass_AK8", "mass_AK8", 125, 0, 500)
+    jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 500)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
 
     # Convert to RooDataSet
-    data_SR = ROOT.RooDataSet("data_SR", "data_SR", tree, ROOT.RooArgSet(fit_mass, weight, mass_AK8, tagger), SR_cut, "weight")
+    data_SR = ROOT.RooDataSet("data_SR", "data_SR", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), SR_cut, "weight")
 
     n_bins = (fit_range_up - fit_range_down) // 20
     binning = ROOT.RooFit.Binning(n_bins, fit_range_down, fit_range_up)
@@ -277,7 +276,7 @@ def get_SR_data(year, SR):
     can.Update()
     can.SaveAs(f"../plots/fit/{year}/data_{SR}_fit_mass.pdf")
 
-    data_dir = f"./output/{year}/data"
+    data_dir = f"./workspace/{year}/data"
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
     f_out = ROOT.TFile(f"{data_dir}/workspace_data_{SR}.root", "RECREATE")
@@ -316,7 +315,7 @@ if __name__ == "__main__":
         CR = SR.replace('S', 'C')
         tagger_cut_low, tagger_cut_high = tagger_cut[SR]
         CR_cut = f"""(
-            (((mass_AK8>50) & (mass_AK8<75)) | (mass_AK8>145)) & 
+            (((jet_mass>50) & (jet_mass<75)) | (jet_mass>145)) & 
             (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
         )"""
         if Fit_background:
@@ -325,7 +324,7 @@ if __name__ == "__main__":
         for fatjet in ['H', 'Z']:
             mass_low, mass_high = mass_SR[fatjet]
             SR_cut = f"""(
-                (mass_AK8>{mass_low}) & (mass_AK8<{mass_high}) & 
+                (jet_mass>{mass_low}) & (jet_mass<{mass_high}) & 
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
             )"""
             get_SR_data(year, SR)
