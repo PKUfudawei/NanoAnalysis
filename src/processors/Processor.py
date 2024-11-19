@@ -65,7 +65,7 @@ class Processor(processor.ProcessorABC):
         #weight = correction.evaluate(np.array(self.event.Pileup.nPU), "nominal")
         #weightUp = correction.evaluate(np.array(self.event.Pileup.nPU), "up")
         #weightDown = correction.evaluate(np.array(self.event.Pileup.nPU), "down")
-        self.weight.add('pile-up', weight=self.variable['PUWeight_nominal'], weightUp=self.variable['PUWeight_up'], weightDown=self.variable['PUWeight_down'])
+        #self.weight.add('pile-up', weight=self.variable['PUWeight_nominal'], weightUp=self.variable['PUWeight_up'], weightDown=self.variable['PUWeight_down'])
         if self.year in ['2016pre', '2016post', '2017']:
             self.weight.add('L1_prefiring', weight=self.event['L1PreFiringWeight']['Nom'])
         #self.weight.add('photonID_SF', weight=self.object['photon']['SF_nominal'])
@@ -343,14 +343,17 @@ class Processor(processor.ProcessorABC):
                 self.object['AK8jet']['mass'] = self.object['AK8jet'][f'mass_{i}_{direction}']
                 self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
                 self.variable[f'photon+jet_mass_{i}_{direction}'] = self.object['photon+jet'].mass
+
+            self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_original
+            self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_original
             for i in ['PES', 'PER']:
                 self.object['photon']['pt'] = self.object['photon'][f'pt_{i}_{direction}']
                 self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
                 self.variable[f'photon+jet_mass_{i}_{direction}'] = self.object['photon+jet'].mass
-        self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_original
-        self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_original
+
         self.object['photon']['pt'] = self.object['photon'].pt_original
-        
+        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
+
         # Event-level
         self.variable['PUWeight_nominal'], self.variable['PUWeight_up'], self.variable['PUWeight_down'] = self.calculate_PU_SF()    
 
@@ -432,7 +435,7 @@ class Processor(processor.ProcessorABC):
         self.object['photon'] = ak.firsts(self.object['photon'], axis=1)  # exactly 1 photon per event
         self.object['AK8jet'] = ak.firsts(self.object['AK8jet'], axis=1)  # exactly 1 bb jet candidate per event
 
-        # HEM filter
+        # HEM issue
         self.pass_cut(name='2018_HEM_issue', cut=~self.HEM_issue())
 
         # b veto
@@ -440,6 +443,7 @@ class Processor(processor.ProcessorABC):
 
         # Photon-Jet Delta_R
         self.variable['photon-jet_deltaR'] = self.object['AK8jet'].delta_r(self.object['photon'])
+        self.pass_cut(name='photon-jet_cleaning', cut=(self.variable['photon-jet_deltaR']>1.1))
         self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
         
         #pj_pair = ak.cartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
