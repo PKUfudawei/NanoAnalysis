@@ -142,7 +142,7 @@ def fit_background(year, CR):
 
     # Convert to RooDataSet
     data_CR = ROOT.RooDataSet("data_CR", "data_CR", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), CR_cut, "weight")
-    data_SR = ROOT.RooDataSet("data_SR", "data_SR", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), SR_cut, "weight")
+
 
     n_bins = (fit_range_up - fit_range_down) // 20
     binning = ROOT.RooFit.Binning(n_bins, fit_range_down, fit_range_up)
@@ -233,7 +233,6 @@ def fit_background(year, CR):
             'p2': {func: p2[func].getVal() for func in p2},
             'p3': {func: p3[func].getVal() for func in p3},
             'CR_num': data_CR.sumEntries(),
-            'SR_num': data_SR.sumEntries(),
             'norm': background_norm.getVal()
         }
         yaml.dump(info, f)
