@@ -20,7 +20,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
         shape_uncertainties = yaml.safe_load(f)
     
     # # Signal modelling
-    f = ROOT.TFile(f"input/{year}/signal_{fatjet}bb_{signal_mass}.root", "r")
+    f = ROOT.TFile(f"input/{year}/{signal_mass}/{fatjet}bb_gamma.root", "r")
     # Load TTree
     tree = f.Get("Events")
 
@@ -97,7 +97,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
     # text.Draw()
     can.SaveAs(f"../plots/fit/{year}/model_{fatjet}bb_{signal_mass}_{SR}.pdf")
 
-    sig_model_dir = f'workspace/{year}/signal'
+    sig_model_dir = f'workspace/{year}/{signal_mass}'
     if not os.path.exists(sig_model_dir):
         os.makedirs(sig_model_dir)
     f_out = ROOT.TFile(f"{sig_model_dir}/{fatjet}bb_{signal_mass}_{SR}.root", "RECREATE")
@@ -108,7 +108,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
     w_sig.Write()
     f_out.Close()
 
-    with open(f'{sig_model_dir}/fit_info_signal_{fatjet}bb_{signal_mass}_{SR}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{sig_model_dir}/fit_info_{fatjet}bb_{SR}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'x0': x0.getVal(),
             'mean': mean.getVal(),
