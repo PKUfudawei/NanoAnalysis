@@ -16,7 +16,7 @@ def parse_commandline():
                      
 
 def fit_signal(year, fatjet, signal_mass, SR):
-    with open('/../src/parameters/uncertainty/shape_uncertainties.yaml', 'r', encoding='utf-8') as f:
+    with open('../src/parameters/uncertainty/shape_uncertainties.yaml', 'r', encoding='utf-8') as f:
         shape_uncertainties = yaml.safe_load(f)
     
     # # Signal modelling
@@ -127,7 +127,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
 
 
 def fit_background(year, CR):
-    bkg_model_dir = f'workspace/{year}/background'
+    bkg_model_dir = f'workspace/{year}'
     
     # # Background modelling
     f = ROOT.TFile(f"input/{year}/data.root", "r")
@@ -240,8 +240,8 @@ def fit_background(year, CR):
 
     if not os.path.exists(bkg_model_dir):
         os.makedirs(bkg_model_dir)
-    f_out = ROOT.TFile(f"{bkg_model_dir}/workspace_data_{CR}.root", "RECREATE")
-    w_bkg = ROOT.RooWorkspace("workspace_background", "workspace_background")
+    f_out = ROOT.TFile(f"{bkg_model_dir}/data_{CR}.root", "RECREATE")
+    w_bkg = ROOT.RooWorkspace("workspace_CR", "workspace_CR")
     getattr(w_bkg, "import")(data_CR)
     getattr(w_bkg, "import")(category)
     getattr(w_bkg, "import")(background_norm)
@@ -280,7 +280,7 @@ def get_SR_data(year, SR):
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
     f_out = ROOT.TFile(f"{data_dir}/workspace_data_{SR}.root", "RECREATE")
-    w = ROOT.RooWorkspace("workspace_data", "workspace_data")
+    w = ROOT.RooWorkspace("workspace_SR", "workspace_SR")
     getattr(w, "import")(data_SR)
     w.Print()
     w.Write()
@@ -304,18 +304,18 @@ if __name__ == "__main__":
     Fit_background = True
 
     tagger_cut = {
-        'SR1': [0, 0.95],
-        'SR2': [0.95, 1],
+        'SR1': [0, 0.8],
+        'SR2': [0.96, 2],
     }
     mass_SR = {
-        'Z': [75, 105],
-        'H': [105, 145],
+        'Z': [80, 110],
+        'H': [110, 150],
     }
     for SR in signal_region:
         CR = SR.replace('S', 'C')
         tagger_cut_low, tagger_cut_high = tagger_cut[SR]
         CR_cut = f"""(
-            (((jet_mass>50) & (jet_mass<75)) | (jet_mass>145)) & 
+            (((jet_mass>50) & (jet_mass<{mass_SR['Z'][0]})) | (jet_mass>mass_SR['H'][1])) & 
             (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
         )"""
         if Fit_background:
