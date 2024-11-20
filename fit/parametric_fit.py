@@ -159,12 +159,12 @@ def fit_background(year, CR):
     model, p1, p2, p3 = {}, {}, {}, {}
 
     # dijet2 model
-    p1['dijet2'] = ROOT.RooRealVar("p1", "p2", 1, -10, 100)
+    p1['dijet2'] = ROOT.RooRealVar("p1", "p1", 1, -10, 100)
     p2['dijet2'] = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
     model['dijet2'] = ROOT.RooGenericPdf("model_background_dijet2", "model_background_dijet2", "TMath::Power(@0, @1 + @2 * TMath::Log(@0))", ROOT.RooArgList(fit_mass, p1['dijet2'], p2['dijet2']))
 
     # dijet3 model
-    p1['dijet3'] = ROOT.RooRealVar("p1", "p2", 1, -10, 10)
+    p1['dijet3'] = ROOT.RooRealVar("p1", "p1", 1, -10, 10)
     p2['dijet3'] = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
     p3['dijet3'] = ROOT.RooRealVar("p3", "p3", -0.1, -10, 10)
     model['dijet3'] = ROOT.RooGenericPdf("model_background_dijet3", "model_background_dijet3", "TMath::Power(@0, @1 + @2 * TMath::Log(@0) + @3 * TMath::Power(TMath::Log(@0), 2))", ROOT.RooArgList(fit_mass, p1['dijet3'], p2['dijet3'], p3['dijet3']))
@@ -275,10 +275,10 @@ def get_SR_data(year, SR):
     can.Update()
     can.SaveAs(f"../plots/fit/{year}/data_{SR}_fit_mass.pdf")
 
-    data_dir = f"./workspace/{year}/data"
+    data_dir = f"./workspace/{year}"
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
-    f_out = ROOT.TFile(f"{data_dir}/workspace_data_{SR}.root", "RECREATE")
+    f_out = ROOT.TFile(f"{data_dir}/data_{SR}_{fatjet}bb.root", "RECREATE")
     w = ROOT.RooWorkspace("workspace_SR", "workspace_SR")
     getattr(w, "import")(data_SR)
     w.Print()
