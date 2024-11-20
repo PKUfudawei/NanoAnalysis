@@ -315,7 +315,7 @@ if __name__ == "__main__":
         CR = SR.replace('S', 'C')
         tagger_cut_low, tagger_cut_high = tagger_cut[SR]
         CR_cut = f"""(
-            (((jet_mass>50) & (jet_mass<{mass_SR['Z'][0]})) | (jet_mass>mass_SR['H'][1])) & 
+            (((jet_mass>50) & (jet_mass<{mass_SR['Z'][0]})) | (jet_mass>{mass_SR['H'][1]})) & 
             (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
         )"""
         if Fit_background:
