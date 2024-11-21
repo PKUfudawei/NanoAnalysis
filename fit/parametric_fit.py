@@ -67,13 +67,13 @@ def fit_signal(year, fatjet, signal_mass, SR):
     PU = ROOT.RooRealVar("PU", "PU", 0, -5, 5)
     JES.setConstant(True); JER.setConstant(True); PU.setConstant(True);
     mean = ROOT.RooFormulaVar("mean", "mean", 
-        "@0*(1+%f*@1+%f*@2+%f*@3)"%tuple(shape_uncertainties[SR][signal_mass]['x0'][k] for k in ['JES', 'JER', 'PU']), 
+        "@0*(1+%f*@1+%f*@2+%f*@3)"%tuple(shape_uncertainties[SR][m]['x0'][k] for k in ['JES', 'JER', 'PU']), 
         ROOT.RooArgList(x0, JES, JER, PU))
     widthL = ROOT.RooFormulaVar("widthL", "widthL", 
-        "@0*(1+%f*@1+%f*@2+%f*@3)"%tuple(shape_uncertainties[SR][signal_mass]['sigmaL'][k] for k in ['JES', 'JER', 'PU']), 
+        "@0*(1+%f*@1+%f*@2+%f*@3)"%tuple(shape_uncertainties[SR][m]['sigmaL'][k] for k in ['JES', 'JER', 'PU']), 
         ROOT.RooArgList(sigmaL, JES, JER, PU))
     widthR = ROOT.RooFormulaVar("widthR", "widthR", 
-        "@0*(1+%f*@1+%f*@2+%f*@3)"%tuple(shape_uncertainties[SR][signal_mass]['sigmaR'][k] for k in ['JES', 'JER', 'PU']), 
+        "@0*(1+%f*@1+%f*@2+%f*@3)"%tuple(shape_uncertainties[SR][m]['sigmaR'][k] for k in ['JES', 'JER', 'PU']), 
         ROOT.RooArgList(sigmaR, JES, JER, PU))
 
     # Define the Gaussian with mean=MH and width=sigma
