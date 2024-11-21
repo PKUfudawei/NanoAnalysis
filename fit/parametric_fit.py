@@ -44,18 +44,18 @@ def fit_signal(year, fatjet, signal_mass, SR):
     mc.plotOn(plot)
     plot.Draw()
     can.Update()
-    if not os.path.exists(f'../plots/fit/{year}'):
-        os.makedirs(f'../plots/fit/{year}')
-    can.SaveAs(f"../plots/fit/{year}/{fatjet}bb_{signal_mass}_fit_mass.pdf")
+    if not os.path.exists(f'../plots/fit/{year}/{signal_mass}'):
+        os.makedirs(f'../plots/fit/{year}/{signal_mass}')
+    can.SaveAs(f"../plots/fit/{year}/{signal_mass}/fit_variable_{fatjet}bb_{signal_mass}_{SR}.pdf")
 
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", signal_mass, signal_mass - 200, signal_mass + 200)
-    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 0, 600)
-    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 0, 600)
-    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.1, 4)
-    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.1, 4)
-    nL = ROOT.RooRealVar("nL", "nL", 1, 0.2, 4)
-    nR = ROOT.RooRealVar("nR", "nR", 1, 0.2, 4)
+    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 0, 5*sigma)
+    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 0, 5*sigma)
+    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.1, 5)
+    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.1, 5)
+    nL = ROOT.RooRealVar("nL", "nL", 1, 0.2, 3)
+    nR = ROOT.RooRealVar("nR", "nR", 1, 0.2, 3)
 
     JES = ROOT.RooRealVar("JES", "JES", 0, -5, 5)
     JER = ROOT.RooRealVar("JER", "JER", 0, -5, 5)
