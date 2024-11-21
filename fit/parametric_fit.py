@@ -17,6 +17,11 @@ def parse_commandline():
                      
 
 def fit_signal(year, fatjet, signal_mass, SR):
+    if '_' in str(signal_mass):
+        m = int(signal_mass.replace('_')[0])
+    else:
+        m = signal_mass
+    
     with open('../src/parameters/uncertainty/shape_uncertainties.yaml', 'r', encoding='utf-8') as f:
         shape_uncertainties = yaml.safe_load(f)
     
@@ -29,7 +34,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", signal_mass, signal_mass-5*sigma, signal_mass+5*sigma)
+    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-5*sigma, m+5*sigma)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
@@ -49,7 +54,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
     can.SaveAs(f"../plots/fit/{year}/{signal_mass}/fit_variable_{fatjet}bb_{signal_mass}_{SR}.pdf")
 
     # Introduce RooRealVars into the workspace for the fitted variable
-    x0 = ROOT.RooRealVar("x0", "x0", signal_mass, signal_mass - 200, signal_mass + 200)
+    x0 = ROOT.RooRealVar("x0", "x0", m, m - 200, m + 200)
     sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 0, 5*sigma)
     sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 0, 5*sigma)
     alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.1, 5)
@@ -125,7 +130,8 @@ def fit_signal(year, fatjet, signal_mass, SR):
             'nL': nL.getVal(),
             'nR': nR.getVal(),
             'event_sum': mc.sumEntries(),
-            'norm': signal_norm.getVal()
+            'norm': signal_norm.getVal(),
+            'sigma': sigma
         }
         yaml.dump(info, f)
 
@@ -331,7 +337,10 @@ if __name__ == "__main__":
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
             )"""
             get_SR_data(year, SR)
-            
-            for m in signal_mass:
-                if Fit_signal:
+
+            if Fit_signal:
+                for m in signal_mass:
                     fit_signal(year, fatjet, m, SR)
+                    if fatjet == 'Z':
+                        fit_signal(year, fatjet, str(m)+'_5p6', SR)
+                        fit_signal(year, fatjet, str(m)+'_10p0', SR)
