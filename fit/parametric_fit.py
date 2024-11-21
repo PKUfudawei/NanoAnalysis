@@ -18,7 +18,7 @@ def parse_commandline():
 
 def fit_signal(year, fatjet, signal_mass, SR):
     if '_' in str(signal_mass):
-        m = int(signal_mass.replace('_')[0])
+        m = int(signal_mass.split('_')[0])
     else:
         m = signal_mass
     
