@@ -131,7 +131,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
             'nR': nR.getVal(),
             'event_sum': mc.sumEntries(),
             'norm': signal_norm.getVal(),
-            'sigma': sigma
+            'sigma': int(sigma)
         }
         yaml.dump(info, f)
 

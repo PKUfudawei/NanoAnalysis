@@ -1,0 +1,29 @@
+alphaL: 1.4310744008921406
+alphaR: 1.4669927609757203
+event_sum: 11.214653839229708
+mean: 985.8578250466034
+nL: 2.999871497574156
+nR: 2.98601820477602
+norm: 11.214653839229708
+sigma: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - false
+  - true
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  TcDH8z+CYUA=
+sigmaL: 100.47944079703404
+sigmaR: 62.28695823051748
+widthL: 100.47944079703404
+widthR: 62.28695823051748
+x0: 985.8578250466034

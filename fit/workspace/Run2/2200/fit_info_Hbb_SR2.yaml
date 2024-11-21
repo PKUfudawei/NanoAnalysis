@@ -1,12 +1,29 @@
-alphaL: 1.629701619867275
-alphaR: 2.1482243227904334
-event_sum: 23.28455983125184
-mean: 2203.338369593881
-nL: 5.9997729067706995
-nR: 2.6100072483405987
-norm: 23.28455983125184
-sigmaL: 105.19410206551058
-sigmaR: 50.4787647595264
-widthL: 105.19410206551058
-widthR: 50.4787647595264
-x0: 2203.338369593881
+alphaL: 1.9572035478758827
+alphaR: 2.1229716515583097
+event_sum: 23.27596991845718
+mean: 2206.974611742603
+nL: 2.9959980438471274
+nR: 2.5752004367308654
+norm: 23.27596991845718
+sigma: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - false
+  - true
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  TyEX/Er4YEA=
+sigmaL: 111.86207240651086
+sigmaR: 48.66425274410419
+widthL: 111.86207240651086
+widthR: 48.66425274410419
+x0: 2206.974611742603

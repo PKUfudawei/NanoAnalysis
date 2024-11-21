@@ -1,12 +1,29 @@
-alphaL: 1.6800210921358272
-alphaR: 2.020553924066435
-event_sum: 146.680758449181
-mean: 1206.6264579663746
-nL: 5.999997558344701
-nR: 5.399878077385227
-norm: 146.680758449181
-sigmaL: 60.533417878078254
-sigmaR: 34.604719921440754
-widthL: 60.533417878078254
-widthR: 34.604719921440754
-x0: 1206.6264579663746
+alphaL: 1.9242749137730202
+alphaR: 2.2954855479760017
+event_sum: 146.66348917222177
+mean: 1207.23683990583
+nL: 2.9999964494808857
+nR: 2.9977591836577497
+norm: 146.66348917222177
+sigma: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - false
+  - true
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  lam7cscSUkA=
+sigmaL: 62.474741066797826
+sigmaR: 34.8267291636965
+widthL: 62.474741066797826
+widthR: 34.8267291636965
+x0: 1207.23683990583

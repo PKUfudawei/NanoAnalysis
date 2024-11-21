@@ -1,12 +1,29 @@
-alphaL: 3.0576444694073746
-alphaR: 0.2067671462147014
+alphaL: 3.1184792120882783
+alphaR: 2.9617080154810917
 event_sum: 9.534784232417842
-mean: 699.9091292211689
-nL: 3.889638171830984
-nR: 5.997888709414135
+mean: 701.7336108397951
+nL: 2.8125141964678075
+nR: 1.7110708285928795
 norm: 9.534784232417842
-sigmaL: 40.51145405536568
-sigmaR: 31.014564042203553
-widthL: 40.51145405536568
-widthR: 31.014564042203553
-x0: 699.9091292211689
+sigma: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - false
+  - true
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  0ly2hNlnWEA=
+sigmaL: 44.01063117403244
+sigmaR: 160.18988979289185
+widthL: 44.01063117403244
+widthR: 160.18988979289185
+x0: 701.7336108397951

@@ -1,0 +1,29 @@
+alphaL: 0.5249658260900589
+alphaR: 1.7017051846296862
+event_sum: 14.56406026196631
+mean: 1548.9047207909468
+nL: 2.999999703194714
+nR: 2.999385838994141
+norm: 14.56406026196631
+sigma: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - false
+  - true
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  GdU9+o7PdUA=
+sigmaL: 91.4127070336661
+sigmaR: 105.73039352647625
+widthL: 91.4127070336661
+widthR: 105.73039352647625
+x0: 1548.9047207909468

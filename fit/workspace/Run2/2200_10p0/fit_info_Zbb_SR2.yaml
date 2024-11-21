@@ -1,0 +1,29 @@
+alphaL: 0.40572118898544685
+alphaR: 1.699098631252255
+event_sum: 12.590795723997296
+mean: 2154.265850612082
+nL: 2.999715752800743
+nR: 2.9999996898882015
+norm: 12.590795723997296
+sigma: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - false
+  - true
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  YeoUcd89g0A=
+sigmaL: 188.3325384506118
+sigmaR: 130.3534622840835
+widthL: 188.3325384506118
+widthR: 130.3534622840835
+x0: 2154.265850612082

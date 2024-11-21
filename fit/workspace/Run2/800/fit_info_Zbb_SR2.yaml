@@ -1,12 +1,29 @@
-alphaL: 2.4736209522290307
-alphaR: 2.116884237288415
+alphaL: 3.368387378609212
+alphaR: 0.10099949749767803
 event_sum: 9.916448329615733
-mean: 809.4705148230204
-nL: 5.937629832380953
-nR: 5.991488425220131
+mean: 826.6328955601267
+nL: 2.2111229456675034
+nR: 2.9999834279614706
 norm: 9.916448329615733
-sigmaL: 51.54627098235835
-sigmaR: 22.90713913871645
-widthL: 51.54627098235835
-widthR: 22.90713913871645
-x0: 809.4705148230204
+sigma: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - false
+  - true
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  pbxAsVpKTkA=
+sigmaL: 60.49294131328471
+sigmaR: 0.8183268672579812
+widthL: 60.49294131328471
+widthR: 0.8183268672579812
+x0: 826.6328955601267

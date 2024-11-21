@@ -1,0 +1,29 @@
+alphaL: 1.0189959851669002
+alphaR: 1.6380196717787299
+event_sum: 13.378064851198761
+mean: 1173.7803338899369
+nL: 2.9995467586600038
+nR: 2.9911399738139575
+norm: 13.378064851198761
+sigma: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - false
+  - true
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  zUTCUREsaEA=
+sigmaL: 104.09942881848303
+sigmaR: 76.88063471072456
+widthL: 104.09942881848303
+widthR: 76.88063471072456
+x0: 1173.7803338899369
