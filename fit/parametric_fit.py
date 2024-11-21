@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import ROOT, os, yaml, argparse
+import ROOT, os, yaml, argparse, uproot
+import numpy as np
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptTitle(0)
 
@@ -19,13 +20,16 @@ def fit_signal(year, fatjet, signal_mass, SR):
     with open('../src/parameters/uncertainty/shape_uncertainties.yaml', 'r', encoding='utf-8') as f:
         shape_uncertainties = yaml.safe_load(f)
     
+    f = uproot.open(f"input/{year}/{signal_mass}/{fatjet}bb_gamma.root")
+    sigma = np.std(f['Events']['fit_mass'].array())
+    
     # # Signal modelling
     f = ROOT.TFile(f"input/{year}/{signal_mass}/{fatjet}bb_gamma.root", "r")
     # Load TTree
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", signal_mass, fit_range_down, fit_range_up)
+    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", signal_mass, signal_mass-5*sigma, signal_mass+5*sigma)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
@@ -46,8 +50,8 @@ def fit_signal(year, fatjet, signal_mass, SR):
 
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", signal_mass, signal_mass - 200, signal_mass + 200)
-    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", 100, 0, 600)
-    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", 100, 0, 600)
+    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 0, 600)
+    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 0, 600)
     alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.1, 4)
     alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.1, 4)
     nL = ROOT.RooRealVar("nL", "nL", 1, 0.2, 4)
