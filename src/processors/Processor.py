@@ -214,7 +214,8 @@ class Processor(processor.ProcessorABC):
         self.tag['photon'] = (  # (event, boolean)
             (raw_photon.pt > 200) &
             ((abs(raw_photon.eta) < 1.4442) | ((abs(raw_photon.eta) > 1.566) & (abs(raw_photon.eta) < 2.4))) &
-            (raw_photon.cutBased >= 1) &
+            #(raw_photon.cutBased >= 1) &
+            (raw_photon.mvaID_WP90 == True) &
             (raw_photon.electronVeto == True)
         )
         if reconstruct:
