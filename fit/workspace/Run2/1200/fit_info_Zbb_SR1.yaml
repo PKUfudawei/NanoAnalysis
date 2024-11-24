@@ -5,23 +5,7 @@ mean: 1211.3463099944006
 nL: 2.9999600082941753
 nR: 2.9296330628312948
 norm: 24.464691035526396
-sigma: !!python/object/apply:numpy.core.multiarray.scalar
-- !!python/object/apply:numpy.dtype
-  args:
-  - f8
-  - false
-  - true
-  state: !!python/tuple
-  - 3
-  - <
-  - null
-  - null
-  - null
-  - -1
-  - -1
-  - 0
-- !!binary |
-  FC1fuW6LU0A=
+sigma: 78
 sigmaL: 62.93676711757612
 sigmaR: 32.76376153865094
 widthL: 62.93676711757612

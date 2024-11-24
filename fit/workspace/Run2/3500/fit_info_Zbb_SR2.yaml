@@ -5,23 +5,7 @@ mean: 3522.3527171844344
 nL: 2.9996395082592766
 nR: 2.5117501670949447
 norm: 33.91179049959781
-sigma: !!python/object/apply:numpy.core.multiarray.scalar
-- !!python/object/apply:numpy.dtype
-  args:
-  - f8
-  - false
-  - true
-  state: !!python/tuple
-  - 3
-  - <
-  - null
-  - null
-  - null
-  - -1
-  - -1
-  - 0
-- !!binary |
-  DcaKKnuueEA=
+sigma: 394
 sigmaL: 180.61143334974741
 sigmaR: 62.121743332416095
 widthL: 180.61143334974741

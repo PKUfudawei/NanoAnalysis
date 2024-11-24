@@ -5,23 +5,7 @@ mean: 906.4292521534653
 nL: 2.9984829213893285
 nR: 2.9134779073827306
 norm: 85.43197515507332
-sigma: !!python/object/apply:numpy.core.multiarray.scalar
-- !!python/object/apply:numpy.dtype
-  args:
-  - f8
-  - false
-  - true
-  state: !!python/tuple
-  - 3
-  - <
-  - null
-  - null
-  - null
-  - -1
-  - -1
-  - 0
-- !!binary |
-  200dh+wbS0A=
+sigma: 54
 sigmaL: 55.913596094571176
 sigmaR: 27.20391252083101
 widthL: 55.913596094571176

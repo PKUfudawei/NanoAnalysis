@@ -5,23 +5,7 @@ mean: 814.0507712530859
 nL: 2.4869514849236567
 nR: 2.9912952850472925
 norm: 22.286729977216556
-sigma: !!python/object/apply:numpy.core.multiarray.scalar
-- !!python/object/apply:numpy.dtype
-  args:
-  - f8
-  - false
-  - true
-  state: !!python/tuple
-  - 3
-  - <
-  - null
-  - null
-  - null
-  - -1
-  - -1
-  - 0
-- !!binary |
-  pbxAsVpKTkA=
+sigma: 60
 sigmaL: 51.273952539905196
 sigmaR: 23.527765598283423
 widthL: 51.273952539905196

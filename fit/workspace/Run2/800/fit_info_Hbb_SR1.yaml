@@ -5,23 +5,7 @@ mean: 808.3717729857572
 nL: 2.9999580427948254
 nR: 2.99854009930574
 norm: 230.80317924917622
-sigma: !!python/object/apply:numpy.core.multiarray.scalar
-- !!python/object/apply:numpy.dtype
-  args:
-  - f8
-  - false
-  - true
-  state: !!python/tuple
-  - 3
-  - <
-  - null
-  - null
-  - null
-  - -1
-  - -1
-  - 0
-- !!binary |
-  gtYq92dbSEA=
+sigma: 48
 sigmaL: 47.70401666833162
 sigmaR: 26.49143556577616
 widthL: 47.70401666833162

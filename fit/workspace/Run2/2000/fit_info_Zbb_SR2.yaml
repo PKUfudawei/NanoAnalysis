@@ -5,23 +5,7 @@ mean: 2011.725025181319
 nL: 2.9999870427075
 nR: 2.1825543750268332
 norm: 27.457682953774345
-sigma: !!python/object/apply:numpy.core.multiarray.scalar
-- !!python/object/apply:numpy.dtype
-  args:
-  - f8
-  - false
-  - true
-  state: !!python/tuple
-  - 3
-  - <
-  - null
-  - null
-  - null
-  - -1
-  - -1
-  - 0
-- !!binary |
-  T4xZDb10YEA=
+sigma: 131
 sigmaL: 101.54935513088604
 sigmaR: 43.23066085611841
 widthL: 101.54935513088604

@@ -5,23 +5,7 @@ mean: 3005.954302661911
 nL: 2.993937366539331
 nR: 2.5568773316684816
 norm: 4.3907918512883475
-sigma: !!python/object/apply:numpy.core.multiarray.scalar
-- !!python/object/apply:numpy.dtype
-  args:
-  - f8
-  - false
-  - true
-  state: !!python/tuple
-  - 3
-  - <
-  - null
-  - null
-  - null
-  - -1
-  - -1
-  - 0
-- !!binary |
-  FkvjptecZ0A=
+sigma: 188
 sigmaL: 133.66551555459486
 sigmaR: 65.77314154491515
 widthL: 133.66551555459486

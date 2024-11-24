@@ -65,7 +65,7 @@ class Processor(processor.ProcessorABC):
         #weight = correction.evaluate(np.array(self.event.Pileup.nPU), "nominal")
         #weightUp = correction.evaluate(np.array(self.event.Pileup.nPU), "up")
         #weightDown = correction.evaluate(np.array(self.event.Pileup.nPU), "down")
-        #self.weight.add('pile-up', weight=self.variable['PUWeight_nominal'], weightUp=self.variable['PUWeight_up'], weightDown=self.variable['PUWeight_down'])
+        self.weight.add('pile-up', weight=self.variable['PUWeight_nominal'], weightUp=self.variable['PUWeight_up'], weightDown=self.variable['PUWeight_down'])
         if self.year in ['2016pre', '2016post', '2017']:
             self.weight.add('L1_prefiring', weight=self.event['L1PreFiringWeight']['Nom'])
         #self.weight.add('photonID_SF', weight=self.object['photon']['SF_nominal'])
@@ -375,9 +375,6 @@ class Processor(processor.ProcessorABC):
             2 * self.object['AK8jet']['pt'] * self.event.MET.pt * (1 - np.cos(self.object['AK8jet']['phi'] - self.event.MET.phi))
         )
 
-        if self.sample_type == 'mc' and self.cutflow['final'] > 0:
-            self.all_correction()
-
         for obj, vars in vars.items():
             for var in vars:
                 if obj != 'event':
@@ -471,16 +468,8 @@ class Processor(processor.ProcessorABC):
         if N_preselect == 0:
             return self.cutflow
 
-        # store variables
-        self.store_variables(vars={
-            'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop', 'rawFactor'} | (set(self.object['AK8jet'].fields) - set(self.event.FatJet.fields)),
-            'photon': {'pt', 'eta', 'phi', 'mass', 'cutBased', 'sieie'} | (set(self.object['photon'].fields) - set(self.event.Photon.fields)),
-            'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight'},
-            'photon+jet': {'pt', 'eta', 'phi', 'mass'},
-        })
-
         # gen-macthing
-        if self.sample_type == 'mc':
+        if self.sample_type == 'mc' and self.cutflow['final'] > 0:
             gen = GenMatch(events=self.event)
             if self.channel in self.channel_info['signal'] and self.channel == 'ZpToHG':
                 self.variable.update(gen.HGamma())
@@ -490,6 +479,16 @@ class Processor(processor.ProcessorABC):
                 self.pass_cut(name='non-prompt photon', cut=(self.object['photon'].genPartFlav==0))
             elif self.channel in self.channel_info['true_photon']:
                 self.pass_cut(name='prompt photon', cut=(self.object['photon'].genPartFlav==1))
+            self.all_correction()
+        
+        # store variables
+        self.store_variables(vars={
+            'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop', 'rawFactor'} | (set(self.object['AK8jet'].fields) - set(self.event.FatJet.fields)),
+            'photon': {'pt', 'eta', 'phi', 'mass', 'cutBased', 'sieie'} | (set(self.object['photon'].fields) - set(self.event.Photon.fields)),
+            'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight'},
+            'photon+jet': {'pt', 'eta', 'phi', 'mass'},
+        })
+
 
         # store output
         if self.cutflow['final'] > 0:

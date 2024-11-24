@@ -5,23 +5,7 @@ mean: 1610.7791781377675
 nL: 2.9999810563965523
 nR: 2.5209367998287124
 norm: 22.59775237709003
-sigma: !!python/object/apply:numpy.core.multiarray.scalar
-- !!python/object/apply:numpy.dtype
-  args:
-  - f8
-  - false
-  - true
-  state: !!python/tuple
-  - 3
-  - <
-  - null
-  - null
-  - null
-  - -1
-  - -1
-  - 0
-- !!binary |
-  vL7L3cKBWUA=
+sigma: 102
 sigmaL: 76.36285494136423
 sigmaR: 39.53332567264158
 widthL: 76.36285494136423
