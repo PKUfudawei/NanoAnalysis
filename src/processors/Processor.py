@@ -204,8 +204,8 @@ class Processor(processor.ProcessorABC):
 
         photon['pt_original'] = photon.pt
         for i in ['PES', 'PER']:
-            photon[f'pt_{i}_up'] = photon.pt * photon[f'{i}_up']
-            photon[f'pt_{i}_down'] = photon.pt * photon[f'{i}_down']
+            photon[f'pt_{i}_up'] = photon['pt_original'] * photon[f'{i}_up']
+            photon[f'pt_{i}_down'] = photon['pt_original'] * photon[f'{i}_down']
 
         return photon
 
