@@ -25,7 +25,7 @@ Xbb_tagger_SR1		lnN	1.035	-
 ---------------------------------------------
 PES             param   0.0     1.0
 PER             param   0.0     1.0
-JES             param   0.0     1.0
-JER             param   0.0     1.0
+JES_SR1		param	0.0	1.0
+JER_SR1		param	0.0	1.0
 ---------------------------------------------
 pdfindex_CR1         discrete
