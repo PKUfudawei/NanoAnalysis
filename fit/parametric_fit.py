@@ -114,7 +114,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
     sig_model_dir = f'workspace/{year}/{signal_mass}'
     if not os.path.exists(sig_model_dir):
         os.makedirs(sig_model_dir)
-    f_out = ROOT.TFile(f"{sig_model_dir}/{fatjet}bb_{signal_mass}_{SR}.root", "RECREATE")
+    f_out = ROOT.TFile(f"{sig_model_dir}/{fatjet}bb_{SR}.root", "RECREATE")
     w_sig = ROOT.RooWorkspace("workspace_signal", "workspace_signal")
     getattr(w_sig, "import")(model_signal)
     getattr(w_sig, "import")(signal_norm)
