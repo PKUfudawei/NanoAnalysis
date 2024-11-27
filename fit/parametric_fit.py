@@ -17,14 +17,13 @@ def parse_commandline():
                      
 
 def fit_signal(year, fatjet, signal_mass, SR):
-    signal_mass = str(signal_mass)
-    m = int(signal_mass.split('_')[0])
+    m = int(str(signal_mass).split('_')[0])
     
     with open('../src/parameters/uncertainty/systematics.yaml', 'r', encoding='utf-8') as f:
         systematics = yaml.safe_load(f)
     
     f = uproot.open(f"input/{year}/{signal_mass}/{fatjet}bb_gamma.root")
-    if '_' in signal_mass:
+    if '_' in str(signal_mass):
         f_narrow = uproot.open(f"input/{year}/{signal_mass.split('_')[0]}/{fatjet}bb_gamma.root")
         sigma = np.std(f_narrow['Events']['fit_mass'].array())
     else:
