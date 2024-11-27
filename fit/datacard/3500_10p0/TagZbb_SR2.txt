@@ -1,0 +1,31 @@
+imax 1  # number of channels
+jmax 1  # number of backgrounds
+kmax *  # number of nuisance parameters (sources of systematic uncertainties)
+---------------------------------------------
+shapes      signal          tagZbb      ../../workspace/Run2/3500_10p0/Zbb_SR2.root      workspace_signal:model_bbgamma
+shapes      background     tagZbb      ../../workspace/Run2/data_CR2.root      workspace_CR:multipdf
+shapes      data_obs     tagZbb      ../../workspace/Run2/data_SR2_Zbb.root      workspace_SR:data_SR
+---------------------------------------------
+bin             tagZbb
+observation     -1
+---------------------------------------------
+bin             tagZbb        tagZbb
+process         signal      background
+process         0           1
+rate			1.0			1.0
+---------------------------------------------
+lumi_Run2		lnN	1.016	-
+L1_prefiring		lnN	1.004	-
+pile-up		lnN	1.01	-
+photon_ID		lnN	1.044	-
+CSEV		lnN	1.001	-
+Xbb_tagger_SR2		lnN	1.057	-
+
+
+---------------------------------------------
+PES             param   0.0     1.0
+PER             param   0.0     1.0
+JES             param   0.0     1.0
+JER             param   0.0     1.0
+---------------------------------------------
+pdfindex_CR2         discrete

@@ -22,11 +22,15 @@ def fit_signal(year, fatjet, signal_mass, SR):
     else:
         m = signal_mass
     
-    with open('../src/parameters/uncertainty/shape_uncertainties.yaml', 'r', encoding='utf-8') as f:
-        shape_uncertainties = yaml.safe_load(f)
+    with open('../src/parameters/uncertainty/systematics.yaml', 'r', encoding='utf-8') as f:
+        systematics = yaml.safe_load(f)
     
     f = uproot.open(f"input/{year}/{signal_mass}/{fatjet}bb_gamma.root")
-    sigma = np.std(f['Events']['fit_mass'].array())
+    if '_' in signal_mass:
+        f_narrow = uproot.open(f"input/{year}/{signal_mass.split('_')[0]}/{fatjet}bb_gamma.root")
+        sigma = np.std(f_narrow['Events']['fit_mass'].array())
+    else:
+        sigma = np.std(f['Events']['fit_mass'].array())
     
     # # Signal modelling
     f = ROOT.TFile(f"input/{year}/{signal_mass}/{fatjet}bb_gamma.root", "r")
@@ -34,7 +38,10 @@ def fit_signal(year, fatjet, signal_mass, SR):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-5*sigma, m+5*sigma)
+    if '_' in signal_mass:
+        fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-5*sigma, m+5*sigma)
+    else:
+        fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-3*sigma, m+3*sigma)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
@@ -54,7 +61,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
     can.SaveAs(f"../plots/fit/{year}/{signal_mass}/fit_variable_{fatjet}bb_{signal_mass}_{SR}.pdf")
 
     # Introduce RooRealVars into the workspace for the fitted variable
-    x0 = ROOT.RooRealVar("x0", "x0", m, m - 200, m + 200)
+    x0 = ROOT.RooRealVar("x0", "x0", m, m - 300, m + 300)
     sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 0, 5*sigma)
     sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 0, 5*sigma)
     alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.1, 5)
@@ -62,19 +69,20 @@ def fit_signal(year, fatjet, signal_mass, SR):
     nL = ROOT.RooRealVar("nL", "nL", 1, 0.2, 3)
     nR = ROOT.RooRealVar("nR", "nR", 1, 0.2, 3)
 
-    JES = ROOT.RooRealVar("JES", "JES", 0, -5, 5)
-    JER = ROOT.RooRealVar("JER", "JER", 0, -5, 5)
-    PU = ROOT.RooRealVar("PU", "PU", 0, -5, 5)
-    JES.setConstant(True); JER.setConstant(True); PU.setConstant(True);
+    JES = ROOT.RooRealVar(f"JES_{SR}", f"JES_{SR}", 0, -5, 5)
+    JER = ROOT.RooRealVar(f"JER_{SR}", f"JER_{SR}", 0, -5, 5)
+    PES = ROOT.RooRealVar("PES", "PES", 0, -5, 5)
+    PER = ROOT.RooRealVar("PER", "PER", 0, -5, 5)
+    JES.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
     mean = ROOT.RooFormulaVar("mean", "mean", 
-        "@0*(1+%f*@1+%f*@2+%f*@3)"%tuple(shape_uncertainties[SR][m]['x0'][k] for k in ['JES', 'JER', 'PU']), 
-        ROOT.RooArgList(x0, JES, JER, PU))
+        "@0*(1+%f*@1+%f*@2)"%tuple(systematics['JES'][SR][m], systematics['PES'][SR][m]), 
+        ROOT.RooArgList(x0, JES, PES))
     widthL = ROOT.RooFormulaVar("widthL", "widthL", 
-        "@0*(1+%f*@1+%f*@2+%f*@3)"%tuple(shape_uncertainties[SR][m]['sigmaL'][k] for k in ['JES', 'JER', 'PU']), 
-        ROOT.RooArgList(sigmaL, JES, JER, PU))
+        "@0*(1+%f*@1+%f*@2)"%tuple(systematics['JER'][SR][fatjet][signal_mass], systematics['PER']), 
+        ROOT.RooArgList(sigmaL, JER, PER))
     widthR = ROOT.RooFormulaVar("widthR", "widthR", 
-        "@0*(1+%f*@1+%f*@2+%f*@3)"%tuple(shape_uncertainties[SR][m]['sigmaR'][k] for k in ['JES', 'JER', 'PU']), 
-        ROOT.RooArgList(sigmaR, JES, JER, PU))
+        "@0*(1+%f*@1+%f*@2)"%tuple(systematics['JER'][SR][fatjet][signal_mass], systematics['PER']),
+        ROOT.RooArgList(sigmaR, JER, PER))
 
     # Define the Gaussian with mean=MH and width=sigma
     model_signal = ROOT.RooCrystalBall("model_bbgamma", "model_bbgamma", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
