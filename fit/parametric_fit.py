@@ -73,13 +73,13 @@ def fit_signal(year, fatjet, signal_mass, SR):
     PER = ROOT.RooRealVar("PER", "PER", 0, -5, 5)
     JES.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
     mean = ROOT.RooFormulaVar("mean", "mean", 
-        "@0*(1+%f*@1+%f*@2)"%tuple(systematics['JES'][SR][m], systematics['PES']), 
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JES'][SR][m], systematics['PES']), 
         ROOT.RooArgList(x0, JES, PES))
     widthL = ROOT.RooFormulaVar("widthL", "widthL", 
-        "@0*(1+%f*@1+%f*@2)"%tuple(systematics['JER'][SR][fatjet][signal_mass], systematics['PER']), 
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][SR][fatjet][signal_mass], systematics['PER']), 
         ROOT.RooArgList(sigmaL, JER, PER))
     widthR = ROOT.RooFormulaVar("widthR", "widthR", 
-        "@0*(1+%f*@1+%f*@2)"%tuple(systematics['JER'][SR][fatjet][signal_mass], systematics['PER']),
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][SR][fatjet][signal_mass], systematics['PER']),
         ROOT.RooArgList(sigmaR, JER, PER))
 
     # Define the Gaussian with mean=MH and width=sigma
