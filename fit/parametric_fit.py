@@ -82,8 +82,8 @@ def fit_signal(year, fatjet, signal_mass, SR):
         ROOT.RooArgList(sigmaR, JER, PER))
 
     # Define the Gaussian with mean=MH and width=sigma
-    model_signal = ROOT.RooCrystalBall("model_bbgamma", "model_bbgamma", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
-    signal_norm = ROOT.RooRealVar("model_bbgamma_norm", f"Number of signal events in Tag {fatjet}bb+gamma", mc.sumEntries(), 0, 100*mc.sumEntries())
+    model_signal = ROOT.RooCrystalBall(f"model_bbgamma_{SR}", f"model_bbgamma_{SR}", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
+    signal_norm = ROOT.RooRealVar(f"model_bbgamma_{SR}_norm", f"Number of signal events in Tag {fatjet}bb+gamma", mc.sumEntries(), 0, 100*mc.sumEntries())
 
     # Fit Gaussian to MC events and plot
     model_signal.fitTo(mc, ROOT.RooFit.SumW2Error(True))
@@ -211,7 +211,7 @@ def fit_background(year, CR):
     models = ROOT.RooArgList()
 
     # Fit model to data sidebands
-    for k in model:
+    for k in ['dijet2', 'dijet3', 'expow1', 'expow2', 'invpow2', 'invpow3']:
         model[k].fitTo(data_CR, ROOT.RooFit.SumW2Error(True))
         p1[k].setConstant(True)
         if k in p2:
@@ -221,8 +221,8 @@ def fit_background(year, CR):
         models.add(model[k])
 
     # Build the RooMultiPdf object
-    multipdf = ROOT.RooMultiPdf(f"multipdf", "MultiPdf", category, models)
-    background_norm = ROOT.RooRealVar(f"multipdf_norm", "Number of background events", data_CR.numEntries(), 0, 100 * data_CR.numEntries())
+    multipdf = ROOT.RooMultiPdf(f"multipdf_{CR}", "multipdf", category, models)
+    background_norm = ROOT.RooRealVar(f"multipdf_{CR}_norm", "Number of background events", data_CR.numEntries(), 0, 100 * data_CR.numEntries())
     background_norm.setConstant(False)
 
     # Let's plot the model fit to the data
@@ -277,7 +277,7 @@ def get_SR_data(year, SR):
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
 
     # Convert to RooDataSet
-    data_SR = ROOT.RooDataSet("data_SR", "data_SR", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), SR_cut, "weight")
+    data_SR = ROOT.RooDataSet(f"data_{SR}", f"data_{SR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), SR_cut, "weight")
 
     n_bins = (fit_range_up - fit_range_down) // 20
     binning = ROOT.RooFit.Binning(n_bins, fit_range_down, fit_range_up)

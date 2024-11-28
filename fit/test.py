@@ -4,7 +4,7 @@ text2workspace.py datacard_1000_SR1.txt; text2workspace.py datacard_1000_SR2.txt
 combine -M GenerateOnly datacard/Run2/expow2/datacard_1000_SR1.root -t 1000 -n .generate_expow2 --expectSignal 0 --saveToys; combine -M MultiDimFit datacard/Run2/dijet2/datacard_1000_SR1.root -t 1000 -n .bias_truth_expow2_fit_dijet2 --expectSignal 1 --toysFile higgsCombine.generate_expow2.GenerateOnly.mH120.123456.root --algo singles; python3 plot_bias_pull.py -t expow2 -m 1000 -R SR1;
 python3 plot_bias_pull.py -t expow2 -m 1000 -R SR1; python3 plot_bias_pull.py -t expow2 -m 1000 -R SR2; python3 plot_bias_pull.py -t expow2 -m 2000 -R SR1; python3 plot_bias_pull.py -t expow2 -m 2000 -R SR2; python3 plot_bias_pull.py -t expow2 -m 3000 -R SR1; python3 plot_bias_pull.py -t expow2 -m 3000 -R SR2; python3 plot_bias_pull.py -t invpow2 -m 1000 -R SR1; python3 plot_bias_pull.py -t invpow2 -m 1000 -R SR2; python3 plot_bias_pull.py -t invpow2 -m 2000 -R SR1; python3 plot_bias_pull.py -t invpow2 -m 2000 -R SR2; python3 plot_bias_pull.py -t invpow2 -m 3000 -R SR1; python3 plot_bias_pull.py -t invpow2 -m 3000 -R SR2;
 
-combineTool.py -M Impacts -d datacard/Run2/datacard_2000_combine.root -m 125 --rMin -1 --rMax 2 --robustFit 1 --doInitialFit;
-combineTool.py -M Impacts -d datacard/Run2/datacard_2000_combine.root -m 125 --rMin -1 --rMax 2 --robustFit 1 --doFits;
-combineTool.py -M Impacts -d  datacard/Run2/datacard_2000_combine.root -m 125 --rMin -1 --rMax 2 --robustFit 1 --output impacts.json;
+combineTool.py -M Impacts -d datacard/1000/TagHbb.root -m 125 --rMin -1 --rMax 2 --robustFit 1 --doInitialFit;
+combineTool.py -M Impacts -d datacard/1000/TagHbb.root -m 125 --rMin -1 --rMax 2 --robustFit 1 --doFits;
+combineTool.py -M Impacts -d  datacard/1000/TagHbb.root -m 125 --rMin -1 --rMax 2 --robustFit 1 --output impacts.json;
 plotImpacts.py -i impacts.json -o impacts
