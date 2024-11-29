@@ -20,8 +20,8 @@ pile-up		lnN	1.01	-
 photon_ID		lnN	1.044	-
 CSEV		lnN	1.001	-
 Xbb_tagger_SR2		lnN	1.057	-
-PDF		lnN	1.04	-
-QCD_scale		lnN	1.084	-
+
+
 ---------------------------------------------
 PES             param   0.0     1.0
 PER             param   0.0     1.0
