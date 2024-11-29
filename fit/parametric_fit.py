@@ -315,8 +315,8 @@ if __name__ == "__main__":
     Fit_background = True
 
     tagger_cut = {
-        'SR1': [0.8, 0.98],
-        'SR2': [0.98, 2],
+        'SR1': [0.7, 0.9],
+        'SR2': [0.9, 2],
     }
     mass_SR = {
         'Z': [80, 110],
