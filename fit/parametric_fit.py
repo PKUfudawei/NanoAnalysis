@@ -153,7 +153,7 @@ def fit_background(year, CR):
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
 
     # Convert to RooDataSet
-    data_CR = ROOT.RooDataSet("data_CR", "data_CR", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), CR_cut, "weight")
+    data_CR = ROOT.RooDataSet(f"data_{CR}", f"data_{CR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), CR_cut, "weight")
 
 
     n_bins = (fit_range_up - fit_range_down) // 20
@@ -218,7 +218,7 @@ def fit_background(year, CR):
         models.add(model[k])
 
     # Build the RooMultiPdf object
-    multipdf = ROOT.RooMultiPdf(f"multipdf_{CR}", "multipdf", category, models)
+    multipdf = ROOT.RooMultiPdf(f"multipdf_{CR}", f"multipdf_{CR}", category, models)
     background_norm = ROOT.RooRealVar(f"multipdf_{CR}_norm", "Number of background events", data_CR.numEntries(), 0, 100 * data_CR.numEntries())
     background_norm.setConstant(False)
 
