@@ -35,7 +35,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    if '_' in signal_mass:
+    if '_' in str(signal_mass):
         fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-3*sigma, m+3*sigma)
     else:
         fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-5*sigma, m+5*sigma)
