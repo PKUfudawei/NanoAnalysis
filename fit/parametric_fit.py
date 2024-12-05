@@ -153,7 +153,7 @@ def fit_background(year, CR):
     fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", 1500, fit_range_down, fit_range_up)
     weight = ROOT.RooRealVar("weight", "weight", 1, -10, 10)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
-    tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 1)
+    tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
 
     # Convert to RooDataSet
     data_CR = ROOT.RooDataSet(f"data_{CR}", f"data_{CR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), CR_cut, "weight")
@@ -318,8 +318,8 @@ if __name__ == "__main__":
     Fit_background = True
 
     tagger_cut = {
-        'SR1': [0.7, 0.9],
-        'SR2': [0.9, 2],
+        'SR1': [0.8, 0.98],
+        'SR2': [0.98, 2],
     }
     mass_SR = {
         'Z': [80, 110],
