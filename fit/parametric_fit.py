@@ -141,7 +141,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
         yaml.dump(info, f)
 
 
-def fit_background(year, CR):
+def fit_background(year, CR, jet):
     bkg_model_dir = f'workspace/{year}'
     
     # # Background modelling
@@ -156,7 +156,7 @@ def fit_background(year, CR):
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
 
     # Convert to RooDataSet
-    data_CR = ROOT.RooDataSet(f"data_{CR}", f"data_{CR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), CR_cut, "weight")
+    data_CR = ROOT.RooDataSet(f"data_{CR}", f"data_{CR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), SR_cut, "weight")
 
 
     n_bins = (fit_range_up - fit_range_down) // 20
@@ -242,7 +242,7 @@ def fit_background(year, CR):
 
     if not os.path.exists(bkg_model_dir):
         os.makedirs(bkg_model_dir)
-    with open(f'{bkg_model_dir}/fit_info_background_{CR}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{bkg_model_dir}/fit_info_background_{jet}_{CR}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'p1': {func: p1[func].getVal() for func in p1},
             'p2': {func: p2[func].getVal() for func in p2},
@@ -314,7 +314,7 @@ if __name__ == "__main__":
     else:
         signal_region = ['SR1', 'SR2']
 
-    Fit_signal = True
+    Fit_signal = False
     Fit_background = True
 
     tagger_cut = {
@@ -332,8 +332,6 @@ if __name__ == "__main__":
             (((jet_mass>50) & (jet_mass<{mass_SR['Z'][0]})) | (jet_mass>{mass_SR['H'][1]})) & 
             (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
         )"""
-        if Fit_background:
-            fit_background(year, CR)
 
         for fatjet in ['H', 'Z']:
             mass_low, mass_high = mass_SR[fatjet]
@@ -342,6 +340,8 @@ if __name__ == "__main__":
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
             )"""
             get_SR_data(year, SR)
+            if Fit_background:
+                fit_background(year, SR, fatjet)
 
             if Fit_signal:
                 for m in signal_mass:
