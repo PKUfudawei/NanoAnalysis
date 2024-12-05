@@ -145,7 +145,7 @@ def fit_background(year, CR, jet):
     bkg_model_dir = f'workspace/{year}'
     
     # # Background modelling
-    f = ROOT.TFile(f"input/{year}/data.root", "r")
+    f = ROOT.TFile(f"input/{year}/background_mc.root", "r")
     # Load TTree
     tree = f.Get("Events")
 
