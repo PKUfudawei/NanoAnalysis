@@ -22,7 +22,7 @@ CSEV		lnN	1.001	-
 Xbb_tagger_SR2		lnN	1.101	-
 
 
-BR_Zbb          lnN 0.9874/1.0124 -
+BR_Zbb		lnN	1.003	-
 ---------------------------------------------
 PES             param   0.0     1.0
 PER             param   0.0     1.0

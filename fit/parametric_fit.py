@@ -211,7 +211,7 @@ def fit_background(year, CR, cut):
     models = ROOT.RooArgList()
 
     # Fit model to data sidebands
-    for k in ['dijet2', 'dijet3', 'expow1', 'expow2', 'invpow2', 'invpow3']:
+    for k in ['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3']:
         model[k].fitTo(data_CR, ROOT.RooFit.SumW2Error(True))
         p1[k].setConstant(True)
         if k in p2:
@@ -314,7 +314,7 @@ if __name__ == "__main__":
     else:
         signal_region = ['SR1', 'SR2']
 
-    Fit_signal = False
+    Fit_signal = True
     Fit_background = True
 
     tagger_cut = {
@@ -346,7 +346,7 @@ if __name__ == "__main__":
 
             if Fit_signal:
                 for m in signal_mass:
-                    fit_signal(year, fatjet, m, SR)
+                    fit_signal(year, fatjet, m, SR, SR_cut)
                     if fatjet == 'Z':
                         fit_signal(year, fatjet, str(m)+'_5p6', SR, SR_cut)
                         fit_signal(year, fatjet, str(m)+'_10p0', SR, SR_cut)
