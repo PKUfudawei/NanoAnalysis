@@ -14,11 +14,11 @@ def parse_commandline():
     parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=4000, type=int)
     args = parser.parse_args()
     return args
-                     
 
-def fit_signal(year, fatjet, signal_mass, SR):
+
+def fit_signal(year, fatjet, signal_mass, SR, cut):
     m = int(str(signal_mass).split('_')[0])
-    
+
     with open('../src/parameters/uncertainty/systematics.yaml', 'r', encoding='utf-8') as f:
         systematics = yaml.safe_load(f)
     
@@ -45,7 +45,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
 
     # Convert to RooDataSet
 
-    mc = ROOT.RooDataSet("signal", "signal", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), SR_cut, "weight")
+    mc = ROOT.RooDataSet("signal", "signal", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
 
     # Lets plot the signal mass distribution
     can = ROOT.TCanvas()
@@ -141,7 +141,7 @@ def fit_signal(year, fatjet, signal_mass, SR):
         yaml.dump(info, f)
 
 
-def fit_background(year, CR, jet):
+def fit_background(year, CR, cut):
     bkg_model_dir = f'workspace/{year}'
     
     # # Background modelling
@@ -156,7 +156,7 @@ def fit_background(year, CR, jet):
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
 
     # Convert to RooDataSet
-    data_CR = ROOT.RooDataSet(f"data_{CR}", f"data_{CR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), SR_cut, "weight")
+    data_CR = ROOT.RooDataSet(f"data_{CR}", f"data_{CR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
 
 
     n_bins = (fit_range_up - fit_range_down) // 20
@@ -242,7 +242,7 @@ def fit_background(year, CR, jet):
 
     if not os.path.exists(bkg_model_dir):
         os.makedirs(bkg_model_dir)
-    with open(f'{bkg_model_dir}/fit_info_background_{jet}_{CR}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{bkg_model_dir}/fit_info_background_{CR}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'p1': {func: p1[func].getVal() for func in p1},
             'p2': {func: p2[func].getVal() for func in p2},
@@ -265,9 +265,9 @@ def fit_background(year, CR, jet):
     f_out.Close()
 
 
-def get_SR_data(year, SR):
+def get_SR_data(year, SR, cut):
     # # Data in SR
-    f = ROOT.TFile(f"input/{year}/data.root", "r")
+    f = ROOT.TFile(f"input/{year}/background_mc.root", "r")
     tree = f.Get("Events")
 
     # Define mass and weight variables
@@ -277,7 +277,7 @@ def get_SR_data(year, SR):
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
 
     # Convert to RooDataSet
-    data_SR = ROOT.RooDataSet(f"data_{SR}", f"data_{SR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), SR_cut, "weight")
+    data_SR = ROOT.RooDataSet(f"data_{SR}", f"data_{SR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
 
     n_bins = (fit_range_up - fit_range_down) // 20
     binning = ROOT.RooFit.Binning(n_bins, fit_range_down, fit_range_up)
@@ -288,12 +288,12 @@ def get_SR_data(year, SR):
     data_SR.plotOn(plot, binning)
     plot.Draw()
     can.Update()
-    can.SaveAs(f"../plots/fit/{year}/data_{SR}_fit_mass.pdf")
+    can.SaveAs(f"../plots/fit/{year}/bkgMC_{SR}_fit_mass.pdf")
 
     data_dir = f"./workspace/{year}"
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
-    f_out = ROOT.TFile(f"{data_dir}/data_{SR}_{fatjet}bb.root", "RECREATE")
+    f_out = ROOT.TFile(f"{data_dir}/bkgMC_{SR}_{fatjet}bb.root", "RECREATE")
     w = ROOT.RooWorkspace("workspace_SR", "workspace_SR")
     getattr(w, "import")(data_SR)
     w.Print()
@@ -333,19 +333,20 @@ if __name__ == "__main__":
             (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
         )"""
 
+        if Fit_background:
+            fit_background(year, CR, CR_cut)
+
         for fatjet in ['H', 'Z']:
             mass_low, mass_high = mass_SR[fatjet]
             SR_cut = f"""(
                 (jet_mass>{mass_low}) & (jet_mass<{mass_high}) & 
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
             )"""
-            get_SR_data(year, SR)
-            if Fit_background:
-                fit_background(year, SR, fatjet)
+            get_SR_data(year, SR, SR_cut)
 
             if Fit_signal:
                 for m in signal_mass:
                     fit_signal(year, fatjet, m, SR)
                     if fatjet == 'Z':
-                        fit_signal(year, fatjet, str(m)+'_5p6', SR)
-                        fit_signal(year, fatjet, str(m)+'_10p0', SR)
+                        fit_signal(year, fatjet, str(m)+'_5p6', SR, SR_cut)
+                        fit_signal(year, fatjet, str(m)+'_10p0', SR, SR_cut)
