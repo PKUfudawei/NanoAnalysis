@@ -277,7 +277,7 @@ def get_SR_data(year, SR, cut):
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
 
     # Convert to RooDataSet
-    data_SR = ROOT.RooDataSet(f"data_{SR}", f"data_{SR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
+    data_SR = ROOT.RooDataSet(f"bkgMC_{SR}", f"bkgMC_{SR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
 
     n_bins = (fit_range_up - fit_range_down) // 20
     binning = ROOT.RooFit.Binning(n_bins, fit_range_down, fit_range_up)
