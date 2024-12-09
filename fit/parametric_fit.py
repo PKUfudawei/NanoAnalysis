@@ -36,9 +36,9 @@ def fit_signal(year, fatjet, signal_mass, SR, cut):
 
     # Define mass and weight variables
     if '_' in str(signal_mass):
-        fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-3*sigma, m+3*sigma)
+        fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-3*sigma if m-3*sigma>500 else 500, m+3*sigma)
     else:
-        fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-5*sigma, m+5*sigma)
+        fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-5*sigma if m-5*sigma>500 else 500, m+5*sigma)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
@@ -59,8 +59,8 @@ def fit_signal(year, fatjet, signal_mass, SR, cut):
 
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", m, m - 300, m + 300)
-    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 0, 5*sigma)
-    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 0, 5*sigma)
+    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 5, 5*sigma)
+    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 5, 5*sigma)
     alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.1, 5)
     alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.1, 5)
     nL = ROOT.RooRealVar("nL", "nL", 1, 0.2, 3)
