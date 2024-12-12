@@ -11,7 +11,7 @@ def parse_commandline():
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
     parser.add_argument('-d', '--fit_range_down', help='To specify the lower bound of fitting range', default=650, type=int)
-    parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=4000, type=int)
+    parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=13000, type=int)
     args = parser.parse_args()
     return args
 
@@ -66,8 +66,8 @@ def fit_signal(year, fatjet, signal_mass, SR, cut):
     nL = ROOT.RooRealVar("nL", "nL", 1, 0.2, 3)
     nR = ROOT.RooRealVar("nR", "nR", 1, 0.2, 3)
 
-    JES = ROOT.RooRealVar(f"JES_{SR}", f"JES_{SR}", 0, -5, 5)
-    JER = ROOT.RooRealVar(f"JER_{SR}", f"JER_{SR}", 0, -5, 5)
+    JES = ROOT.RooRealVar(f"JES", f"JES", 0, -5, 5)
+    JER = ROOT.RooRealVar(f"JER", f"JER", 0, -5, 5)
     PES = ROOT.RooRealVar("PES", "PES", 0, -5, 5)
     PER = ROOT.RooRealVar("PER", "PER", 0, -5, 5)
     JES.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
