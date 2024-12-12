@@ -29,4 +29,4 @@ PER             param   0.0     1.0
 JES		param	0.0	1.0
 JER		param	0.0	1.0
 ---------------------------------------------
-pdfindex_SR1         discrete
+pdfindex_CR1         discrete

@@ -265,9 +265,9 @@ def fit_background(year, CR, cut):
     f_out.Close()
 
 
-def get_SR_data(year, SR, cut):
+def get_SR_data(year, SR, cut, fatjet):
     # # Data in SR
-    f = ROOT.TFile(f"input/{year}/background_mc.root", "r")
+    f = ROOT.TFile(f"input/{year}/data_CR_to_SR{fatjet}.root", "r")
     tree = f.Get("Events")
 
     # Define mass and weight variables
@@ -277,7 +277,7 @@ def get_SR_data(year, SR, cut):
     tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
 
     # Convert to RooDataSet
-    data_SR = ROOT.RooDataSet(f"bkgMC_{SR}", f"bkgMC_{SR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
+    data_SR = ROOT.RooDataSet(f"data_{SR}", f"data_{SR}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
 
     n_bins = (fit_range_up - fit_range_down) // 20
     binning = ROOT.RooFit.Binning(n_bins, fit_range_down, fit_range_up)
@@ -288,12 +288,12 @@ def get_SR_data(year, SR, cut):
     data_SR.plotOn(plot, binning)
     plot.Draw()
     can.Update()
-    can.SaveAs(f"../plots/fit/{year}/bkgMC_{SR}_fit_mass.pdf")
+    can.SaveAs(f"../plots/fit/{year}/data_{SR}_fit_mass.pdf")
 
     data_dir = f"./workspace/{year}"
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
-    f_out = ROOT.TFile(f"{data_dir}/bkgMC_{SR}_{fatjet}bb.root", "RECREATE")
+    f_out = ROOT.TFile(f"{data_dir}/data_{fatjet}bb_{SR}.root", "RECREATE")
     w = ROOT.RooWorkspace("workspace_SR", "workspace_SR")
     getattr(w, "import")(data_SR)
     w.Print()
