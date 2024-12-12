@@ -11,7 +11,7 @@ def parse_commandline():
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
     parser.add_argument('-d', '--fit_range_down', help='To specify the lower bound of fitting range', default=650, type=int)
-    parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=13000, type=int)
+    parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=4000, type=int)
     args = parser.parse_args()
     return args
 
