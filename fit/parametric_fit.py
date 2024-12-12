@@ -72,13 +72,13 @@ def fit_signal(year, fatjet, signal_mass, SR, cut):
     PER = ROOT.RooRealVar("PER", "PER", 0, -5, 5)
     JES.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
     mean = ROOT.RooFormulaVar("mean", "mean", 
-        "@0*(1+%f*@1+%f*@2)"%(systematics['JES'][SR][m]-1, systematics['PES']-1), 
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JES'][SR][m]-1, systematics['PES'][SR][m]-1), 
         ROOT.RooArgList(x0, JES, PES))
     widthL = ROOT.RooFormulaVar("widthL", "widthL", 
-        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][SR][fatjet][signal_mass]-1, systematics['PER']-1), 
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][SR][fatjet][signal_mass]-1, systematics['PER'][SR][fatjet][signal_mass]-1), 
         ROOT.RooArgList(sigmaL, JER, PER))
     widthR = ROOT.RooFormulaVar("widthR", "widthR", 
-        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][SR][fatjet][signal_mass]-1, systematics['PER']-1),
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][SR][fatjet][signal_mass]-1, systematics['PER'][SR][fatjet][signal_mass]-1),
         ROOT.RooArgList(sigmaR, JER, PER))
 
     # Define the Gaussian with mean=MH and width=sigma
@@ -306,7 +306,7 @@ if __name__ == "__main__":
     year = args.year
     fit_range_down, fit_range_up = args.fit_range_down, args.fit_range_up                    
     signal_mass = [700, 800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 3000, 3500]
-    
+
     if args.signal_mass is not None:
         signal_mass = [args.signal_mass]
     if args.SR is not None:

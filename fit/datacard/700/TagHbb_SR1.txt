@@ -4,7 +4,7 @@ kmax *  # number of nuisance parameters (sources of systematic uncertainties)
 ---------------------------------------------
 shapes      bbgamma          tagHbb      ../../workspace/Run2/700/Hbb_SR1.root      workspace_signal:model_bbgamma_SR1
 shapes      background     tagHbb      ../../workspace/Run2/data_CR1.root      workspace_CR:multipdf_CR1
-shapes      data_obs     tagHbb      ../../workspace/Run2/data_CR1_SR1.root      workspace_SR:data_SR1
+shapes      data_obs     tagHbb      ../../workspace/Run2/data_Hbb_SR1.root      workspace_SR:data_SR1
 ---------------------------------------------
 bin             tagHbb
 observation     -1
@@ -29,4 +29,4 @@ PER             param   0.0     1.0
 JES		param	0.0	1.0
 JER		param	0.0	1.0
 ---------------------------------------------
-pdfindex_CR1         discrete
+pdfindex_SR1         discrete
