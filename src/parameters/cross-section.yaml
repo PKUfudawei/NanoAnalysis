@@ -70,7 +70,7 @@ ST:
   ST_s-channel_4f_hadronicDecays: 11.24
   ST_s-channel_4f_leptonDecays: 3.74
 ZpToHG:
-  ZpToHGamma_M600: 0.0472
+  #ZpToHGamma_M600: 0.0472
   ZpToHGamma_M700: 0.03787
   ZpToHGamma_M800: 0.03052
   ZpToHGamma_M900: 0.02468
