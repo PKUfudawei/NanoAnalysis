@@ -227,6 +227,7 @@ def fit_background(year, region, cut):
 def get_SR_data(year, region, cut, fatjet):
     # # Data in SR
     f = ROOT.TFile(f"input/{year}/data_CR_to_SR{fatjet}.root", "r")
+    #f = ROOT.TFile(f"input/{year}/background_mc.root", "r")
     tree = f.Get("Events")
 
     # Define mass and weight variables
