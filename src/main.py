@@ -49,7 +49,7 @@ def main() -> None:
     ).events()
     p = Processor(outdir=args.outdir, mode=args.mode, param_dir=args.param_dir)
     cutflow = p.process(events)
-    stats = {k: int(v) for (k, v) in cutflow.items()}
+    stats = {k: float(v) for (k, v) in cutflow.items()}
 
     ## post-processing
     result = []

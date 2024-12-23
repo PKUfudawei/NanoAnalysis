@@ -464,10 +464,10 @@ class Processor(processor.ProcessorABC):
             self.cutflow['n_events'] = ak.sum(np.sign(self.event.genWeight))
             if 'LHEPdfWeight' in self.event.fields:
                 for i in range(len(self.event.LHEPdfWeight[0])):
-                    self.variable[f'LHEPdfWeight_sum_{i}'] = ak.ones_like(self.event.event)*ak.sum(self.event.LHEPdfWeight[:, i])
+                    self.cutflow[f'LHEPdfWeight_sum_{i}'] = ak.sum(self.event.LHEPdfWeight[:, i])
             if 'LHEScaleWeight' in self.event.fields:
                 for i in range(len(self.event.LHEScaleWeight[0])):
-                    self.variable[f'LHEScaleWeight_sum_{i}'] = ak.ones_like(self.event.event)*ak.sum(self.event.LHEScaleWeight[:, i])
+                    self.cutflow[f'LHEScaleWeight_sum_{i}'] = ak.sum(self.event.LHEScaleWeight[:, i])
 
         # pass pre-selection
         N_preselect = self.preselect_bbgamma()
