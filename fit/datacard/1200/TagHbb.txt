@@ -21,8 +21,8 @@ rate                              1              1              1              1
 Br_Hbb                  lnN       0.9874/1.0124  -              0.9874/1.0124  -            
 CSEV                    lnN       1.001          -              1.001          -            
 L1_prefiring            lnN       1.004          -              1.004          -            
-PDF                     lnN       1.021          -              1.032          -            
-QCD_scale               lnN       1.047          -              1.047          -            
+PDF                     lnN       1.003          -              1.004          -            
+QCD_scale               lnN       0.996/1.005    -              0.996/1.005    -            
 Xbb_tagger_SR1          lnN       1.05           -              -              -            
 Xbb_tagger_SR2          lnN       -              -              1.054          -            
 lumi_Run2               lnN       1.016          -              1.016          -            
