@@ -150,33 +150,34 @@ def fit_background(year, region, cut):
     # dijet2 model
     p1['dijet2'] = ROOT.RooRealVar("p1", "p1", 1, -10, 100)
     p2['dijet2'] = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
-    model['dijet2'] = ROOT.RooGenericPdf("model_background_dijet2", "model_background_dijet2", "TMath::Power(@0, @1 + @2 * TMath::Log(@0))", ROOT.RooArgList(fit_mass, p1['dijet2'], p2['dijet2']))
+    model['dijet2'] = ROOT.RooGenericPdf("model_background_dijet2", "model_background_dijet2", f"TMath::Power(@0, @1 + @2 * TMath::Log(@0))", ROOT.RooArgList(fit_mass, p1['dijet2'], p2['dijet2']))
 
     # dijet3 model
-    p1['dijet3'] = ROOT.RooRealVar("p1", "p1", 1, -10, 10)
-    p2['dijet3'] = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
-    p3['dijet3'] = ROOT.RooRealVar("p3", "p3", -0.1, -10, 10)
-    model['dijet3'] = ROOT.RooGenericPdf("model_background_dijet3", "model_background_dijet3", "TMath::Power(@0, @1 + @2 * TMath::Log(@0) + @3 * TMath::Power(TMath::Log(@0), 2))", ROOT.RooArgList(fit_mass, p1['dijet3'], p2['dijet3'], p3['dijet3']))
+    p1['dijet3'] = ROOT.RooRealVar("p1", "p1", 1, -10, 100)
+    p2['dijet3'] = ROOT.RooRealVar("p2", "p2", -0.1, -10, 10)
+    p3['dijet3'] = ROOT.RooRealVar("p3", "p3", -0.1, -2, 1)
+    model['dijet3'] = ROOT.RooGenericPdf("model_background_dijet3", "model_background_dijet3", f"TMath::Power(@0, @1 + @2 * TMath::Log(@0) + @3 * TMath::Power(TMath::Log(@0), 2))", ROOT.RooArgList(fit_mass, p1['dijet3'], p2['dijet3'], p3['dijet3']))
 
     # expow1 model
     p1['expow1'] = ROOT.RooRealVar("p1", "p1", -0.1, -10, 0)
-    model['expow1'] = ROOT.RooGenericPdf("model_background_expow1", "model_background_expow1", "TMath::Power(@0, @1)", ROOT.RooArgList(fit_mass, p1['expow1']))
-    
+    model['expow1'] = ROOT.RooGenericPdf("model_background_expow1", "model_background_expow1", f"TMath::Power(@0, @1)", ROOT.RooArgList(fit_mass, p1['expow1']))
+
+
     # expow2 model
-    p1['expow2'] = ROOT.RooRealVar("p1", "p1", -0.01, -5, 0)
+    p1['expow2'] = ROOT.RooRealVar("p1", "p1", 0.1, -10, 5)
     p2['expow2'] = ROOT.RooRealVar("p2", "p2", -0.001, -1, 0)
-    model['expow2'] = ROOT.RooGenericPdf("model_background_expow2", "model_background_expow2", "TMath::Power(@0, @1) * TMath::Exp(@2 * @0)", ROOT.RooArgList(fit_mass, p1['expow2'], p2['expow2']))
+    model['expow2'] = ROOT.RooGenericPdf("model_background_expow2", "model_background_expow2", f"TMath::Power(@0, @1) * TMath::Exp(@2 * @0)", ROOT.RooArgList(fit_mass, p1['expow2'], p2['expow2']))
 
     # invpow2 model
-    p1['invpow2'] = ROOT.RooRealVar("p1", "p1", -1e-3, -1, 0.1)
-    p2['invpow2'] = ROOT.RooRealVar("p2", "p2", 10, 0, 1e4)
-    model['invpow2'] = ROOT.RooGenericPdf("model_background_invpow2", "model_background_invpow2", "TMath::Power(1 + @1*@0, @2)", ROOT.RooArgList(fit_mass, p1['invpow2'], p2['invpow2']))
+    p1['invpow2'] = ROOT.RooRealVar("p1", "p1", 1e-6, -1e-1, 1e-1)
+    p2['invpow2'] = ROOT.RooRealVar("p2", "p2", -1e2, -1e4, 1e4)
+    model['invpow2'] = ROOT.RooGenericPdf("model_background_invpow2", "model_background_invpow2", f"TMath::Power(1 + @1*@0, @2)", ROOT.RooArgList(fit_mass, p1['invpow2'], p2['invpow2']))
 
     # invpow3 model
-    p1['invpow3'] = ROOT.RooRealVar("p1", "p1", -1e-4, -1, 0.1)
-    p2['invpow3'] = ROOT.RooRealVar("p2", "p2", 10, 0, 1e4)
-    p3['invpow3'] = ROOT.RooRealVar("p3", "p3", -0.1, -1, 1)
-    model['invpow3'] = ROOT.RooGenericPdf("model_background_invpow3", "model_background_invpow3", "TMath::Power(1 + @1*@0, @2 + @3*@0)", ROOT.RooArgList(fit_mass, p1['invpow3'], p2['invpow3'], p3['invpow3']))
+    p1['invpow3'] = ROOT.RooRealVar("p1", "p1", 1e-6, -1, 1)
+    p2['invpow3'] = ROOT.RooRealVar("p2", "p2", -1e2, -1e4, 5e3)
+    p3['invpow3'] = ROOT.RooRealVar("p3", "p3", 1e-6, -1, 1)
+    model['invpow3'] = ROOT.RooGenericPdf("model_background_invpow3", "model_background_invpow3", f"TMath::Power(1 + @1*@0, @2 + @3*@0)", ROOT.RooArgList(fit_mass, p1['invpow3'], p2['invpow3'], p3['invpow3']))
 
     # Make a RooCategory object: this will control which PDF is "active"
     category = ROOT.RooCategory(f"pdfindex_{region}", "Index of Pdf which is active")
