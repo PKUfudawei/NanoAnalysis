@@ -337,21 +337,29 @@ class Processor(processor.ProcessorABC):
     def all_correction(self):
         # Object-level
         self.object['photon'] = self.photon_correction(self.object['photon'])
+
+        self.object['AK8jet']['pt'] = self.object['AK8jet']['pt_nominal']
+        self.object['AK8jet']['mass'] = self.object['AK8jet']['mass_nominal']
+        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
+        self.variable['photon+jet_mass_JEC_nominal'] = self.object['photon+jet'].mass
+
+        self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_original
+        self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_original
         for direction in ['up', 'down']:
             for i in ['JES', 'JER']:
                 self.object['AK8jet']['pt'] = self.object['AK8jet'][f'pt_{i}_{direction}']
                 self.object['AK8jet']['mass'] = self.object['AK8jet'][f'mass_{i}_{direction}']
                 self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
                 self.variable[f'photon+jet_mass_{i}_{direction}'] = self.object['photon+jet'].mass
-
             self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_original
             self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_original
+
             for i in ['PES', 'PER']:
                 self.object['photon']['pt'] = self.object['photon'][f'pt_{i}_{direction}']
                 self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
                 self.variable[f'photon+jet_mass_{i}_{direction}'] = self.object['photon+jet'].mass
+            self.object['photon']['pt'] = self.object['photon'].pt_original
 
-        self.object['photon']['pt'] = self.object['photon'].pt_original
         self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
 
         # Event-level
