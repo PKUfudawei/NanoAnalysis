@@ -202,10 +202,10 @@ class Processor(processor.ProcessorABC):
         photon['PER_down'] = 1 + photon.dEsigmaDown
         photon['PER_nominal'] = ak.ones_like(photon.dEsigmaUp)
 
-        photon['pt_original'] = photon.pt
+        photon['pt_nominal'] = photon.pt
         for i in ['PES', 'PER']:
-            photon[f'pt_{i}_up'] = photon['pt_original'] * photon[f'{i}_up']
-            photon[f'pt_{i}_down'] = photon['pt_original'] * photon[f'{i}_down']
+            photon[f'pt_{i}_up'] = photon['pt_nominal'] * photon[f'{i}_up']
+            photon[f'pt_{i}_down'] = photon['pt_nominal'] * photon[f'{i}_down']
 
         return photon
 
@@ -258,7 +258,9 @@ class Processor(processor.ProcessorABC):
         AK8jet['PU_rho'] = ak.broadcast_arrays(self.event.fixedGridRhoFastjetAll, AK8jet)[0]
 
         corrected_AK8jet = CorrectedJetsFactory(name_map, jec_stack).build(AK8jet).compute()
+        AK8jet['pt'] = corrected_AK8jet.pt
         AK8jet['pt_nominal'] = corrected_AK8jet.pt
+        AK8jet['mass'] = corrected_AK8jet.mass
         AK8jet['mass_nominal'] = corrected_AK8jet.mass
         self.object['corrected_AK8jet'] = corrected_AK8jet
         for i in corrected_AK8jet.fields:
@@ -338,27 +340,20 @@ class Processor(processor.ProcessorABC):
         # Object-level
         self.object['photon'] = self.photon_correction(self.object['photon'])
 
-        self.object['AK8jet']['pt'] = self.object['AK8jet']['pt_nominal']
-        self.object['AK8jet']['mass'] = self.object['AK8jet']['mass_nominal']
-        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
-        self.variable['photon+jet_mass_JEC_nominal'] = self.object['photon+jet'].mass
-
-        self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_original
-        self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_original
         for direction in ['up', 'down']:
             for i in ['JES', 'JER']:
                 self.object['AK8jet']['pt'] = self.object['AK8jet'][f'pt_{i}_{direction}']
                 self.object['AK8jet']['mass'] = self.object['AK8jet'][f'mass_{i}_{direction}']
                 self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
                 self.variable[f'photon+jet_mass_{i}_{direction}'] = self.object['photon+jet'].mass
-            self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_original
-            self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_original
+            self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_nominal
+            self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_nominal
 
             for i in ['PES', 'PER']:
                 self.object['photon']['pt'] = self.object['photon'][f'pt_{i}_{direction}']
                 self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
                 self.variable[f'photon+jet_mass_{i}_{direction}'] = self.object['photon+jet'].mass
-            self.object['photon']['pt'] = self.object['photon'].pt_original
+            self.object['photon']['pt'] = self.object['photon'].pt_nominal
 
         self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
 
