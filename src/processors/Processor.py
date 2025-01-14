@@ -258,10 +258,8 @@ class Processor(processor.ProcessorABC):
         AK8jet['PU_rho'] = ak.broadcast_arrays(self.event.fixedGridRhoFastjetAll, AK8jet)[0]
 
         corrected_AK8jet = CorrectedJetsFactory(name_map, jec_stack).build(AK8jet).compute()
-        AK8jet['pt'] = corrected_AK8jet.pt
-        AK8jet['pt_nominal'] = corrected_AK8jet.pt
-        AK8jet['mass'] = corrected_AK8jet.mass
-        AK8jet['mass_nominal'] = corrected_AK8jet.mass
+        AK8jet['pt_JEC_nominal'] = corrected_AK8jet.pt
+        AK8jet['mass_JEC_nominal'] = corrected_AK8jet.mass
         self.object['corrected_AK8jet'] = corrected_AK8jet
         for i in corrected_AK8jet.fields:
             if i.startswith("JES") or i.startswith("JER"):
@@ -340,14 +338,18 @@ class Processor(processor.ProcessorABC):
         # Object-level
         self.object['photon'] = self.photon_correction(self.object['photon'])
 
+        self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_JEC_nominal
+        self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_JEC_nominal
+        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
+        self.variable[f'photon+jet_mass_JEC_nominal'] = self.object['photon+jet'].mass
         for direction in ['up', 'down']:
             for i in ['JES', 'JER']:
                 self.object['AK8jet']['pt'] = self.object['AK8jet'][f'pt_{i}_{direction}']
                 self.object['AK8jet']['mass'] = self.object['AK8jet'][f'mass_{i}_{direction}']
                 self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
                 self.variable[f'photon+jet_mass_{i}_{direction}'] = self.object['photon+jet'].mass
-            self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_nominal
-            self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_nominal
+            self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_original
+            self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_original
 
             for i in ['PES', 'PER']:
                 self.object['photon']['pt'] = self.object['photon'][f'pt_{i}_{direction}']
