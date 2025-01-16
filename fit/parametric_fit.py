@@ -214,7 +214,7 @@ def fit_background(year, region, cut):
 
     if not os.path.exists(bkg_model_dir):
         os.makedirs(bkg_model_dir)
-    f_out = ROOT.TFile(f"{bkg_model_dir}/data_{region}.root", "RECREATE")
+    f_out = ROOT.TFile(f"{bkg_model_dir}/data_{fatjet}bb_{region}.root", "RECREATE")
     w_bkg = ROOT.RooWorkspace(f"workspace_{region}", f"workspace_{region}")
     getattr(w_bkg, "import")(data_region)
     getattr(w_bkg, "import")(category)

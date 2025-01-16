@@ -3,10 +3,10 @@ imax 2 number of bins
 jmax 1 number of processes minus 1
 kmax 12 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
-shapes background  SR1         datacard/2000_5p6/../../workspace/Run2/data_SR1.root workspace_SR1:multipdf_SR1
+shapes background  SR1         datacard/2000_5p6/../../workspace/Run2/data_Zbb_SR1.root workspace_SR1:multipdf_SR1
 shapes bbgamma     SR1         datacard/2000_5p6/../../workspace/Run2/2000_5p6/Zbb_SR1.root workspace_signal:model_bbgamma_SR1
 shapes data_obs    SR1         datacard/2000_5p6/../../workspace/Run2/data_Zbb_SR1.root workspace_SR1:data_SR1
-shapes background  SR2         datacard/2000_5p6/../../workspace/Run2/data_SR2.root workspace_SR2:multipdf_SR2
+shapes background  SR2         datacard/2000_5p6/../../workspace/Run2/data_Zbb_SR2.root workspace_SR2:multipdf_SR2
 shapes bbgamma     SR2         datacard/2000_5p6/../../workspace/Run2/2000_5p6/Zbb_SR2.root workspace_signal:model_bbgamma_SR2
 shapes data_obs    SR2         datacard/2000_5p6/../../workspace/Run2/data_Zbb_SR2.root workspace_SR2:data_SR2
 ----------------------------------------------------------------------------------------------------------------------------------
