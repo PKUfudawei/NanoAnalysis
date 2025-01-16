@@ -283,16 +283,15 @@ if __name__ == "__main__":
             (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
         )"""
 
-        if Fit_background:
-            fit_background(year, CR, CR_cut)
-
         for fatjet in ['H', 'Z']:
             mass_low, mass_high = mass_SR[fatjet]
             SR_cut = f"""(
                 (jet_mass>{mass_low}) & (jet_mass<{mass_high}) & 
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
             )"""
-            get_SR_data(year, SR, SR_cut, fatjet)
+            #get_SR_data(year, SR, SR_cut, fatjet)
+            if Fit_background:
+                fit_background(year, SR, SR_cut)
 
             if Fit_signal:
                 for m in signal_mass:

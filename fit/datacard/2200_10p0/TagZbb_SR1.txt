@@ -3,7 +3,7 @@ jmax 1  # number of backgrounds
 kmax *  # number of nuisance parameters (sources of systematic uncertainties)
 ---------------------------------------------
 shapes      bbgamma          tagZbb      ../../workspace/Run2/2200_10p0/Zbb_SR1.root      workspace_signal:model_bbgamma_SR1
-shapes      background     tagZbb      ../../workspace/Run2/data_CR1.root      workspace_CR1:multipdf_CR1
+shapes      background     tagZbb      ../../workspace/Run2/data_SR1.root      workspace_SR1:multipdf_SR1
 shapes      data_obs     tagZbb      ../../workspace/Run2/data_Zbb_SR1.root      workspace_SR1:data_SR1
 ---------------------------------------------
 bin             tagZbb
@@ -29,4 +29,4 @@ PER             param   0.0     1.0
 JES		param	0.0	1.0
 JER		param	0.0	1.0
 ---------------------------------------------
-pdfindex_CR1         discrete
+pdfindex_SR1         discrete
