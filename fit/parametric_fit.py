@@ -41,7 +41,7 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
         fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-5*sigma if m-5*sigma>500 else 500, m+5*sigma)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
-    tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
+    tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
 
     # Convert to RooDataSet
 
@@ -127,7 +127,7 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
         yaml.dump(info, f)
 
 
-def fit_background(year, region, cut):
+def fit_background(year, fatjet, region, cut):
     bkg_model_dir = f'workspace/{year}'
     
     # # Background modelling
@@ -139,7 +139,7 @@ def fit_background(year, region, cut):
     fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", 1500, fit_range_down, fit_range_up)
     weight = ROOT.RooRealVar("weight", "weight", 1, -10, 10)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
-    tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
+    tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
 
     # Convert to RooDataSet
     data_region = ROOT.RooDataSet(f"data_{region}", f"data_{region}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
@@ -149,7 +149,7 @@ def fit_background(year, region, cut):
 
     # dijet2 model
     p1['dijet2'] = ROOT.RooRealVar("p1", "p1", 1, -10, 100)
-    p2['dijet2'] = ROOT.RooRealVar("p2", "p2", -1, -10, 10)
+    p2['dijet2'] = ROOT.RooRealVar("p2", "p2", -2, -10, 0)
     model['dijet2'] = ROOT.RooGenericPdf("model_background_dijet2", "model_background_dijet2", f"TMath::Power(@0, @1 + @2 * TMath::Log(@0))", ROOT.RooArgList(fit_mass, p1['dijet2'], p2['dijet2']))
 
     # dijet3 model
@@ -164,19 +164,19 @@ def fit_background(year, region, cut):
 
 
     # expow2 model
-    p1['expow2'] = ROOT.RooRealVar("p1", "p1", 0.1, -10, 5)
-    p2['expow2'] = ROOT.RooRealVar("p2", "p2", -0.001, -1, 0)
+    p1['expow2'] = ROOT.RooRealVar("p1", "p1", 2, -10, 10)
+    p2['expow2'] = ROOT.RooRealVar("p2", "p2", -0.1, -5, 5)
     model['expow2'] = ROOT.RooGenericPdf("model_background_expow2", "model_background_expow2", f"TMath::Power(@0, @1) * TMath::Exp(@2 * @0)", ROOT.RooArgList(fit_mass, p1['expow2'], p2['expow2']))
 
     # invpow2 model
-    p1['invpow2'] = ROOT.RooRealVar("p1", "p1", 1e-6, -1e-1, 1e-1)
-    p2['invpow2'] = ROOT.RooRealVar("p2", "p2", -1e2, -1e4, 1e4)
+    p1['invpow2'] = ROOT.RooRealVar("p1", "p1", 1e-5, -1e-1, 1e-1)
+    p2['invpow2'] = ROOT.RooRealVar("p2", "p2", -1e2, -2e3, 0)
     model['invpow2'] = ROOT.RooGenericPdf("model_background_invpow2", "model_background_invpow2", f"TMath::Power(1 + @1*@0, @2)", ROOT.RooArgList(fit_mass, p1['invpow2'], p2['invpow2']))
 
     # invpow3 model
-    p1['invpow3'] = ROOT.RooRealVar("p1", "p1", 1e-6, -1, 1)
-    p2['invpow3'] = ROOT.RooRealVar("p2", "p2", -1e2, -1e4, 5e3)
-    p3['invpow3'] = ROOT.RooRealVar("p3", "p3", 1e-6, -1, 1)
+    p1['invpow3'] = ROOT.RooRealVar("p1", "p1", 1e-4, -1, 1)
+    p2['invpow3'] = ROOT.RooRealVar("p2", "p2", -1e2, -1e3, 1e2)
+    p3['invpow3'] = ROOT.RooRealVar("p3", "p3", -1e-2, -1, 1)
     model['invpow3'] = ROOT.RooGenericPdf("model_background_invpow3", "model_background_invpow3", f"TMath::Power(1 + @1*@0, @2 + @3*@0)", ROOT.RooArgList(fit_mass, p1['invpow3'], p2['invpow3'], p3['invpow3']))
 
     # Make a RooCategory object: this will control which PDF is "active"
@@ -186,7 +186,7 @@ def fit_background(year, region, cut):
     models = ROOT.RooArgList()
 
     # Fit model to data sidebands
-    for k in ['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3']:
+    for k in ['expow1', 'dijet2']:
         model[k].fitTo(data_region, ROOT.RooFit.SumW2Error(True))
         p1[k].setConstant(True)
         if k in p2:
@@ -202,7 +202,7 @@ def fit_background(year, region, cut):
     background_norm.setConstant(False)
     if not os.path.exists(bkg_model_dir):
         os.makedirs(bkg_model_dir)
-    with open(f'{bkg_model_dir}/fit_info_background_{region}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{bkg_model_dir}/fit_info_background_{fatjet}_{region}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'p1': {func: p1[func].getVal() for func in p1},
             'p2': {func: p2[func].getVal() for func in p2},
@@ -291,9 +291,9 @@ if __name__ == "__main__":
             )"""
             #get_SR_data(year, SR, SR_cut, fatjet)
             if Fit_background:
-                fit_background(year, SR, SR_cut)
+                fit_background(year, fatjet, SR, SR_cut)
 
-            if Fit_signal:
+            if Fit_signal:     
                 for m in signal_mass:
                     fit_signal(year, fatjet, m, SR, SR_cut)
                     if fatjet == 'Z':
