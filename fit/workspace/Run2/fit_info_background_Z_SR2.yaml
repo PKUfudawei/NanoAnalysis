@@ -1,13 +1,13 @@
-norm: 59.0
+norm: 57.0
 p1:
-  dijet2: 0.8878060265752288
+  dijet2: 1.005788523440985
   dijet3: 1.0
-  expow1: -4.5202199651308455
+  expow1: -4.651580714152275
   expow2: 2.0
   invpow2: 1.0e-05
   invpow3: 0.0001
 p2:
-  dijet2: -0.3969025710997533
+  dijet2: -0.41646388484193925
   dijet3: -0.1
   expow2: -0.1
   invpow2: -100.0
@@ -15,4 +15,4 @@ p2:
 p3:
   dijet3: -0.1
   invpow3: -0.01
-region_num: 59.0
+region_num: 57.0

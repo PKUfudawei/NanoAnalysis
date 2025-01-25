@@ -372,7 +372,6 @@ class Processor(processor.ProcessorABC):
     def store_variables(self, vars: dict):
         self.variable['nAK4jet'] = ak.num(self.event.Jet, axis=1)
         self.variable['nExtraAK4jet'] = ak.sum(self.extra_AK4jet_tag(reconstruct=True), axis=1)
-        self.variable['event_No.'] = getattr(self.event, 'event', ak.ones_like(self.event.event))
         self.variable['MET+photon_mT'] = np.sqrt(
             2 * self.object['photon']['pt'] * self.event.MET.pt * (1 - np.cos(self.object['photon']['phi'] - self.event.MET.phi))
         )
@@ -391,7 +390,7 @@ class Processor(processor.ProcessorABC):
                 elif obj == 'event' and var == 'weight':
                     array = self.add_weight()
                 elif obj == 'event':
-                    array = self.event[var]
+                    array = getattr(self.event, var, ak.ones_like(self.event.event))
                 if f'{obj}_{var}' not in self.variable:
                     self.variable[f'{obj}_{var}'] = array
 
@@ -496,7 +495,7 @@ class Processor(processor.ProcessorABC):
         self.store_variables(vars={
             'AK8jet': {'pt', 'eta', 'phi', 'mass', 'msoftdrop', 'rawFactor'} | (set(self.object['AK8jet'].fields) - set(self.event.FatJet.fields)),
             'photon': {'pt', 'eta', 'phi', 'mass', 'cutBased', 'sieie'} | (set(self.object['photon'].fields) - set(self.event.Photon.fields)),
-            'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight'},
+            'event': {'MET_pt', 'MET_phi', 'genWeight', 'weight', 'run', 'luminosityBlock', 'event'},
             'photon+jet': {'pt', 'eta', 'phi', 'mass'},
         })
 
