@@ -11,7 +11,7 @@ def parse_commandline():
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
     parser.add_argument('-d', '--fit_range_down', help='To specify the lower bound of fitting range', default=650, type=int)
-    parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=4000, type=int)
+    parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=3700, type=int)
     args = parser.parse_args()
     return args
 
@@ -29,7 +29,7 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
     else:
         sigma = np.std(f['Events']['fit_mass'].array())
     
-    # # Signal modelling
+    ## Signal modelling
     f = ROOT.TFile(f"input/{year}/{signal_mass}/{fatjet}bb_gamma.root", "r")
     # Load TTree
     tree = f.Get("Events")
@@ -53,8 +53,7 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
     mc.plotOn(plot)
     plot.Draw()
     can.Update()
-    if not os.path.exists(f'../plots/fit/{year}/{signal_mass}'):
-        os.makedirs(f'../plots/fit/{year}/{signal_mass}')
+    os.makedirs(f'../plots/fit/{year}/{signal_mass}', exist_ok=True)
     can.SaveAs(f"../plots/fit/{year}/{signal_mass}/fit_variable_{fatjet}bb_{signal_mass}_{region}.pdf")
 
     # Introduce RooRealVars into the workspace for the fitted variable
@@ -63,8 +62,8 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
     sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 5, 5*sigma)
     alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.1, 5)
     alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.1, 5)
-    nL = ROOT.RooRealVar("nL", "nL", 1, 0.2, 3)
-    nR = ROOT.RooRealVar("nR", "nR", 1, 0.2, 3)
+    nL = ROOT.RooRealVar("nL", "nL", 1, 0.2, 4)
+    nR = ROOT.RooRealVar("nR", "nR", 1, 0.2, 4)
 
     JES = ROOT.RooRealVar("JES", "JES", 0, -5, 5)
     JER = ROOT.RooRealVar("JER", "JER", 0, -5, 5)
@@ -95,15 +94,15 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
     alphaR.setConstant(True)
     nL.setConstant(True)
     nR.setConstant(True)
-    signal_norm.setConstant(True)
+    #signal_norm.setConstant(True)
 
     sig_model_dir = f'workspace/{year}/{signal_mass}'
     if not os.path.exists(sig_model_dir):
         os.makedirs(sig_model_dir)
-    f_out = ROOT.TFile(f"{sig_model_dir}/{fatjet}bb_{region}.root", "RECREATE")
+    f_out = ROOT.TFile(f"{sig_model_dir}/signal_{fatjet}bb_{region}.root", "RECREATE")
     w_sig = ROOT.RooWorkspace("workspace_signal", "workspace_signal")
     getattr(w_sig, "import")(model_signal)
-    getattr(w_sig, "import")(signal_norm)
+    #getattr(w_sig, "import")(signal_norm)
     w_sig.Print()
     w_sig.Write()
     f_out.Close()
@@ -146,47 +145,45 @@ def fit_background(year, fatjet, region, cut):
 
     ## Multiple background models
     model, p1, p2, p3 = {}, {}, {}, {}
-
+    energy = 1e3
     # dijet2 model
-    p1['dijet2'] = ROOT.RooRealVar("p1", "p1", 1, -10, 100)
-    p2['dijet2'] = ROOT.RooRealVar("p2", "p2", -2, -10, 0)
-    model['dijet2'] = ROOT.RooGenericPdf("model_background_dijet2", "model_background_dijet2", f"TMath::Power(@0, @1 + @2 * TMath::Log(@0))", ROOT.RooArgList(fit_mass, p1['dijet2'], p2['dijet2']))
+    p1['dijet2'] = ROOT.RooRealVar("p1_dijet2", "p1_dijet2", -1, -10, 0)
+    p2['dijet2'] = ROOT.RooRealVar("p2_dijet2", "p2_dijet2", -1, -10, 0)
+    model['dijet2'] = ROOT.RooGenericPdf("model_background_dijet2", "model_background_dijet2", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}))", ROOT.RooArgList(fit_mass, p1['dijet2'], p2['dijet2']))
 
     # dijet3 model
-    p1['dijet3'] = ROOT.RooRealVar("p1", "p1", 1, -10, 100)
-    p2['dijet3'] = ROOT.RooRealVar("p2", "p2", -0.1, -10, 10)
-    p3['dijet3'] = ROOT.RooRealVar("p3", "p3", -0.1, -2, 1)
-    model['dijet3'] = ROOT.RooGenericPdf("model_background_dijet3", "model_background_dijet3", f"TMath::Power(@0, @1 + @2 * TMath::Log(@0) + @3 * TMath::Power(TMath::Log(@0), 2))", ROOT.RooArgList(fit_mass, p1['dijet3'], p2['dijet3'], p3['dijet3']))
+    p1['dijet3'] = ROOT.RooRealVar("p1_dijet3", "p1_dijet3", -1, -10, 0)
+    p2['dijet3'] = ROOT.RooRealVar("p2_dijet3", "p2_dijet3", -1, -10, 0)
+    p3['dijet3'] = ROOT.RooRealVar("p3_dijet3", "p3_dijet3", 1, -10, 10)
+    model['dijet3'] = ROOT.RooGenericPdf("model_background_dijet3", "model_background_dijet3", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}) + @3 * TMath::Power(TMath::Log(@0/{energy}), 2))", ROOT.RooArgList(fit_mass, p1['dijet3'], p2['dijet3'], p3['dijet3']))
 
     # expow1 model
-    p1['expow1'] = ROOT.RooRealVar("p1", "p1", -0.1, -10, 0)
-    model['expow1'] = ROOT.RooGenericPdf("model_background_expow1", "model_background_expow1", f"TMath::Power(@0, @1)", ROOT.RooArgList(fit_mass, p1['expow1']))
-
+    p1['expow1'] = ROOT.RooRealVar("p1_expow1", "p1_expow1", -1, -10, 0)
+    model['expow1'] = ROOT.RooGenericPdf("model_background_expow1", "model_background_expow1", f"TMath::Power(@0/{energy}, @1)", ROOT.RooArgList(fit_mass, p1['expow1']))
 
     # expow2 model
-    p1['expow2'] = ROOT.RooRealVar("p1", "p1", 2, -10, 10)
-    p2['expow2'] = ROOT.RooRealVar("p2", "p2", -0.1, -5, 5)
-    model['expow2'] = ROOT.RooGenericPdf("model_background_expow2", "model_background_expow2", f"TMath::Power(@0, @1) * TMath::Exp(@2 * @0)", ROOT.RooArgList(fit_mass, p1['expow2'], p2['expow2']))
+    p1['expow2'] = ROOT.RooRealVar("p1_expow2", "p1_expow2", -1, -10, 0)
+    p2['expow2'] = ROOT.RooRealVar("p2_expow2", "p2_expow2", -1, -10, 10)
+    model['expow2'] = ROOT.RooGenericPdf("model_background_expow2", "model_background_expow2", f"TMath::Power(@0/{energy}, @1) * TMath::Exp(@2 * @0/{energy})", ROOT.RooArgList(fit_mass, p1['expow2'], p2['expow2']))
 
     # invpow2 model
-    p1['invpow2'] = ROOT.RooRealVar("p1", "p1", 1e-5, -1e-1, 1e-1)
-    p2['invpow2'] = ROOT.RooRealVar("p2", "p2", -1e2, -2e3, 0)
-    model['invpow2'] = ROOT.RooGenericPdf("model_background_invpow2", "model_background_invpow2", f"TMath::Power(1 + @1*@0, @2)", ROOT.RooArgList(fit_mass, p1['invpow2'], p2['invpow2']))
+    p1['invpow2'] = ROOT.RooRealVar("p1_invpow2", "p1_invpow2", 1, -10, 10)
+    p2['invpow2'] = ROOT.RooRealVar("p2_invpow2", "p2_invpow2", -1, -20, 20)
+    model['invpow2'] = ROOT.RooGenericPdf("model_background_invpow2", "model_background_invpow2", f"TMath::Power(1 + @1*@0/{energy}, @2)", ROOT.RooArgList(fit_mass, p1['invpow2'], p2['invpow2']))
 
     # invpow3 model
-    p1['invpow3'] = ROOT.RooRealVar("p1", "p1", 1e-4, -1, 1)
-    p2['invpow3'] = ROOT.RooRealVar("p2", "p2", -1e2, -1e3, 1e2)
-    p3['invpow3'] = ROOT.RooRealVar("p3", "p3", -1e-2, -1, 1)
-    model['invpow3'] = ROOT.RooGenericPdf("model_background_invpow3", "model_background_invpow3", f"TMath::Power(1 + @1*@0, @2 + @3*@0)", ROOT.RooArgList(fit_mass, p1['invpow3'], p2['invpow3'], p3['invpow3']))
+    p1['invpow3'] = ROOT.RooRealVar("p1_invpow3", "p1_invpow3", 1, -10, 10)
+    p2['invpow3'] = ROOT.RooRealVar("p2_invpow3", "p2_invpow3", -1, -50, 50)
+    p3['invpow3'] = ROOT.RooRealVar("p3_invpow3", "p3_invpow3", 1e-1, -10, 10)
+    model['invpow3'] = ROOT.RooGenericPdf("model_background_invpow3", "model_background_invpow3", f"TMath::Power(1 + @1*@0/{energy}, @2 + @3*@0/{energy})", ROOT.RooArgList(fit_mass, p1['invpow3'], p2['invpow3'], p3['invpow3']))
 
     # Make a RooCategory object: this will control which PDF is "active"
     category = ROOT.RooCategory(f"pdfindex_{region}", "Index of Pdf which is active")
-
     # Make a RooArgList of the models
     models = ROOT.RooArgList()
 
-    # Fit model to data sidebands
-    for k in ['expow1', 'dijet2']:
+    # Fit models
+    for k in model:
         model[k].fitTo(data_region, ROOT.RooFit.SumW2Error(True))
         p1[k].setConstant(True)
         if k in p2:
@@ -194,32 +191,35 @@ def fit_background(year, fatjet, region, cut):
         if k in p3:
             p3[k].setConstant(True)
         models.add(model[k])
-
+    
     # Build the RooMultiPdf object
     multipdf = ROOT.RooMultiPdf(f"multipdf_{region}", f"multipdf_{region}", category, models)
 
     background_norm = ROOT.RooRealVar(f"multipdf_{region}_norm", "Number of background events", data_region.sumEntries(), 0, 100 * data_region.sumEntries())
     background_norm.setConstant(False)
-    if not os.path.exists(bkg_model_dir):
-        os.makedirs(bkg_model_dir)
-    with open(f'{bkg_model_dir}/fit_info_background_{fatjet}_{region}.yaml', 'w', encoding='utf-8') as f:
+    os.makedirs(bkg_model_dir, exist_ok=True)
+    with open(f'{bkg_model_dir}/background_{fatjet}_{region}.yaml', 'w', encoding='utf-8') as f:
         info = {
-            'p1': {func: p1[func].getVal() for func in p1},
-            'p2': {func: p2[func].getVal() for func in p2},
-            'p3': {func: p3[func].getVal() for func in p3},
-            'region_num': data_region.sumEntries(),
+            'p1': {k: p1[k].getVal() for k in p1},
+            'p2': {k: p2[k].getVal() for k in p2},
+            'p3': {k: p3[k].getVal() for k in p3},
+            'event_sum': data_region.sumEntries(),
             'norm': background_norm.getVal()
         }
         yaml.dump(info, f)
 
-    if not os.path.exists(bkg_model_dir):
-        os.makedirs(bkg_model_dir)
+
+    fit_mass.setBins(320)
+    data_hist = ROOT.RooDataHist(f"data_{region}_hist", f"data_{region}_hist", fit_mass, data_region)
+    os.makedirs(bkg_model_dir, exist_ok=True)
     f_out = ROOT.TFile(f"{bkg_model_dir}/data_{fatjet}bb_{region}.root", "RECREATE")
     w_bkg = ROOT.RooWorkspace(f"workspace_{region}", f"workspace_{region}")
     getattr(w_bkg, "import")(data_region)
-    getattr(w_bkg, "import")(category)
-    getattr(w_bkg, "import")(background_norm)
     getattr(w_bkg, "import")(multipdf)
+    for k in model:
+        getattr(w_bkg, "import")(model[k])
+    getattr(w_bkg, "import")(background_norm)
+    getattr(w_bkg, "import")(data_hist)
     w_bkg.Print()
     w_bkg.Write()
     f_out.Close()
@@ -241,8 +241,7 @@ def get_SR_data(year, region, cut, fatjet):
     data_region = ROOT.RooDataSet(f"data_{region}", f"data_{region}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
 
     data_dir = f"./workspace/{year}"
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
+    os.makedirs(data_dir, exist_ok=True)
     f_out = ROOT.TFile(f"{data_dir}/data_{fatjet}bb_{region}.root", "RECREATE")
     w = ROOT.RooWorkspace(f"workspace_{region}", f"workspace_{region}")
     getattr(w, "import")(data_region)

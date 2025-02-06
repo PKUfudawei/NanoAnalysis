@@ -2,9 +2,9 @@ imax 1  # number of channels
 jmax 1  # number of backgrounds
 kmax *  # number of nuisance parameters (sources of systematic uncertainties)
 ---------------------------------------------
-shapes      bbgamma          tagZbb      ../../workspace/Run2/2200/Zbb_SR2.root      workspace_signal:model_bbgamma_SR2
-shapes      background     tagZbb      ../../workspace/Run2/data_Zbb_SR2.root      workspace_SR2:multipdf_SR2
-shapes      data_obs     tagZbb      ../../workspace/Run2/data_Zbb_SR2.root      workspace_SR2:data_SR2
+shapes      bbgamma          tagZbb      ../../workspace/Run2/2200/atom_signal_Zbb_SR2.root      workspace_signal:model_bbgamma_SR2
+shapes      background     tagZbb      ../../workspace/Run2/atom_data_Zbb_SR2.root      workspace_SR2:multipdf_SR2
+shapes      data_obs     tagZbb      ../../workspace/Run2/atom_data_Zbb_SR2.root      workspace_SR2:data_SR2_hist
 ---------------------------------------------
 bin             tagZbb
 observation     -1
@@ -12,7 +12,7 @@ observation     -1
 bin             tagZbb        tagZbb
 process         bbgamma      background
 process         0           1
-rate			1.0			1.0
+rate		5.626527375341875	1.0
 ---------------------------------------------
 lumi_Run2		lnN	1.016	-
 L1_prefiring		lnN	1.004	-
@@ -24,9 +24,11 @@ Xbb_tagger_SR2		lnN	1.057	-
 
 Br_Zbb		lnN	1.003	-
 ---------------------------------------------
-PES             param   0.0     1.0
-PER             param   0.0     1.0
-JES		param	0.0	1.0
-JER		param	0.0	1.0
+PES     param   0.0     1.0
+PER     param   0.0     1.0
+JES		param	0.0     1.0
+JER		param	0.0     1.0
+---------------------------------------------
+theory group = Br_Zbb
 ---------------------------------------------
 pdfindex_SR2         discrete

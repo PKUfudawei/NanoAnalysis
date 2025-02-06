@@ -1,18 +1,15 @@
 norm: 574.0
 p1:
-  dijet2: 11.068721774684017
-  dijet3: 1.0
-  expow1: -5.109650424362457
-  expow2: 2.0
-  invpow2: 1.0e-05
-  invpow3: 0.0001
+  dijet2: -5.345617794692093
+  dijet3: -1.0
+  expow1: -5.309176823760153
+  expow2: -1.0
+  invpow2: 1.0
 p2:
-  dijet2: -1.1882718521826092
-  dijet3: -0.1
-  expow2: -0.1
-  invpow2: -100.0
-  invpow3: -100.0
+  dijet2: -1.1796367429087573
+  dijet3: -1.0
+  expow2: -1.0
+  invpow2: -1.0
 p3:
-  dijet3: -0.1
-  invpow3: -0.01
+  dijet3: 1.0
 region_num: 574.0
