@@ -1,0 +1,34 @@
+imax 1  # number of channels
+jmax 1  # number of backgrounds
+kmax *  # number of nuisance parameters (sources of systematic uncertainties)
+---------------------------------------------
+shapes      bbgamma          tagZbb      ../../../workspace/2017/1800_5p6/signal_Zbb_SR1.root      workspace_signal:model_bbgamma_SR1
+shapes      background     tagZbb      ../../../workspace/2017/data_Zbb_SR1.root      workspace_SR1:multipdf_SR1
+shapes      data_obs     tagZbb      ../../../workspace/2017/data_Zbb_SR1.root      workspace_SR1:data_SR1
+---------------------------------------------
+bin             tagZbb
+observation     -1
+---------------------------------------------
+bin             tagZbb        tagZbb
+process         bbgamma      background
+process         0           1
+rate		0.5278329787033726	1.0
+---------------------------------------------
+luminosity		lnN	1.016	-
+L1_prefiring		lnN	1.004	-
+pile-up		lnN	1.01	-
+photon_ID		lnN	1.044	-
+CSEV		lnN	1.001	-
+Xbb_tagger_SR1		lnN	1.037	-
+
+
+Br_Zbb          lnN 0.9874/1.0124 -
+---------------------------------------------
+PES     param   0.0     1.0
+PER     param   0.0     1.0
+JES_2017	param	0.0	1.0
+JER		param	0.0     1.0
+---------------------------------------------
+theory group = Br_Zbb
+---------------------------------------------
+pdfindex_SR1_2017         discrete

@@ -27,7 +27,7 @@ def cross_section_reweighting(file, lumi, x_section, n_events):
         print(f'\tEmpty file: {file}')
         return
     array = ak.from_parquet(file)
-    array['event_final_weight'] = array['event_weight'] * x_section * lumi * 1000 / n_events
+    array['event_final_weight'] = array['event_genWeight'] * x_section * lumi * 1000 / n_events
     ak.to_parquet(ak.Array(array), file)
     return array.event_final_weight
 

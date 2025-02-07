@@ -1,0 +1,35 @@
+Combination of SR1=TagZbb_SR1.txt  SR2=TagZbb_SR2.txt
+imax 2 number of bins
+jmax 1 number of processes minus 1
+kmax 12 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes background  SR1         ../../../workspace/2018/data_Zbb_SR1.root workspace_SR1:multipdf_SR1
+shapes bbgamma     SR1         ../../../workspace/2018/2600_10p0/signal_Zbb_SR1.root workspace_signal:model_bbgamma_SR1
+shapes data_obs    SR1         ../../../workspace/2018/data_Zbb_SR1.root workspace_SR1:data_SR1
+shapes background  SR2         ../../../workspace/2018/data_Zbb_SR2.root workspace_SR2:multipdf_SR2
+shapes bbgamma     SR2         ../../../workspace/2018/2600_10p0/signal_Zbb_SR2.root workspace_signal:model_bbgamma_SR2
+shapes data_obs    SR2         ../../../workspace/2018/data_Zbb_SR2.root workspace_SR2:data_SR2
+----------------------------------------------------------------------------------------------------------------------------------
+bin          SR1            SR2          
+observation  -1             -1           
+----------------------------------------------------------------------------------------------------------------------------------
+bin                               SR1            SR1            SR2            SR2          
+process                           bbgamma        background     bbgamma        background   
+process                           0              1              0              1            
+rate                              0.1573861491   1              0.284026324    1            
+----------------------------------------------------------------------------------------------------------------------------------
+Br_Zbb                  lnN       0.9874/1.0124  -              0.9874/1.0124  -            
+CSEV                    lnN       1.001          -              1.001          -            
+L1_prefiring            lnN       1.004          -              1.004          -            
+Xbb_tagger_SR1          lnN       1.035          -              -              -            
+Xbb_tagger_SR2          lnN       -              -              1.057          -            
+luminosity              lnN       1.016          -              1.016          -            
+photon_ID               lnN       1.044          -              1.044          -            
+pile-up                 lnN       1.01           -              1.01           -            
+PES           param  0.0 1.0
+PER           param  0.0 1.0
+JES_2018      param  0.0 1.0
+JER           param  0.0 1.0
+pdfindex_SR1_2018  discrete
+pdfindex_SR2_2018  discrete
+theory group = Br_Zbb

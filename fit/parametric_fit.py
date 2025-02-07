@@ -7,7 +7,7 @@ ROOT.gStyle.SetOptTitle(0)
 
 def parse_commandline():
     parser = argparse.ArgumentParser(description='parametric fitting')
-    parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2017', '2018', 'Run2'), default='Run2')
+    parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2016', '2017', '2018', 'Run2'), default='Run2')
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
     parser.add_argument('-d', '--fit_range_down', help='To specify the lower bound of fitting range', default=650, type=int)
@@ -21,16 +21,16 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
 
     with open('../src/parameters/uncertainty/systematics.yaml', 'r', encoding='utf-8') as f:
         systematics = yaml.safe_load(f)
-    
-    f = uproot.open(f"input/{year}/{signal_mass}/{fatjet}bb_gamma.root")
+
     if '_' in str(signal_mass):
-        f_narrow = uproot.open(f"input/{year}/{signal_mass.split('_')[0]}/{fatjet}bb_gamma.root")
+        f_narrow = uproot.open(f"input/{year}/{signal_mass.split('_')[0]}/bbgamma_SR{fatjet}.root")
         sigma = np.std(f_narrow['Events']['fit_mass'].array())
     else:
+        f = uproot.open(f"input/{year}/{signal_mass}/bbgamma_SR{fatjet}.root")
         sigma = np.std(f['Events']['fit_mass'].array())
-    
-    ## Signal modelling
-    f = ROOT.TFile(f"input/{year}/{signal_mass}/{fatjet}bb_gamma.root", "r")
+
+    ## Signal modeling
+    f = ROOT.TFile(f"input/{year}/{signal_mass}/bbgamma_SR{fatjet}.root", "r")
     # Load TTree
     tree = f.Get("Events")
 
@@ -65,13 +65,16 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
     nL = ROOT.RooRealVar("nL", "nL", 1, 0.2, 4)
     nR = ROOT.RooRealVar("nR", "nR", 1, 0.2, 4)
 
-    JES = ROOT.RooRealVar("JES", "JES", 0, -5, 5)
+    if year != 'Run2':
+        JES = ROOT.RooRealVar(f"JES_{year}", f"JES_{year}", 0, -5, 5)
+    else:
+        JES = ROOT.RooRealVar("JES", f"JES", 0, -5, 5)
     JER = ROOT.RooRealVar("JER", "JER", 0, -5, 5)
     PES = ROOT.RooRealVar("PES", "PES", 0, -5, 5)
     PER = ROOT.RooRealVar("PER", "PER", 0, -5, 5)
     JES.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
     mean = ROOT.RooFormulaVar("mean", "mean", 
-        "@0*(1+%f*@1+%f*@2)"%(systematics['JES'][region][m]-1, systematics['PES'][region][m]-1), 
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JES'][region][m]-1, (systematics['PES'][region][m]-1)/2), 
         ROOT.RooArgList(x0, JES, PES))
     widthL = ROOT.RooFormulaVar("widthL", "widthL", 
         "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][region][fatjet][signal_mass]-1, systematics['PER'][region][fatjet][signal_mass]-1), 
@@ -107,7 +110,7 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
     w_sig.Write()
     f_out.Close()
 
-    with open(f'{sig_model_dir}/fit_info_{fatjet}bb_{region}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{sig_model_dir}/signal_{fatjet}bb_{region}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'x0': x0.getVal(),
             'mean': mean.getVal(),
@@ -145,17 +148,7 @@ def fit_background(year, fatjet, region, cut):
 
     ## Multiple background models
     model, p1, p2, p3 = {}, {}, {}, {}
-    energy = 1e3
-    # dijet2 model
-    p1['dijet2'] = ROOT.RooRealVar("p1_dijet2", "p1_dijet2", -1, -10, 0)
-    p2['dijet2'] = ROOT.RooRealVar("p2_dijet2", "p2_dijet2", -1, -10, 0)
-    model['dijet2'] = ROOT.RooGenericPdf("model_background_dijet2", "model_background_dijet2", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}))", ROOT.RooArgList(fit_mass, p1['dijet2'], p2['dijet2']))
-
-    # dijet3 model
-    p1['dijet3'] = ROOT.RooRealVar("p1_dijet3", "p1_dijet3", -1, -10, 0)
-    p2['dijet3'] = ROOT.RooRealVar("p2_dijet3", "p2_dijet3", -1, -10, 0)
-    p3['dijet3'] = ROOT.RooRealVar("p3_dijet3", "p3_dijet3", 1, -10, 10)
-    model['dijet3'] = ROOT.RooGenericPdf("model_background_dijet3", "model_background_dijet3", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}) + @3 * TMath::Power(TMath::Log(@0/{energy}), 2))", ROOT.RooArgList(fit_mass, p1['dijet3'], p2['dijet3'], p3['dijet3']))
+    energy = 1e2
 
     # expow1 model
     p1['expow1'] = ROOT.RooRealVar("p1_expow1", "p1_expow1", -1, -10, 0)
@@ -163,27 +156,41 @@ def fit_background(year, fatjet, region, cut):
 
     # expow2 model
     p1['expow2'] = ROOT.RooRealVar("p1_expow2", "p1_expow2", -1, -10, 0)
-    p2['expow2'] = ROOT.RooRealVar("p2_expow2", "p2_expow2", -1, -10, 10)
+    p2['expow2'] = ROOT.RooRealVar("p2_expow2", "p2_expow2", -1e-2, -0.5, 0.5)
     model['expow2'] = ROOT.RooGenericPdf("model_background_expow2", "model_background_expow2", f"TMath::Power(@0/{energy}, @1) * TMath::Exp(@2 * @0/{energy})", ROOT.RooArgList(fit_mass, p1['expow2'], p2['expow2']))
 
+    # dijet2 model
+    p1['dijet2'] = ROOT.RooRealVar("p1_dijet2", "p1_dijet2", -2, -10, 0)
+    p2['dijet2'] = ROOT.RooRealVar("p2_dijet2", "p2_dijet2", -1, -5, 0)
+    model['dijet2'] = ROOT.RooGenericPdf("model_background_dijet2", "model_background_dijet2", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}))", ROOT.RooArgList(fit_mass, p1['dijet2'], p2['dijet2']))
+
+    # dijet3 model
+    p1['dijet3'] = ROOT.RooRealVar("p1_dijet3", "p1_dijet3", -1, -10, 0)
+    p2['dijet3'] = ROOT.RooRealVar("p2_dijet3", "p2_dijet3", -1, -5, 0)
+    p3['dijet3'] = ROOT.RooRealVar("p3_dijet3", "p3_dijet3", -1e-3, -0.1, 0.1)
+    model['dijet3'] = ROOT.RooGenericPdf("model_background_dijet3", "model_background_dijet3", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}) + @3 * TMath::Power(TMath::Log(@0/{energy}), 2))", ROOT.RooArgList(fit_mass, p1['dijet3'], p2['dijet3'], p3['dijet3']))
+
     # invpow2 model
-    p1['invpow2'] = ROOT.RooRealVar("p1_invpow2", "p1_invpow2", 1, -10, 10)
-    p2['invpow2'] = ROOT.RooRealVar("p2_invpow2", "p2_invpow2", -1, -20, 20)
+    p1['invpow2'] = ROOT.RooRealVar("p1_invpow2", "p1_invpow2", 1e-2, 0, 10)
+    p2['invpow2'] = ROOT.RooRealVar("p2_invpow2", "p2_invpow2", -2, -30, 0)
     model['invpow2'] = ROOT.RooGenericPdf("model_background_invpow2", "model_background_invpow2", f"TMath::Power(1 + @1*@0/{energy}, @2)", ROOT.RooArgList(fit_mass, p1['invpow2'], p2['invpow2']))
 
     # invpow3 model
-    p1['invpow3'] = ROOT.RooRealVar("p1_invpow3", "p1_invpow3", 1, -10, 10)
-    p2['invpow3'] = ROOT.RooRealVar("p2_invpow3", "p2_invpow3", -1, -50, 50)
-    p3['invpow3'] = ROOT.RooRealVar("p3_invpow3", "p3_invpow3", 1e-1, -10, 10)
+    p1['invpow3'] = ROOT.RooRealVar("p1_invpow3", "p1_invpow3", 1e-2, 0, 10)
+    p2['invpow3'] = ROOT.RooRealVar("p2_invpow3", "p2_invpow3", -2, -30, 0)
+    p3['invpow3'] = ROOT.RooRealVar("p3_invpow3", "p3_invpow3", -0.5, -1, 1)
     model['invpow3'] = ROOT.RooGenericPdf("model_background_invpow3", "model_background_invpow3", f"TMath::Power(1 + @1*@0/{energy}, @2 + @3*@0/{energy})", ROOT.RooArgList(fit_mass, p1['invpow3'], p2['invpow3'], p3['invpow3']))
 
     # Make a RooCategory object: this will control which PDF is "active"
-    category = ROOT.RooCategory(f"pdfindex_{region}", "Index of Pdf which is active")
+    if year != 'Run2':
+        category = ROOT.RooCategory(f"pdfindex_{region}_{year}", "Index of Pdf which is active")
+    else:
+        category = ROOT.RooCategory(f"pdfindex_{region}", "Index of Pdf which is active")
     # Make a RooArgList of the models
     models = ROOT.RooArgList()
 
     # Fit models
-    for k in model:
+    for k in ['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3']:
         model[k].fitTo(data_region, ROOT.RooFit.SumW2Error(True))
         p1[k].setConstant(True)
         if k in p2:
@@ -198,7 +205,7 @@ def fit_background(year, fatjet, region, cut):
     background_norm = ROOT.RooRealVar(f"multipdf_{region}_norm", "Number of background events", data_region.sumEntries(), 0, 100 * data_region.sumEntries())
     background_norm.setConstant(False)
     os.makedirs(bkg_model_dir, exist_ok=True)
-    with open(f'{bkg_model_dir}/background_{fatjet}_{region}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{bkg_model_dir}/background_{fatjet}bb_{region}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'p1': {k: p1[k].getVal() for k in p1},
             'p2': {k: p2[k].getVal() for k in p2},
@@ -209,8 +216,8 @@ def fit_background(year, fatjet, region, cut):
         yaml.dump(info, f)
 
 
-    fit_mass.setBins(320)
-    data_hist = ROOT.RooDataHist(f"data_{region}_hist", f"data_{region}_hist", fit_mass, data_region)
+    #fit_mass.setBins(320)
+    #data_hist = ROOT.RooDataHist(f"data_{region}_hist", f"data_{region}_hist", fit_mass, data_region)
     os.makedirs(bkg_model_dir, exist_ok=True)
     f_out = ROOT.TFile(f"{bkg_model_dir}/data_{fatjet}bb_{region}.root", "RECREATE")
     w_bkg = ROOT.RooWorkspace(f"workspace_{region}", f"workspace_{region}")
@@ -219,7 +226,7 @@ def fit_background(year, fatjet, region, cut):
     for k in model:
         getattr(w_bkg, "import")(model[k])
     getattr(w_bkg, "import")(background_norm)
-    getattr(w_bkg, "import")(data_hist)
+    #getattr(w_bkg, "import")(data_hist)
     w_bkg.Print()
     w_bkg.Write()
     f_out.Close()
