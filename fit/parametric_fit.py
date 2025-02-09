@@ -16,21 +16,22 @@ def parse_commandline():
     return args
 
 
-def fit_signal(year, fatjet, signal_mass, region, cut):
+def fit_signal(year, jet, signal_mass, region, cut):
+    signal_region = region[:2]+jet+region[2:]
     m = int(str(signal_mass).split('_')[0])
 
     with open('../src/parameters/uncertainty/systematics.yaml', 'r', encoding='utf-8') as f:
         systematics = yaml.safe_load(f)
 
     if '_' in str(signal_mass):
-        f_narrow = uproot.open(f"input/{year}/{signal_mass.split('_')[0]}/bbgamma_SR{fatjet}.root")
+        f_narrow = uproot.open(f"input/{year}/{signal_mass.split('_')[0]}/bbgamma_SR{jet}.root")
         sigma = np.std(f_narrow['Events']['fit_mass'].array())
     else:
-        f = uproot.open(f"input/{year}/{signal_mass}/bbgamma_SR{fatjet}.root")
+        f = uproot.open(f"input/{year}/{signal_mass}/bbgamma_SR{jet}.root")
         sigma = np.std(f['Events']['fit_mass'].array())
 
     ## Signal modeling
-    f = ROOT.TFile(f"input/{year}/{signal_mass}/bbgamma_SR{fatjet}.root", "r")
+    f = ROOT.TFile(f"input/{year}/{signal_mass}/bbgamma_SR{jet}.root", "r")
     # Load TTree
     tree = f.Get("Events")
 
@@ -54,7 +55,7 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
     plot.Draw()
     can.Update()
     os.makedirs(f'../plots/fit/{year}/{signal_mass}', exist_ok=True)
-    can.SaveAs(f"../plots/fit/{year}/{signal_mass}/fit_variable_{fatjet}bb_{signal_mass}_{region}.pdf")
+    can.SaveAs(f"../plots/fit/{year}/{signal_mass}/fit_variable_{signal_region}_{signal_mass}.pdf")
 
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", m, m - 300, m + 300)
@@ -74,18 +75,18 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
     PER = ROOT.RooRealVar("PER", "PER", 0, -5, 5)
     JES.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
     mean = ROOT.RooFormulaVar("mean", "mean", 
-        "@0*(1+%f*@1+%f*@2)"%(systematics['JES'][region][m]-1, (systematics['PES'][region][m]-1)/2), 
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JES'][region][m]-1, (systematics['PES'][region][m]-1)), 
         ROOT.RooArgList(x0, JES, PES))
     widthL = ROOT.RooFormulaVar("widthL", "widthL", 
-        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][region][fatjet][signal_mass]-1, systematics['PER'][region][fatjet][signal_mass]-1), 
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][region][jet][signal_mass]-1, systematics['PER'][region][jet][signal_mass]-1), 
         ROOT.RooArgList(sigmaL, JER, PER))
     widthR = ROOT.RooFormulaVar("widthR", "widthR", 
-        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][region][fatjet][signal_mass]-1, systematics['PER'][region][fatjet][signal_mass]-1),
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][region][jet][signal_mass]-1, systematics['PER'][region][jet][signal_mass]-1),
         ROOT.RooArgList(sigmaR, JER, PER))
 
     # Define the Gaussian with mean=MH and width=sigma
-    model_signal = ROOT.RooCrystalBall(f"model_bbgamma_{region}", f"model_bbgamma_{region}", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
-    signal_norm = ROOT.RooRealVar(f"model_bbgamma_{region}_norm", f"Number of signal events in Tag {fatjet}bb+gamma", mc.sumEntries(), 0, 100*mc.sumEntries())
+    model_signal = ROOT.RooCrystalBall(f"model_bbgamma_{signal_region}", f"model_bbgamma_{signal_region}", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
+    signal_norm = ROOT.RooRealVar(f"model_bbgamma_{signal_region}_norm", f"Number of signal events in {signal_region}", mc.sumEntries(), 0, 100*mc.sumEntries())
 
     # Fit Gaussian to MC events and plot
     model_signal.fitTo(mc, ROOT.RooFit.SumW2Error(True))
@@ -102,7 +103,7 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
     sig_model_dir = f'workspace/{year}/{signal_mass}'
     if not os.path.exists(sig_model_dir):
         os.makedirs(sig_model_dir)
-    f_out = ROOT.TFile(f"{sig_model_dir}/signal_{fatjet}bb_{region}.root", "RECREATE")
+    f_out = ROOT.TFile(f"{sig_model_dir}/signal_{signal_region}.root", "RECREATE")
     w_sig = ROOT.RooWorkspace("workspace_signal", "workspace_signal")
     getattr(w_sig, "import")(model_signal)
     #getattr(w_sig, "import")(signal_norm)
@@ -110,7 +111,7 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
     w_sig.Write()
     f_out.Close()
 
-    with open(f'{sig_model_dir}/signal_{fatjet}bb_{region}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{sig_model_dir}/signal_{signal_region}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'x0': x0.getVal(),
             'mean': mean.getVal(),
@@ -129,7 +130,8 @@ def fit_signal(year, fatjet, signal_mass, region, cut):
         yaml.dump(info, f)
 
 
-def fit_background(year, fatjet, region, cut):
+def fit_background(year, jet, region, cut):
+    signal_region = region[:2]+jet+region[2:]
     bkg_model_dir = f'workspace/{year}'
     
     # # Background modelling
@@ -182,10 +184,7 @@ def fit_background(year, fatjet, region, cut):
     model['invpow3'] = ROOT.RooGenericPdf("model_background_invpow3", "model_background_invpow3", f"TMath::Power(1 + @1*@0/{energy}, @2 + @3*@0/{energy})", ROOT.RooArgList(fit_mass, p1['invpow3'], p2['invpow3'], p3['invpow3']))
 
     # Make a RooCategory object: this will control which PDF is "active"
-    if year != 'Run2':
-        category = ROOT.RooCategory(f"pdfindex_{region}_{year}", "Index of Pdf which is active")
-    else:
-        category = ROOT.RooCategory(f"pdfindex_{region}", "Index of Pdf which is active")
+    category = ROOT.RooCategory(f"pdfindex_{region}", "Index of Pdf which is active")
     # Make a RooArgList of the models
     models = ROOT.RooArgList()
 
@@ -200,12 +199,12 @@ def fit_background(year, fatjet, region, cut):
         models.add(model[k])
     
     # Build the RooMultiPdf object
-    multipdf = ROOT.RooMultiPdf(f"multipdf_{region}", f"multipdf_{region}", category, models)
+    multipdf = ROOT.RooMultiPdf(f"multipdf_{signal_region}", f"multipdf_{signal_region}", category, models)
 
-    background_norm = ROOT.RooRealVar(f"multipdf_{region}_norm", "Number of background events", data_region.sumEntries(), 0, 100 * data_region.sumEntries())
+    background_norm = ROOT.RooRealVar(f"multipdf_{signal_region}_norm", "Number of background events", data_region.sumEntries(), 0, 100 * data_region.sumEntries())
     background_norm.setConstant(False)
     os.makedirs(bkg_model_dir, exist_ok=True)
-    with open(f'{bkg_model_dir}/background_{fatjet}bb_{region}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{bkg_model_dir}/background_{signal_region}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'p1': {k: p1[k].getVal() for k in p1},
             'p2': {k: p2[k].getVal() for k in p2},
@@ -219,8 +218,8 @@ def fit_background(year, fatjet, region, cut):
     #fit_mass.setBins(320)
     #data_hist = ROOT.RooDataHist(f"data_{region}_hist", f"data_{region}_hist", fit_mass, data_region)
     os.makedirs(bkg_model_dir, exist_ok=True)
-    f_out = ROOT.TFile(f"{bkg_model_dir}/data_{fatjet}bb_{region}.root", "RECREATE")
-    w_bkg = ROOT.RooWorkspace(f"workspace_{region}", f"workspace_{region}")
+    f_out = ROOT.TFile(f"{bkg_model_dir}/data_{signal_region}.root", "RECREATE")
+    w_bkg = ROOT.RooWorkspace(f"workspace_{signal_region}", f"workspace_{signal_region}")
     getattr(w_bkg, "import")(data_region)
     getattr(w_bkg, "import")(multipdf)
     for k in model:
@@ -232,9 +231,9 @@ def fit_background(year, fatjet, region, cut):
     f_out.Close()
 
 
-def get_SR_data(year, region, cut, fatjet):
+def get_SR_data(year, region, cut, jet):
     # # Data in SR
-    f = ROOT.TFile(f"input/{year}/data_CR_to_SR{fatjet}.root", "r")
+    f = ROOT.TFile(f"input/{year}/data_CR_to_SR{jet}.root", "r")
     #f = ROOT.TFile(f"input/{year}/background_mc.root", "r")
     tree = f.Get("Events")
 
@@ -249,7 +248,7 @@ def get_SR_data(year, region, cut, fatjet):
 
     data_dir = f"./workspace/{year}"
     os.makedirs(data_dir, exist_ok=True)
-    f_out = ROOT.TFile(f"{data_dir}/data_{fatjet}bb_{region}.root", "RECREATE")
+    f_out = ROOT.TFile(f"{data_dir}/data_{jet}bb_{region}.root", "RECREATE")
     w = ROOT.RooWorkspace(f"workspace_{region}", f"workspace_{region}")
     getattr(w, "import")(data_region)
     w.Print()
@@ -277,7 +276,7 @@ if __name__ == "__main__":
         'SR1': [0.8, 0.98],
         'SR2': [0.98, 2],
     }
-    mass_SR = {
+    mass_cut = {
         'Z': [80, 110],
         'H': [110, 150],
     }
@@ -285,23 +284,23 @@ if __name__ == "__main__":
         CR = SR.replace('S', 'C')
         tagger_cut_low, tagger_cut_high = tagger_cut[SR]
         CR_cut = f"""(
-            (((jet_mass>50) & (jet_mass<{mass_SR['Z'][0]})) | (jet_mass>{mass_SR['H'][1]})) & 
+            (((jet_mass>50) & (jet_mass<{mass_cut['Z'][0]})) | (jet_mass>{mass_cut['H'][1]})) & 
             (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
         )"""
 
-        for fatjet in ['H', 'Z']:
-            mass_low, mass_high = mass_SR[fatjet]
+        for jet in ['H', 'Z']:
+            mass_low, mass_high = mass_cut[jet]
             SR_cut = f"""(
                 (jet_mass>{mass_low}) & (jet_mass<{mass_high}) & 
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
             )"""
-            #get_SR_data(year, SR, SR_cut, fatjet)
+            #get_SR_data(year, SR, SR_cut, jet)
             if Fit_background:
-                fit_background(year, fatjet, SR, SR_cut)
+                fit_background(year, jet, SR, SR_cut)
 
-            if Fit_signal:     
+            if Fit_signal:
                 for m in signal_mass:
-                    fit_signal(year, fatjet, m, SR, SR_cut)
-                    if fatjet == 'Z':
-                        fit_signal(year, fatjet, str(m)+'_5p6', SR, SR_cut)
-                        fit_signal(year, fatjet, str(m)+'_10p0', SR, SR_cut)
+                    fit_signal(year, jet, m, SR, SR_cut)
+                    if jet == 'Z':
+                        fit_signal(year, jet, str(m)+'_5p6', SR, SR_cut)
+                        fit_signal(year, jet, str(m)+'_10p0', SR, SR_cut)

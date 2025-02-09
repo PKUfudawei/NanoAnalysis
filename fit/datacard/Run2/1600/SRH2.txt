@@ -1,0 +1,42 @@
+imax *  # number of channels
+jmax *  # number of backgrounds
+kmax *  # number of nuisance parameters (sources of systematic uncertainties)
+---------------------------------------------
+shapes      bbgamma_2016    SRH2      ../../../workspace/2016/1600/signal_SRH2.root      workspace_signal:model_bbgamma_SRH2
+shapes      bbgamma_2017    SRH2      ../../../workspace/2017/1600/signal_SRH2.root      workspace_signal:model_bbgamma_SRH2
+shapes      bbgamma_2018    SRH2      ../../../workspace/2018/1600/signal_SRH2.root      workspace_signal:model_bbgamma_SRH2
+shapes      background      SRH2      ../../../workspace/Run2/data_SRH2.root      workspace_SRH2:multipdf_SRH2
+shapes      data_obs     SRH2      ../../../workspace/Run2/data_SRH2.root      workspace_SRH2:data_SRH2
+---------------------------------------------
+bin             SRH2
+observation     -1
+---------------------------------------------
+bin             SRH2    SRH2    SRH2        SRH2
+process         bbgamma_2016    bbgamma_2017    bbgamma_2018      background
+process         0           -1  -2  1
+rate		13.192263704375364	15.612328459625132	22.442599090514705	1.0
+---------------------------------------------
+lumi_13TeV_2016		lnN	1.010   -   -	-
+lumi_13TeV_2017		lnN	-   1.020   -	-
+lumi_13TeV_2018		lnN	-   -   1.015	-
+lumi_13TeV_1718 	lnN	-   1.006   1.002	-
+lumi_13TeV_correlated	lnN	1.006   1.009   1.020	-
+L1_prefiring		lnN	1.004	1.004	1.004	-
+pile-up		lnN	1.01	1.01	1.01	-
+photon_ID		lnN	1.044	1.044	1.044	-
+CSEV		lnN	1.001	1.001	1.001	-
+Xbb_tagger_SR2		lnN	1.056	1.056	1.056	-
+PDF		lnN	1.006	1.006	1.006	-
+QCD_scale		lnN	0.994/1.006	0.994/1.006	0.994/1.006	-
+Br_Hbb          lnN 0.9874/1.0124   0.9874/1.0124   0.9874/1.0124 -
+---------------------------------------------
+JES_2016	param	0.0	1.0
+JES_2017	param	0.0	1.0
+JES_2018	param	0.0	1.0
+JER		param	0.0     1.0
+PES     param   0.0     1.0
+PER     param   0.0     1.0
+---------------------------------------------
+theory group = PDF QCD_scale Br_Hbb
+---------------------------------------------
+pdfindex_SRH2         discrete

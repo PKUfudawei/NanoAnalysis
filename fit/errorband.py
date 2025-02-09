@@ -191,6 +191,9 @@ def main(SR, jet, x_max=3700, x_min=650, bin_width=50):
 
     fit_error_band(candidates=['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3'], model=model, result=result, fit_variable=fit_mass, data_region=data_region, SR=SR, jet=jet, x_min=x_min, x_max=x_max, bin_width=bin_width)
 
+main('SR1', 'Z')
+"""
 for SR in ['SR1', 'SR2']:
     for jet in ['H', 'Z']:
         main(SR, jet)
+"""
