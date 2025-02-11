@@ -6,4 +6,4 @@ for year in ['2016', '2017', '2018', 'Run2']:
             name = file.replace('.txt', '')
             #os.system(f"cd {prefix}; combineCards.py {name}={file} > {file}")
             if file.endswith('.txt') and '1' in file:
-                os.system(f"combineCards.py {name}={prefix}/{file} {name.replace('1', '2')}={prefix}/{file.replace('1', '2')} > {prefix}/{file.replace('1', '')}")
+                os.system(f"cd {prefix}; combineCards.py {name}={file} {name.replace('1', '2')}={file.replace('1', '2')} > {file.replace('1', '')}")

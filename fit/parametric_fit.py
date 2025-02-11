@@ -11,7 +11,7 @@ def parse_commandline():
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
     parser.add_argument('-d', '--fit_range_down', help='To specify the lower bound of fitting range', default=650, type=int)
-    parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=3700, type=int)
+    parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=4000, type=int)
     args = parser.parse_args()
     return args
 
@@ -24,8 +24,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
         systematics = yaml.safe_load(f)
 
     if '_' in str(signal_mass):
-        f_narrow = uproot.open(f"input/{year}/{signal_mass.split('_')[0]}/bbgamma_SR{jet}.root")
-        sigma = np.std(f_narrow['Events']['fit_mass'].array())
+        sigma = m * (0.056 if '_5p6' in signal_mass else 0.10)
     else:
         f = uproot.open(f"input/{year}/{signal_mass}/bbgamma_SR{jet}.root")
         sigma = np.std(f['Events']['fit_mass'].array())
@@ -36,10 +35,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    if '_' in str(signal_mass):
-        fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-3*sigma if m-3*sigma>500 else 500, m+3*sigma)
-    else:
-        fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, m-5*sigma if m-5*sigma>500 else 500, m+5*sigma)
+    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, fit_range_down if m-4*sigma<fit_range_down  else m-4*sigma, fit_range_up if m+4*sigma>fit_range_up else m+4*sigma)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
@@ -61,10 +57,10 @@ def fit_signal(year, jet, signal_mass, region, cut):
     x0 = ROOT.RooRealVar("x0", "x0", m, m - 300, m + 300)
     sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 5, 5*sigma)
     sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 5, 5*sigma)
-    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.1, 5)
-    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.1, 5)
-    nL = ROOT.RooRealVar("nL", "nL", 1, 0.2, 4)
-    nR = ROOT.RooRealVar("nR", "nR", 1, 0.2, 4)
+    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.01, 5)
+    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.01, 5)
+    nL = ROOT.RooRealVar("nL", "nL", 1, 0.1, 5)
+    nR = ROOT.RooRealVar("nR", "nR", 1, 0.1, 5)
 
     if year != 'Run2':
         JES = ROOT.RooRealVar(f"JES_{year}", f"JES_{year}", 0, -5, 5)
@@ -131,7 +127,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
 
 
 def fit_background(year, jet, region, cut):
-    signal_region = region[:2]+jet+region[2:]
+    region = region[:2]+jet+region[2:]
     bkg_model_dir = f'workspace/{year}'
     
     # # Background modelling
@@ -199,12 +195,12 @@ def fit_background(year, jet, region, cut):
         models.add(model[k])
     
     # Build the RooMultiPdf object
-    multipdf = ROOT.RooMultiPdf(f"multipdf_{signal_region}", f"multipdf_{signal_region}", category, models)
+    multipdf = ROOT.RooMultiPdf(f"multipdf_{region}", f"multipdf_{region}", category, models)
 
-    background_norm = ROOT.RooRealVar(f"multipdf_{signal_region}_norm", "Number of background events", data_region.sumEntries(), 0, 100 * data_region.sumEntries())
+    background_norm = ROOT.RooRealVar(f"multipdf_{region}_norm", "Number of background events", data_region.sumEntries(), 0, 100 * data_region.sumEntries())
     background_norm.setConstant(False)
     os.makedirs(bkg_model_dir, exist_ok=True)
-    with open(f'{bkg_model_dir}/background_{signal_region}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{bkg_model_dir}/background_{region}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'p1': {k: p1[k].getVal() for k in p1},
             'p2': {k: p2[k].getVal() for k in p2},
@@ -218,8 +214,8 @@ def fit_background(year, jet, region, cut):
     #fit_mass.setBins(320)
     #data_hist = ROOT.RooDataHist(f"data_{region}_hist", f"data_{region}_hist", fit_mass, data_region)
     os.makedirs(bkg_model_dir, exist_ok=True)
-    f_out = ROOT.TFile(f"{bkg_model_dir}/data_{signal_region}.root", "RECREATE")
-    w_bkg = ROOT.RooWorkspace(f"workspace_{signal_region}", f"workspace_{signal_region}")
+    f_out = ROOT.TFile(f"{bkg_model_dir}/data_{region}.root", "RECREATE")
+    w_bkg = ROOT.RooWorkspace(f"workspace_{region}", f"workspace_{region}")
     getattr(w_bkg, "import")(data_region)
     getattr(w_bkg, "import")(multipdf)
     for k in model:

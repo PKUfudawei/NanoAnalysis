@@ -1,14 +1,14 @@
-Combination of SRH1=datacard/2018/3500/SRH1.txt  SRH2=datacard/2018/3500/SRH2.txt
+Combination of SRH1=SRH1.txt  SRH2=SRH2.txt
 imax 2 number of bins
 jmax 1 number of processes minus 1
 kmax 16 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
-shapes background    SRH1          datacard/2018/3500/../../../workspace/2018/data_SRH1.root workspace_SRH1:multipdf_SRH1
-shapes bbgamma_2018  SRH1          datacard/2018/3500/../../../workspace/2018/3500/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
-shapes data_obs      SRH1          datacard/2018/3500/../../../workspace/2018/data_SRH1.root workspace_SRH1:data_SRH1
-shapes background    SRH2          datacard/2018/3500/../../../workspace/2018/data_SRH2.root workspace_SRH2:multipdf_SRH2
-shapes bbgamma_2018  SRH2          datacard/2018/3500/../../../workspace/2018/3500/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
-shapes data_obs      SRH2          datacard/2018/3500/../../../workspace/2018/data_SRH2.root workspace_SRH2:data_SRH2
+shapes background    SRH1          ../../../workspace/2018/data_SRH1.root workspace_SRH1:multipdf_SRH1
+shapes bbgamma_2018  SRH1          ../../../workspace/2018/3500/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
+shapes data_obs      SRH1          ../../../workspace/2018/data_SRH1.root workspace_SRH1:data_SRH1
+shapes background    SRH2          ../../../workspace/2018/data_SRH2.root workspace_SRH2:multipdf_SRH2
+shapes bbgamma_2018  SRH2          ../../../workspace/2018/3500/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
+shapes data_obs      SRH2          ../../../workspace/2018/data_SRH2.root workspace_SRH2:data_SRH2
 ----------------------------------------------------------------------------------------------------------------------------------
 bin          SRH1           SRH2         
 observation  -1             -1           
@@ -16,7 +16,7 @@ observation  -1             -1
 bin                                      SRH1           SRH1           SRH2           SRH2         
 process                                  bbgamma_2018   background     bbgamma_2018   background   
 process                                  0              1              0              1            
-rate                                     0.649508459    1              1.1883946712   1            
+rate                                     0.6464818586   1              1.1819631452   1            
 ----------------------------------------------------------------------------------------------------------------------------------
 Br_Hbb                  lnN              0.9874/1.0124  -              0.9874/1.0124  -            
 CSEV                    lnN              1.001          -              1.001          -            
@@ -36,4 +36,4 @@ PES           param  0.0 1.0
 PER           param  0.0 1.0
 pdfindex_SRH1  discrete
 pdfindex_SRH2  discrete
-theory group = PDF QCD_scale Br_Hbb
+theory group = Br_Hbb QCD_scale PDF

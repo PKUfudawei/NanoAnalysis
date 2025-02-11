@@ -1,18 +1,18 @@
-Combination of SRH1=datacard/Run2/800/SRH1.txt  SRH2=datacard/Run2/800/SRH2.txt
+Combination of SRH1=SRH1.txt  SRH2=SRH2.txt
 imax 2 number of bins
 jmax 3 number of processes minus 1
 kmax 20 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
-shapes background    SRH1          datacard/Run2/800/../../../workspace/Run2/data_SRH1.root workspace_SRH1:multipdf_SRH1
-shapes bbgamma_2016  SRH1          datacard/Run2/800/../../../workspace/2016/800/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
-shapes bbgamma_2017  SRH1          datacard/Run2/800/../../../workspace/2017/800/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
-shapes bbgamma_2018  SRH1          datacard/Run2/800/../../../workspace/2018/800/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
-shapes data_obs      SRH1          datacard/Run2/800/../../../workspace/Run2/data_SRH1.root workspace_SRH1:data_SRH1
-shapes background    SRH2          datacard/Run2/800/../../../workspace/Run2/data_SRH2.root workspace_SRH2:multipdf_SRH2
-shapes bbgamma_2016  SRH2          datacard/Run2/800/../../../workspace/2016/800/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
-shapes bbgamma_2017  SRH2          datacard/Run2/800/../../../workspace/2017/800/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
-shapes bbgamma_2018  SRH2          datacard/Run2/800/../../../workspace/2018/800/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
-shapes data_obs      SRH2          datacard/Run2/800/../../../workspace/Run2/data_SRH2.root workspace_SRH2:data_SRH2
+shapes background    SRH1          workspace/Run2/data_SRH1.root workspace_SRH1:multipdf_SRH1
+shapes bbgamma_2016  SRH1          workspace/2016/800/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
+shapes bbgamma_2017  SRH1          workspace/2017/800/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
+shapes bbgamma_2018  SRH1          workspace/2018/800/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
+shapes data_obs      SRH1          workspace/Run2/data_SRH1.root workspace_SRH1:data_SRH1
+shapes background    SRH2          workspace/Run2/data_SRH2.root workspace_SRH2:multipdf_SRH2
+shapes bbgamma_2016  SRH2          workspace/2016/800/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
+shapes bbgamma_2017  SRH2          workspace/2017/800/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
+shapes bbgamma_2018  SRH2          workspace/2018/800/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
+shapes data_obs      SRH2          workspace/Run2/data_SRH2.root workspace_SRH2:data_SRH2
 ----------------------------------------------------------------------------------------------------------------------------------
 bin          SRH1           SRH2         
 observation  -1             -1           
@@ -20,7 +20,7 @@ observation  -1             -1
 bin                                      SRH1           SRH1           SRH1           SRH1           SRH2           SRH2           SRH2           SRH2         
 process                                  bbgamma_2016   bbgamma_2017   bbgamma_2018   background     bbgamma_2016   bbgamma_2017   bbgamma_2018   background   
 process                                  -2             -1             0              1              -2             -1             0              1            
-rate                                     61.5122507201  71.8057926781  98.5863110195  1              20.0292913886  23.3571381331  33.6804500571  1            
+rate                                     61.424098786   71.7045151144  98.4275273927  1              19.9894627882  23.3064993513  33.5827370561  1            
 ----------------------------------------------------------------------------------------------------------------------------------
 Br_Hbb                  lnN              0.9874/1.0124  0.9874/1.0124  0.9874/1.0124  -              0.9874/1.0124  0.9874/1.0124  0.9874/1.0124  -            
 CSEV                    lnN              1.001          1.001          1.001          -              1.001          1.001          1.001          -            
@@ -44,4 +44,4 @@ PES           param  0.0 1.0
 PER           param  0.0 1.0
 pdfindex_SRH1  discrete
 pdfindex_SRH2  discrete
-theory group = PDF QCD_scale Br_Hbb
+theory group = PDF Br_Hbb QCD_scale

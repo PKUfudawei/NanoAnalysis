@@ -2,11 +2,11 @@ imax *  # number of channels
 jmax *  # number of backgrounds
 kmax *  # number of nuisance parameters (sources of systematic uncertainties)
 ---------------------------------------------
-shapes      bbgamma_2016    SRZ2      ../../../workspace/2016/2400_10p0/signal_SRZ2.root      workspace_signal:model_bbgamma_SRZ2
-shapes      bbgamma_2017    SRZ2      ../../../workspace/2017/2400_10p0/signal_SRZ2.root      workspace_signal:model_bbgamma_SRZ2
-shapes      bbgamma_2018    SRZ2      ../../../workspace/2018/2400_10p0/signal_SRZ2.root      workspace_signal:model_bbgamma_SRZ2
-shapes      background      SRZ2      ../../../workspace/Run2/data_SRZ2.root      workspace_SRZ2:multipdf_SRZ2
-shapes      data_obs     SRZ2      ../../../workspace/Run2/data_SRZ2.root      workspace_SRZ2:data_SRZ2
+shapes      bbgamma_2016    SRZ2      workspace/2016/2400_10p0/signal_SRZ2.root      workspace_signal:model_bbgamma_SRZ2
+shapes      bbgamma_2017    SRZ2      workspace/2017/2400_10p0/signal_SRZ2.root      workspace_signal:model_bbgamma_SRZ2
+shapes      bbgamma_2018    SRZ2      workspace/2018/2400_10p0/signal_SRZ2.root      workspace_signal:model_bbgamma_SRZ2
+shapes      background      SRZ2      workspace/Run2/data_SRZ2.root      workspace_SRZ2:multipdf_SRZ2
+shapes      data_obs     SRZ2      workspace/Run2/data_SRZ2.root      workspace_SRZ2:data_SRZ2
 ---------------------------------------------
 bin             SRZ2
 observation     -1
@@ -14,7 +14,7 @@ observation     -1
 bin             SRZ2    SRZ2    SRZ2        SRZ2
 process         bbgamma_2016    bbgamma_2017    bbgamma_2018      background
 process         0           -1  -2  1
-rate		0.20223248795082327	0.24899521217594156	0.34053243877133355	1.0
+rate		0.27568889257963747	0.33932943075342337	0.4718260584049858	1.0
 ---------------------------------------------
 lumi_13TeV_2016		lnN	1.010   -   -	-
 lumi_13TeV_2017		lnN	-   1.020   -	-

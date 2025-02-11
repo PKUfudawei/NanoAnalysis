@@ -2,11 +2,11 @@ imax *  # number of channels
 jmax *  # number of backgrounds
 kmax *  # number of nuisance parameters (sources of systematic uncertainties)
 ---------------------------------------------
-shapes      bbgamma_2016    SRH1      ../../../workspace/2016/700/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
-shapes      bbgamma_2017    SRH1      ../../../workspace/2017/700/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
-shapes      bbgamma_2018    SRH1      ../../../workspace/2018/700/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
-shapes      background      SRH1      ../../../workspace/Run2/data_SRH1.root      workspace_SRH1:multipdf_SRH1
-shapes      data_obs     SRH1      ../../../workspace/Run2/data_SRH1.root      workspace_SRH1:data_SRH1
+shapes      bbgamma_2016    SRH1      workspace/2016/700/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
+shapes      bbgamma_2017    SRH1      workspace/2017/700/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
+shapes      bbgamma_2018    SRH1      workspace/2018/700/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
+shapes      background      SRH1      workspace/Run2/data_SRH1.root      workspace_SRH1:multipdf_SRH1
+shapes      data_obs     SRH1      workspace/Run2/data_SRH1.root      workspace_SRH1:data_SRH1
 ---------------------------------------------
 bin             SRH1
 observation     -1
@@ -14,7 +14,7 @@ observation     -1
 bin             SRH1    SRH1    SRH1        SRH1
 process         bbgamma_2016    bbgamma_2017    bbgamma_2018      background
 process         0           -1  -2  1
-rate		47.120215783361346	55.301690831780434	76.28256023861468	1.0
+rate		42.563903347589076	50.494897082448006	68.93016080372036	1.0
 ---------------------------------------------
 lumi_13TeV_2016		lnN	1.010   -   -	-
 lumi_13TeV_2017		lnN	-   1.020   -	-
