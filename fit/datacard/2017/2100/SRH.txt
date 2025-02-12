@@ -1,0 +1,39 @@
+Combination of SRH1=SRH1.txt  SRH2=SRH2.txt
+imax 2 number of bins
+jmax 1 number of processes minus 1
+kmax 16 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes background    SRH1          ../../../workspace/2017/data_SRH1.root workspace_SRH1:multipdf_SRH1
+shapes bbgamma_2017  SRH1          ../../../workspace/2017/2100/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
+shapes data_obs      SRH1          ../../../workspace/2017/data_SRH1.root workspace_SRH1:data_SRH1
+shapes background    SRH2          ../../../workspace/2017/data_SRH2.root workspace_SRH2:multipdf_SRH2
+shapes bbgamma_2017  SRH2          ../../../workspace/2017/2100/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
+shapes data_obs      SRH2          ../../../workspace/2017/data_SRH2.root workspace_SRH2:data_SRH2
+----------------------------------------------------------------------------------------------------------------------------------
+bin          SRH1           SRH2         
+observation  -1             -1           
+----------------------------------------------------------------------------------------------------------------------------------
+bin                                      SRH1           SRH1           SRH2           SRH2         
+process                                  bbgamma_2017   background     bbgamma_2017   background   
+process                                  0              1              0              1            
+rate                                     7.8005489979   1              8.2356278438   1            
+----------------------------------------------------------------------------------------------------------------------------------
+Br_Hbb                  lnN              0.9874/1.0124  -              0.9874/1.0124  -            
+CSEV                    lnN              1.001          -              1.001          -            
+L1_prefiring            lnN              1.004          -              1.004          -            
+PDF                     lnN              1.006          -              1.009          -            
+QCD_scale               lnN              1.008          -              1.008          -            
+Xbb_tagger_SR1          lnN              1.035          -              -              -            
+Xbb_tagger_SR2          lnN              -              -              1.057          -            
+lumi_13TeV_1718         lnN              1.006          -              1.006          -            
+lumi_13TeV_2017         lnN              1.02           -              1.02           -            
+lumi_13TeV_correlated   lnN              1.009          -              1.009          -            
+photon_ID               lnN              1.044          -              1.044          -            
+pile-up                 lnN              1.01           -              1.01           -            
+JES_2017      param  0.0 1.0
+JER           param  0.0 1.0
+PES           param  0.0 1.0
+PER           param  0.0 1.0
+pdfindex_SRH1  discrete
+pdfindex_SRH2  discrete
+theory group = Br_Hbb PDF QCD_scale

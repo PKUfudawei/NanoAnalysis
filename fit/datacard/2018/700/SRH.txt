@@ -22,7 +22,7 @@ Br_Hbb                  lnN              0.9874/1.0124  -              0.9874/1.
 CSEV                    lnN              1.001          -              1.001          -            
 L1_prefiring            lnN              1.004          -              1.004          -            
 PDF                     lnN              1.003          -              1.003          -            
-QCD_scale               lnN              0.998/1.002    -              0.998/1.002    -            
+QCD_scale               lnN              1.002          -              1.002          -            
 Xbb_tagger_SR1          lnN              1.063          -              -              -            
 Xbb_tagger_SR2          lnN              -              -              1.101          -            
 lumi_13TeV_1718         lnN              1.002          -              1.002          -            

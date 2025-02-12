@@ -35,7 +35,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, fit_range_down if m-4*sigma<fit_range_down  else m-4*sigma, fit_range_up if m+4*sigma>fit_range_up else m+4*sigma)
+    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, max(fit_range_down, m-5*sigma), min(fit_range_up, m+5*sigma))
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
@@ -82,7 +82,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
 
     # Define the Gaussian with mean=MH and width=sigma
     model_signal = ROOT.RooCrystalBall(f"model_bbgamma_{signal_region}", f"model_bbgamma_{signal_region}", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
-    signal_norm = ROOT.RooRealVar(f"model_bbgamma_{signal_region}_norm", f"Number of signal events in {signal_region}", mc.sumEntries(), 0, 100*mc.sumEntries())
+    signal_norm = ROOT.RooRealVar(f"model_bbgamma_{signal_region}_norm", f"Number of signal events in {signal_region}", mc.sumEntries(), 1e-3, 5*mc.sumEntries())
 
     # Fit Gaussian to MC events and plot
     model_signal.fitTo(mc, ROOT.RooFit.SumW2Error(True))
@@ -97,8 +97,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
     #signal_norm.setConstant(True)
 
     sig_model_dir = f'workspace/{year}/{signal_mass}'
-    if not os.path.exists(sig_model_dir):
-        os.makedirs(sig_model_dir)
+    os.makedirs(sig_model_dir, exist_ok=True)
     f_out = ROOT.TFile(f"{sig_model_dir}/signal_{signal_region}.root", "RECREATE")
     w_sig = ROOT.RooWorkspace("workspace_signal", "workspace_signal")
     getattr(w_sig, "import")(model_signal)

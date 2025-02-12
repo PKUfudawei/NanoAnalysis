@@ -22,7 +22,7 @@ photon_ID		lnN	1.044	-
 CSEV		lnN	1.001	-
 Xbb_tagger_SR2		lnN	1.057	-
 PDF		lnN	1.017	-
-QCD_scale		lnN	0.992/1.01	-
+QCD_scale		lnN	1.01	-
 Br_Hbb          lnN 0.9874/1.0124 -
 ---------------------------------------------
 JES_2016	param	0.0	1.0

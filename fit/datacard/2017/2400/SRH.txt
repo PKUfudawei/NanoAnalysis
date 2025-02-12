@@ -22,7 +22,7 @@ Br_Hbb                  lnN              0.9874/1.0124  -              0.9874/1.
 CSEV                    lnN              1.001          -              1.001          -            
 L1_prefiring            lnN              1.004          -              1.004          -            
 PDF                     lnN              1.01           -              1.015          -            
-QCD_scale               lnN              0.992/1.009    -              0.992/1.009    -            
+QCD_scale               lnN              1.009          -              1.009          -            
 Xbb_tagger_SR1          lnN              1.035          -              -              -            
 Xbb_tagger_SR2          lnN              -              -              1.057          -            
 lumi_13TeV_1718         lnN              1.006          -              1.006          -            
@@ -36,4 +36,4 @@ PES           param  0.0 1.0
 PER           param  0.0 1.0
 pdfindex_SRH1  discrete
 pdfindex_SRH2  discrete
-theory group = QCD_scale Br_Hbb PDF
+theory group = Br_Hbb PDF QCD_scale
