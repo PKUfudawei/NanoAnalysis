@@ -16,7 +16,7 @@ observation  -1             -1
 bin                                      SRH1           SRH1           SRH2           SRH2         
 process                                  bbgamma_2016   background     bbgamma_2016   background   
 process                                  0              1              0              1            
-rate                                     35.7073093789  1              18.8725513355  1            
+rate                                     35.8217290557  1              18.9641124047  1            
 ----------------------------------------------------------------------------------------------------------------------------------
 Br_Hbb                  lnN              0.9874/1.0124  -              0.9874/1.0124  -            
 CSEV                    lnN              1.001          -              1.001          -            
@@ -35,4 +35,4 @@ PES           param  0.0 1.0
 PER           param  0.0 1.0
 pdfindex_SRH1  discrete
 pdfindex_SRH2  discrete
-theory group = PDF QCD_scale Br_Hbb
+theory group = QCD_scale PDF Br_Hbb

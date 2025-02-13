@@ -7,7 +7,7 @@ ROOT.gStyle.SetOptTitle(0)
 
 def parse_commandline():
     parser = argparse.ArgumentParser(description='parametric fitting')
-    parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2016', '2017', '2018', 'Run2'), default='Run2')
+    parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2016', '2017', '2018', 'Run2'), default=None)
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
     parser.add_argument('-d', '--fit_range_down', help='To specify the lower bound of fitting range', default=650, type=int)
@@ -35,7 +35,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, max(fit_range_down, m-5*sigma), min(fit_range_up, m+5*sigma))
+    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, max(fit_range_down, m-5*sigma), m+5*sigma)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
@@ -55,12 +55,12 @@ def fit_signal(year, jet, signal_mass, region, cut):
 
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", m, m - 300, m + 300)
-    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 5, 5*sigma)
-    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 5, 5*sigma)
-    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.01, 5)
-    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.01, 5)
-    nL = ROOT.RooRealVar("nL", "nL", 1, 0.1, 5)
-    nR = ROOT.RooRealVar("nR", "nR", 1, 0.1, 5)
+    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 10, 5*sigma)
+    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 10, 5*sigma)
+    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.1, 5)
+    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.1, 5)
+    nL = ROOT.RooRealVar("nL", "nL", 2, 1, 4.5)
+    nR = ROOT.RooRealVar("nR", "nR", 2, 1, 4.5)
 
     if year != 'Run2':
         JES = ROOT.RooRealVar(f"JES_{year}", f"JES_{year}", 0, -5, 5)
@@ -259,13 +259,14 @@ if __name__ == "__main__":
 
     if args.signal_mass is not None:
         signal_mass = [args.signal_mass]
+    if args.year is None:
+        YEARS = ['2016', '2017', '2018', 'Run2']
+    else:
+        YEARS = [args.year]
     if args.SR is not None:
         signal_region = [args.SR]
     else:
         signal_region = ['SR1', 'SR2']
-
-    Fit_signal = True
-    Fit_background = True
 
     tagger_cut = {
         'SR1': [0.8, 0.98],
@@ -275,25 +276,25 @@ if __name__ == "__main__":
         'Z': [80, 110],
         'H': [110, 150],
     }
-    for SR in signal_region:
-        CR = SR.replace('S', 'C')
-        tagger_cut_low, tagger_cut_high = tagger_cut[SR]
-        CR_cut = f"""(
-            (((jet_mass>50) & (jet_mass<{mass_cut['Z'][0]})) | (jet_mass>{mass_cut['H'][1]})) & 
-            (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
-        )"""
 
-        for jet in ['H', 'Z']:
-            mass_low, mass_high = mass_cut[jet]
-            SR_cut = f"""(
-                (jet_mass>{mass_low}) & (jet_mass<{mass_high}) & 
+    for year in YEARS:
+        for SR in signal_region:
+            CR = SR.replace('S', 'C')
+            tagger_cut_low, tagger_cut_high = tagger_cut[SR]
+            CR_cut = f"""(
+                (((jet_mass>50) & (jet_mass<{mass_cut['Z'][0]})) | (jet_mass>{mass_cut['H'][1]})) & 
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
             )"""
-            #get_SR_data(year, SR, SR_cut, jet)
-            if Fit_background:
+
+            for jet in ['H', 'Z']:
+                mass_low, mass_high = mass_cut[jet]
+                SR_cut = f"""(
+                    (jet_mass>{mass_low}) & (jet_mass<{mass_high}) & 
+                    (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
+                )"""
+                #get_SR_data(year, SR, SR_cut, jet)
                 fit_background(year, jet, SR, SR_cut)
 
-            if Fit_signal:
                 for m in signal_mass:
                     fit_signal(year, jet, m, SR, SR_cut)
                     if jet == 'Z':

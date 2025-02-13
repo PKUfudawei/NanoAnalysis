@@ -12,7 +12,7 @@ observation     -1
 bin             SRH1        SRH1
 process         bbgamma_2017      background
 process         0           1
-rate		66.47880030258341	1.0
+rate		66.62827555697841	1.0
 ---------------------------------------------
 lumi_13TeV_2017		lnN	1.020	-
 lumi_13TeV_1718 	lnN	1.006	-
