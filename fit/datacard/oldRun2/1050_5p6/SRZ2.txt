@@ -1,0 +1,34 @@
+imax 1  # number of channels
+jmax 1  # number of backgrounds
+kmax *  # number of nuisance parameters (sources of systematic uncertainties)
+---------------------------------------------
+shapes      bbgamma          SRZ2      ../../../workspace/Run2/1050_5p6/signal_SRZ2.root      workspace_signal:model_bbgamma_SRZ2
+shapes      background     SRZ2      ../../../workspace/Run2/data_SRZ2.root      workspace_SRZ2:multipdf_SRZ2
+shapes      data_obs     SRZ2      ../../../workspace/Run2/data_SRZ2.root      workspace_SRZ2:data_SRZ2
+---------------------------------------------
+bin             SRZ2
+observation     -1
+---------------------------------------------
+bin             SRZ2        SRZ2
+process         bbgamma      background
+process         0           1
+rate		1.8815916820276979	1.0
+---------------------------------------------
+lumi_Run2		lnN	1.016	-
+L1_prefiring		lnN	1.004	-
+pile-up		lnN	1.01	-
+photon_ID		lnN	1.044	-
+CSEV		lnN	1.001	-
+Xbb_tagger_SR2		lnN	1.059	-
+
+
+Br_Zbb          lnN 0.9874/1.0124 -
+---------------------------------------------
+PES     param   0.0     1.0
+PER     param   0.0     1.0
+JES	param	0.0	1.0
+JER		param	0.0     1.0
+---------------------------------------------
+theory group = Br_Zbb
+---------------------------------------------
+pdfindex_SRZ2         discrete
