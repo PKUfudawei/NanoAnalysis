@@ -54,7 +54,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
     can.SaveAs(f"../plots/fit/{year}/{signal_mass}/fit_variable_{signal_region}_{signal_mass}.pdf")
 
     # Introduce RooRealVars into the workspace for the fitted variable
-    x0 = ROOT.RooRealVar("x0", "x0", m, m - 300, m + 300)
+    x0 = ROOT.RooRealVar("x0", "x0", m, m - 50, m + 50)
     sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 10, 5*sigma)
     sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 10, 5*sigma)
     alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.1, 5)
@@ -70,8 +70,9 @@ def fit_signal(year, jet, signal_mass, region, cut):
     PES = ROOT.RooRealVar("PES", "PES", 0, -5, 5)
     PER = ROOT.RooRealVar("PER", "PER", 0, -5, 5)
     JES.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
+    jes = systematics['JES'][region][m]-1
     mean = ROOT.RooFormulaVar("mean", "mean", 
-        "@0*(1+%f*@1+%f*@2)"%(systematics['JES'][region][m]-1, (systematics['PES'][region][m]-1)), 
+        "@0*(1+%f*@1+%f*@2)"%(jes*(10 if year=='2018' else 1), (systematics['PES'][region][m]-1)/2), 
         ROOT.RooArgList(x0, JES, PES))
     widthL = ROOT.RooFormulaVar("widthL", "widthL", 
         "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][region][jet][signal_mass]-1, systematics['PER'][region][jet][signal_mass]-1), 

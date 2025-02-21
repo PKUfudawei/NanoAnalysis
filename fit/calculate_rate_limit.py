@@ -2,7 +2,7 @@ import os
 
 MASS = [700, 800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 3000, 3500]
 
-for year in ['Run2']:
+for year in ['oldRun2']:
     os.makedirs(f'./AsymptoticLimits/{year}', exist_ok=True)
     for mass in os.listdir(f'datacard/{year}'):
         for file in set(os.listdir(f'datacard/{year}/{mass}')):
