@@ -294,7 +294,7 @@ if __name__ == "__main__":
                     (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
                 )"""
                 #get_SR_data(year, SR, SR_cut, jet)
-                fit_background(year, jet, SR, SR_cut)
+                fit_background(year, jet, CR, CR_cut)
 
                 for m in signal_mass:
                     fit_signal(year, jet, m, SR, SR_cut)
