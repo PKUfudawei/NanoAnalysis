@@ -33,9 +33,9 @@ use_x509userproxy       = true
 # that HTCondor returns from the remote host.
 # The LOG file is where HTCondor places information about your 
 # job's status, success, and resource consumption. 
-Error = log/data/2016pre/SinglePhoton/SinglePhoton_Run2016E/$(Cluster).$(Process).err
-Output = log/data/2016pre/SinglePhoton/SinglePhoton_Run2016E/$(Cluster).$(Process).out
-Log = log/data/2016pre/SinglePhoton/SinglePhoton_Run2016E/$(Cluster).log
+#Error = log/data/2016pre/SinglePhoton/SinglePhoton_Run2016E/$(Cluster).$(Process).err
+#Output = log/data/2016pre/SinglePhoton/SinglePhoton_Run2016E/$(Cluster).$(Process).out
+#Log = log/data/2016pre/SinglePhoton/SinglePhoton_Run2016E/$(Cluster).log
 
 # Specify CPU,Memory and Disk
 # Default units if not specified:

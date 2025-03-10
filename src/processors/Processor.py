@@ -134,6 +134,7 @@ class Processor(processor.ProcessorABC):
         self.tag['b-jet'] = (
             (raw_AK4jet.pt > 30) &
             (abs(raw_AK4jet.eta) < 2.5) & 
+            (raw_AK4jet.puId >= (3 if self.year.startswith('2016') else 6)) &
             (raw_AK4jet.btagDeepFlavB > WP[str(self.year)][level]) &
             (self.object['AK8jet'].delta_r(raw_AK4jet) > 0.8 + 0.4)
         )

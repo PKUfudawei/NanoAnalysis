@@ -33,9 +33,9 @@ use_x509userproxy       = true
 # that HTCondor returns from the remote host.
 # The LOG file is where HTCondor places information about your 
 # job's status, success, and resource consumption. 
-Error = log/mc/2016post/GluGluToZG/GluGluSpin0ToZGamma_ZToQQ_M2600_5p6/$(Cluster).$(Process).err
-Output = log/mc/2016post/GluGluToZG/GluGluSpin0ToZGamma_ZToQQ_M2600_5p6/$(Cluster).$(Process).out
-Log = log/mc/2016post/GluGluToZG/GluGluSpin0ToZGamma_ZToQQ_M2600_5p6/$(Cluster).log
+#Error = log/mc/2016post/GluGluToZG/GluGluSpin0ToZGamma_ZToQQ_M2600_5p6/$(Cluster).$(Process).err
+#Output = log/mc/2016post/GluGluToZG/GluGluSpin0ToZGamma_ZToQQ_M2600_5p6/$(Cluster).$(Process).out
+#Log = log/mc/2016post/GluGluToZG/GluGluSpin0ToZGamma_ZToQQ_M2600_5p6/$(Cluster).log
 
 # Specify CPU,Memory and Disk
 # Default units if not specified:

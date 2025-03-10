@@ -8,7 +8,7 @@ import glob
 
 def parse_commanline():
     parser = argparse.ArgumentParser(description='Do cross-section reweighting on files')
-    parser.add_argument('-d', '--directory', help='To specify file directory', default='../../condor/output/')
+    parser.add_argument('-i', '--indir', help='Specify input directory of arrays', default=None)
     parser.add_argument('-t', '--sample_type', help='To specify jobs in mc/ or data/', default='*', choices=('mc', 'data'))
     parser.add_argument('-y', '--year', help='To specify jobs in which year', choices=('2018', '2017', '2016pre', '2016post'), default='*')
     parser.add_argument('-c', '--channel', help='To specify jobs in which channel', default='*')
@@ -39,7 +39,7 @@ def main():
     with open(f'{args.param_dir}/cross-section.yaml', 'r', encoding='utf-8') as f:
         X_SECTION = yaml.safe_load(f)
 
-    dirs = os.path.join(args.directory, args.sample_type, args.year, args.channel, args.job)
+    dirs = os.path.join(args.indir, args.sample_type, args.year, args.channel, args.job)
     dirs = set(glob.glob(dirs))
 
     for folder in dirs:
@@ -49,8 +49,8 @@ def main():
         sample_type, year, channel, dataset = folder.split('/')[-4:]
 
         stats_file = os.path.join(folder, '_'.join(folder.split('/')[-4:-1]))+'.yaml'
-        output_file = stats_file.replace('yaml', 'parquet')
-        if not os.path.exists(stats_file) or not os.path.exists(output_file) or os.path.getsize(stats_file) == 0 or os.path.getsize(output_file) == 0:
+        array_file = stats_file.replace('yaml', 'parquet')
+        if not os.path.exists(stats_file) or not os.path.exists(array_file) or os.path.getsize(stats_file) == 0 or os.path.getsize(array_file) == 0:
             print(f'\tEmpty directory!')
             continue
 
@@ -60,10 +60,10 @@ def main():
         print(f'\tn_raw_events={n_raw_events}')
 
         if sample_type == 'mc':
-            cross_section_reweighting(output_file, LUMI[year], eval(str(X_SECTION[channel][dataset])), n_raw_events)
+            cross_section_reweighting(array_file, LUMI[year], eval(str(X_SECTION[channel][dataset])), n_raw_events)
             print(f'\tFinished, lumi={LUMI[year]}, x-section={X_SECTION[channel][dataset]}pb')
         elif sample_type == 'data':
-            cross_section_reweighting(output_file, 1, 1, 1000)
+            cross_section_reweighting(array_file, 1, 1, 1000)
             print(f'\tFinished, weight = 1 for data')
 
 
