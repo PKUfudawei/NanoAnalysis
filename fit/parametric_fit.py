@@ -35,7 +35,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, max(fit_range_down, m-5*sigma), m+5*sigma)
+    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, max(fit_range_down, 2*m/3), 4*m/3)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
@@ -294,7 +294,7 @@ if __name__ == "__main__":
                     (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
                 )"""
                 #get_SR_data(year, SR, SR_cut, jet)
-                fit_background(year, jet, CR, CR_cut)
+                fit_background(year, jet, SR,SR_cut)
 
                 for m in signal_mass:
                     fit_signal(year, jet, m, SR, SR_cut)
