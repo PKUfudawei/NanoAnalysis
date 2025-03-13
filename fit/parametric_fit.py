@@ -35,10 +35,11 @@ def fit_signal(year, jet, signal_mass, region, cut):
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, max(fit_range_down, 2*m/3), 4*m/3)
+    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, 650, 4000)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
+    fit_mass.setRange("fit_range", max(650, 2*m/3), min(4000, 4*m/3))
 
     # Convert to RooDataSet
 
@@ -86,7 +87,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
     signal_norm = ROOT.RooRealVar(f"model_bbgamma_{signal_region}_norm", f"Number of signal events in {signal_region}", mc.sumEntries(), 1e-3, 5*mc.sumEntries())
 
     # Fit Gaussian to MC events and plot
-    model_signal.fitTo(mc, ROOT.RooFit.SumW2Error(True))
+    model_signal.fitTo(mc, ROOT.RooFit.Range('fit_range'),  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True))
 
     x0.setConstant(True)
     sigmaL.setConstant(True)
