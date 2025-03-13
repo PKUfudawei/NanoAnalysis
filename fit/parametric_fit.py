@@ -42,25 +42,15 @@ def fit_signal(year, jet, signal_mass, region, cut):
     fit_mass.setRange("fit_range", max(650, 2*m/3), min(4000, 4*m/3))
 
     # Convert to RooDataSet
-
     mc = ROOT.RooDataSet("signal", "signal", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
-
-    # Lets plot the signal mass distribution
-    can = ROOT.TCanvas()
-    plot = fit_mass.frame()
-    mc.plotOn(plot)
-    plot.Draw()
-    can.Update()
-    os.makedirs(f'../plots/fit/{year}/{signal_mass}', exist_ok=True)
-    can.SaveAs(f"../plots/fit/{year}/{signal_mass}/fit_variable_{signal_region}_{signal_mass}.pdf")
 
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", m, m - 50, m + 50)
-    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 10, 5*sigma)
-    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 10, 5*sigma)
-    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.1, 5)
-    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.1, 5)
-    nL = ROOT.RooRealVar("nL", "nL", 2, 1, 4.5)
+    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 10, 3*sigma)
+    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 10, 3*sigma)
+    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.4, 3)
+    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.3, 3)
+    nL = ROOT.RooRealVar("nL", "nL", 2, 0.4, 10)
     nR = ROOT.RooRealVar("nR", "nR", 2, 1, 4.5)
 
     if year != 'Run2':
