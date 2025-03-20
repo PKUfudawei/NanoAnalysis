@@ -213,7 +213,7 @@ class Processor(processor.ProcessorABC):
     def photon_tag(self, reconstruct: bool = False) -> ak.Array:
         raw_photon = self.event.Photon  # (event, photon)
         self.tag['photon'] = (  # (event, boolean)
-            (raw_photon.pt > 200) &
+            (raw_photon.pt > 225) &
             ((abs(raw_photon.eta) < 1.4442) | ((abs(raw_photon.eta) > 1.566) & (abs(raw_photon.eta) < 2.4))) &
             (raw_photon.cutBased >= 1) &
             (raw_photon.electronVeto == True)

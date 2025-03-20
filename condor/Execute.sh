@@ -24,4 +24,4 @@ rm -rf *.parq *.pkl
 python3 src/main.py -m $1 -p $2 -f custom_nano.root
 
 ## transfer files via condor
-#xrdcp -f *.parquet root://eosuser.cern.ch/$3
+#xrdcp -f *.parquet root://eosuser.cern.ch/$4

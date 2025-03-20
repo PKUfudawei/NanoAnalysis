@@ -5,7 +5,7 @@ import argparse, os, glob, yaml, json, subprocess
 def parse_commandline():
     parser = argparse.ArgumentParser(description='Parse dataset to filelists and condor job-submit files')
     parser.add_argument('-d', '--directory', help='To specify base directory', default=os.path.abspath('../datasets'))
-    parser.add_argument('-o', '--outdir', help='Which directory to stroe output', default='./')
+    parser.add_argument('-o', '--outdir', help='Which directory to stroe output', default='root://eosuser.cern.ch//eos/user/d/dfu/bbgamma_output')
     parser.add_argument('-t', '--type', help='To specify jobs in mc/ or data/', choices=('data', 'mc', '*'), default='*')
     parser.add_argument('-y', '--year', help='To specify jobs in which year', choices=('2018', '2017', '2016pre', '2016post'), default='*')
     parser.add_argument('-c', '--channel', help='To specify jobs in which channel', default='*')
@@ -62,9 +62,10 @@ def filelist_to_submit(filelist: str, template: str, args: argparse.Namespace):
         os.makedirs(folder)
 
     mode = '_'.join([args.type, args.year, args.channel])
+    out_dir = os.path.join(args.outdir, 'output', name)
     with open(f'./submit/{name}.submit', 'w') as f:
         f.write(
-            template.replace('${template}', name).replace('${mode}', mode).replace('${param_dir}', './src/parameters/')
+            template.replace('${template}', name).replace('${mode}', mode).replace('${param_dir}', './src/parameters/').replace('${out_dir}', out_dir)
         )
 
     print(f'\tGenerated submit/{name}.submit')
