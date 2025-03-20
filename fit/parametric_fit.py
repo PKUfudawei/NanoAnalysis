@@ -136,9 +136,6 @@ def fit_signal(year, jet, signal_mass, region, cut):
         yaml.dump(info, f)
 
 
-
-
-
 def plot_b_only_fit(candidates, model, result, fit_variable, data_region, SR, jet, x_min=650, x_max=3700, bin_width=50):
     line_color = {'expow1': ROOT.kRed, 'expow2': ROOT.kGreen+1, 'dijet2': ROOT.kYellow+2, 'dijet3': ROOT.kCyan, 'invpow2':ROOT.kBlue, 'invpow3': ROOT.kMagenta}
     band_color = {'expow1': ROOT.kPink, 'expow2': ROOT.kYellow, 'dijet2': ROOT.kGreen, 'dijet3': ROOT.kCyan, 'invpow2':ROOT.kAzure, 'invpow3': ROOT.kMagenta}
@@ -181,7 +178,6 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data_region, SR, je
     # plot errorbands
     for k in candidates:
         model[k].plotOn(frame, VisualizeError=(result[k], 1), FillColor='kGray', LineColor='kWhite', Name=f'error_{k}')
-    
     for i, k in enumerate(candidates):
         model[k].plotOn(frame, LineColor=line_color[k], Name=k)
         chi2_ndf = frame.chiSquare(len(result[k].floatParsFinal()))
@@ -294,7 +290,7 @@ def fit_background(year, jet, region, cut):
 
     # Define mass and weight variables
     fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", 1500, fit_range_down, fit_range_up)
-    weight = ROOT.RooRealVar("weight", "weight", 1, -10, 10)
+    weight = ROOT.RooRealVar("weight", "weight", 1, -10, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
 
@@ -302,7 +298,7 @@ def fit_background(year, jet, region, cut):
     data_region = ROOT.RooDataSet(f"data_{region}", f"data_{region}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
 
     ## Multiple background models
-    model, p1, p2, p3 = {}, {}, {}, {}
+    model, p1, p2, p3, result = {}, {}, {}, {}, {}
     energy = 1e2
 
     # expow1 model
@@ -342,18 +338,14 @@ def fit_background(year, jet, region, cut):
     models = ROOT.RooArgList()
 
     # Fit models
-    result = {}
     for k in ['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3']:
-        result[k] = model[k].fitTo(data_region, ROOT.RooFit.SumW2Error(True))
+        result[k] = model[k].fitTo(data_region, ROOT.RooFit.SumW2Error(True), Save=True)
         p1[k].setConstant(True)
         if k in p2:
             p2[k].setConstant(True)
         if k in p3:
             p3[k].setConstant(True)
         models.add(model[k])
-
-    # plot b-only fit
-    for k in ['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3']:
         plot_b_only_fit(candidates=[k], model=model, result=result, fit_variable=fit_mass, data_region=data_region, SR=SR, jet=jet, x_min=fit_range_down, x_max=fit_range_up-300, bin_width=50)
 
     plot_b_only_fit(candidates=['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3'], model=model, result=result, fit_variable=fit_mass, data_region=data_region, SR=SR, jet=jet, x_min=fit_range_down, x_max=fit_range_up-300, bin_width=50)
