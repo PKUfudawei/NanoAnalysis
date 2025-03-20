@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import ROOT, os, yaml, argparse, uproot
 import numpy as np
+from scipy.interpolate import CubicSpline
+
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptTitle(0)
 
@@ -14,6 +16,22 @@ def parse_commandline():
     parser.add_argument('-u', '--fit_range_up', help='To specify the higher bound of fitting range', default=4000, type=int)
     args = parser.parse_args()
     return args
+
+
+def Garwood_eror(number, direction):
+    upper = np.array([1.84, 3.30, 4.64, 5.92, 7.16, 8.38, 9.58, 10.77, 11.95, 13.11, 14.27])
+    lower = np.array([0, 0.17, 0.71, 1.37, 2.09, 2.84, 3.62, 4.42, 5.23, 6.06, 6.89])
+    center = np.arange(11)
+    if number < 0:
+        raise ValueError('number < 0 !')
+    elif number > 10:
+        return np.sqrt(number)
+    elif direction=='up':
+        return (upper-center)[int(number)]
+    elif direction=='down':
+        return (center-lower)[int(number)]
+    else:
+        return None
 
 
 def fit_signal(year, jet, signal_mass, region, cut):
@@ -72,12 +90,12 @@ def fit_signal(year, jet, signal_mass, region, cut):
         "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][region][jet][signal_mass]-1, systematics['PER'][region][jet][signal_mass]-1),
         ROOT.RooArgList(sigmaR, JER, PER))
 
-    # Define the Gaussian with mean=MH and width=sigma
+    # Fit signal model to MC
     model_signal = ROOT.RooCrystalBall(f"model_bbgamma_{signal_region}", f"model_bbgamma_{signal_region}", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
-    signal_norm = ROOT.RooRealVar(f"model_bbgamma_{signal_region}_norm", f"Number of signal events in {signal_region}", mc.sumEntries(), 1e-3, 5*mc.sumEntries())
-
-    # Fit Gaussian to MC events and plot
     model_signal.fitTo(mc, ROOT.RooFit.Range('fit_range'),  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True))
+    fit_range_norm = mc.sumEntries('', 'fit_range')
+    fit_range_frac = model_signal.createIntegral(fit_mass, ROOT.RooFit.NormSet(fit_mass), ROOT.RooFit.Range("fit_range"))
+    signal_norm = ROOT.RooRealVar(f"model_bbgamma_{signal_region}_norm", f"Number of signal events in {signal_region}", fit_range_norm, 0, 5*fit_range_norm)
 
     x0.setConstant(True)
     sigmaL.setConstant(True)
@@ -112,9 +130,157 @@ def fit_signal(year, jet, signal_mass, region, cut):
             'nR': nR.getVal(),
             'event_sum': mc.sumEntries(),
             'norm': signal_norm.getVal(),
-            'sigma': float(sigma)
+            'sigma': float(sigma),
+            'fraction': fit_range_frac.getVal()
         }
         yaml.dump(info, f)
+
+
+
+
+
+def plot_b_only_fit(candidates, model, result, fit_variable, data_region, SR, jet, x_min=650, x_max=3700, bin_width=50):
+    line_color = {'expow1': ROOT.kRed, 'expow2': ROOT.kGreen+1, 'dijet2': ROOT.kYellow+2, 'dijet3': ROOT.kCyan, 'invpow2':ROOT.kBlue, 'invpow3': ROOT.kMagenta}
+    band_color = {'expow1': ROOT.kPink, 'expow2': ROOT.kYellow, 'dijet2': ROOT.kGreen, 'dijet3': ROOT.kCyan, 'invpow2':ROOT.kAzure, 'invpow3': ROOT.kMagenta}
+
+    ## plot
+    bins = int((x_max-x_min)/bin_width)
+    plot_name = (candidates[0] if len(candidates) == 1 else f"{len(candidates)}")
+
+    # Create a canvas and split it into two pads
+    canvas = ROOT.TCanvas("canvas", "canvas", 800, 800)
+    top_pad = ROOT.TPad("top_pad", "top_pad", 0, 0.3, 1, 1)  # Top pad (main plot)
+    bottom_pad = ROOT.TPad("bottom_pad", "bottom_pad", 0, 0, 1, 0.3)  # Bottom pad (pull plot)
+    top_pad.Draw()
+    bottom_pad.Draw()
+
+
+    # Draw the main plot in the top pad
+    top_pad.cd()
+    top_pad.SetLogy()
+    top_pad.SetBottomMargin(0.02)  # Reduce margin between pads
+
+    legend = ROOT.TLegend(0.35, 0.6, 0.89, 0.89)
+    legend.SetBorderSize(0)
+    legend.SetNColumns(2)
+    legend.SetTextSize(0.03)
+    #legend.SetFillColorAlpha(ROOT.kWhite, 0)
+
+    frame = fit_variable.frame(x_min, x_max, bins)
+
+    # Create a histogram from the RooDataSet
+    hist_data = data_region.createHistogram(f"hist_data", fit_variable, ROOT.RooFit.Binning(bins, x_min, x_max))
+
+    # Convert the histogram to a RooHist object
+    data_hist = ROOT.RooHist(hist_data)
+    for i in range(data_hist.GetN()):
+        y = data_hist.GetPointY(i)
+        data_hist.SetPointError(i, 0, 0, Garwood_eror(y, 'down'), Garwood_eror(y, 'up'))
+    data_region.plotOn(frame, ROOT.RooFit.MarkerColor(ROOT.kBlack), ROOT.RooFit.LineColor(ROOT.kWhite))
+    
+    # plot errorbands
+    for k in candidates:
+        model[k].plotOn(frame, VisualizeError=(result[k], 1), FillColor='kGray', LineColor='kWhite', Name=f'error_{k}')
+    
+    for i, k in enumerate(candidates):
+        model[k].plotOn(frame, LineColor=line_color[k], Name=k)
+        chi2_ndf = frame.chiSquare(len(result[k].floatParsFinal()))
+        legend.AddEntry(frame.getObject(i+len(candidates)+1), f"{k}, #chi^{{2}}/NDF = {chi2_ndf:.2f}", "l")
+    frame.addPlotable(data_hist, "P")
+    legend.AddEntry(frame.getObject(2*len(candidates)+1), "Data", "ep")
+    legend.AddEntry(frame.getObject(1), '#sigma_{SYS}', "f")
+    #return bins
+    hpull = frame.pullHist(frame.getObject(2*len(candidates)+1).GetName(), frame.getObject(len(candidates)+1).GetName())
+    for i in range(hpull.GetN()):
+        hpull.SetPointError(i, 0, 0, 1, 1)  # Set x-error to 0 and y-error to 1return frame.getObject(2)
+    
+    canvas.SetLogy()
+    frame.SetMinimum(1e-2)
+    frame.SetTitle("")
+    frame.GetXaxis().SetLabelSize(0)  # Hide x-axis labels
+    frame.GetXaxis().SetTickLength(0) # Hide x-axis ticks
+    #frame.GetXaxis().SetTitle('m_{j\gamma} [GeV]')
+    frame.Draw()
+    legend.Draw()
+    
+    ##########################################
+    # Draw the pull plot in the bottom pad
+
+    bottom_pad.cd()
+    bottom_pad.SetTopMargin(0.04)  # Reduce margin between pads
+    bottom_pad.SetBottomMargin(0.25)  # Increase bottom margin for labels
+
+    bottom_legend = ROOT.TLegend(0.3, 0.25, 0.95, 0.5)
+    #legend.SetTextSize(0.05)
+    bottom_legend.SetBorderSize(0)
+    bottom_legend.SetFillColorAlpha(ROOT.kWhite, 0)
+    bottom_legend.SetNColumns(3)
+    bottom_legend.SetTextSize(0.08)
+
+    # Create a frame for the pull plot
+    pull_frame = fit_variable.frame(x_min, x_max, bins)
+
+    # sigma_sys/sigma_stats
+    x_centers = np.array(frame.getObject(2*len(candidates)+1).GetX())
+    error_stats = np.array(frame.getObject(2*len(candidates)+1).GetEYhigh()) + np.array(frame.getObject(2*len(candidates)+1).GetEYlow())
+
+    cs = {}
+    for k in candidates:
+        x=np.array(frame.findObject(f'error_{k}').GetX())
+        y=np.array(frame.findObject(f'error_{k}').GetY())
+        N=int(len(x)/2)
+        error_bar = {}
+        for i in x[:N]:
+            if not 650<=i<=3700:
+                continue
+            y_up = np.max(y[x==i])
+            _y_down = np.min(y[x==i])
+            y_down = np.where(_y_down>=0, _y_down, 0)
+            error_bar[i] = y_up - y_down
+        cs[k]=CubicSpline(x=list(error_bar.keys()), y=list(error_bar.values()))
+
+    error_sys = [cs[k](x_centers) for k in candidates]
+    error_sys_over_stats = np.max(error_sys, axis=0) / error_stats
+
+    roohist = ROOT.RooHist()
+    for i in range(len(x_centers)):
+        x = x_centers[i]
+        roohist.addBinWithXYError(x, 0, bin_width/2, bin_width/2, error_sys_over_stats[i], error_sys_over_stats[i])
+    roohist.SetFillColor(ROOT.kGray)
+    #roohist.SetFillStyle(3001)
+    #roohist.SetMarkerSize(0)
+
+    pull_frame.addPlotable(roohist, "E2")
+    bottom_legend.AddEntry(pull_frame.getObject(0), '#sigma_{SYS}/#sigma_{STAT}', "f")
+
+    # Add a horizontal line at y = 0 for reference
+    zero_line = ROOT.TLine(x_min, 0, x_max, 0)
+    zero_line.SetLineColor(line_color[candidates[0]])
+    zero_line.SetLineWidth(2)
+    pull_frame.addObject(zero_line)
+    bottom_legend.AddEntry(pull_frame.getObject(1), candidates[0], "l")
+
+    # Calculate and plot the pulls for expow1
+    pull_frame.addPlotable(hpull, "P")
+    bottom_legend.AddEntry(pull_frame.getObject(2), '(Data - '+candidates[0]+')/#sigma_{STAT}', "ep")
+
+    # plot
+    pull_frame.SetTitle("")
+    pull_frame.GetYaxis().SetLabelSize(0.1)
+    pull_frame.GetYaxis().SetTitle("Pull")
+    pull_frame.GetYaxis().SetTitleOffset(0.4)
+    pull_frame.GetYaxis().SetTitleSize(0.1)
+
+    pull_frame.GetXaxis().SetTitle('m_{j#gamma} (GeV)')
+    pull_frame.GetXaxis().SetTitleSize(0.1)
+    pull_frame.GetXaxis().SetLabelSize(0.1)
+    pull_frame.Draw()
+    pull_frame.SetMaximum(+3)
+    pull_frame.SetMinimum(-3)
+    bottom_legend.Draw()
+    
+    os.makedirs('../plots/fit/Run2', exist_ok=True)
+    canvas.SaveAs(f"../plots/fit/Run2/b_only_fit_{SR}_{jet}_{plot_name}.pdf")
 
 
 def fit_background(year, jet, region, cut):
@@ -176,20 +342,28 @@ def fit_background(year, jet, region, cut):
     models = ROOT.RooArgList()
 
     # Fit models
+    result = {}
     for k in ['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3']:
-        model[k].fitTo(data_region, ROOT.RooFit.SumW2Error(True))
+        result[k] = model[k].fitTo(data_region, ROOT.RooFit.SumW2Error(True))
         p1[k].setConstant(True)
         if k in p2:
             p2[k].setConstant(True)
         if k in p3:
             p3[k].setConstant(True)
         models.add(model[k])
-    
+
+    # plot b-only fit
+    for k in ['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3']:
+        plot_b_only_fit(candidates=[k], model=model, result=result, fit_variable=fit_mass, data_region=data_region, SR=SR, jet=jet, x_min=fit_range_down, x_max=fit_range_up-300, bin_width=50)
+
+    plot_b_only_fit(candidates=['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3'], model=model, result=result, fit_variable=fit_mass, data_region=data_region, SR=SR, jet=jet, x_min=fit_range_down, x_max=fit_range_up-300, bin_width=50)
+
     # Build the RooMultiPdf object
     multipdf = ROOT.RooMultiPdf(f"multipdf_{region}", f"multipdf_{region}", category, models)
-
     background_norm = ROOT.RooRealVar(f"multipdf_{region}_norm", "Number of background events", data_region.sumEntries(), 0, 100 * data_region.sumEntries())
     background_norm.setConstant(False)
+
+    # store workspace
     os.makedirs(bkg_model_dir, exist_ok=True)
     with open(f'{bkg_model_dir}/background_{region}.yaml', 'w', encoding='utf-8') as f:
         info = {
@@ -201,10 +375,6 @@ def fit_background(year, jet, region, cut):
         }
         yaml.dump(info, f)
 
-
-    #fit_mass.setBins(320)
-    #data_hist = ROOT.RooDataHist(f"data_{region}_hist", f"data_{region}_hist", fit_mass, data_region)
-    os.makedirs(bkg_model_dir, exist_ok=True)
     f_out = ROOT.TFile(f"{bkg_model_dir}/data_{region}.root", "RECREATE")
     w_bkg = ROOT.RooWorkspace(f"workspace_{region}", f"workspace_{region}")
     getattr(w_bkg, "import")(data_region)
@@ -212,7 +382,6 @@ def fit_background(year, jet, region, cut):
     for k in model:
         getattr(w_bkg, "import")(model[k])
     getattr(w_bkg, "import")(background_norm)
-    #getattr(w_bkg, "import")(data_hist)
     w_bkg.Print()
     w_bkg.Write()
     f_out.Close()
@@ -285,7 +454,8 @@ if __name__ == "__main__":
                     (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
                 )"""
                 #get_SR_data(year, SR, SR_cut, jet)
-                fit_background(year, jet, SR,SR_cut)
+                if year == 'Run2':
+                    fit_background(year, jet, SR,SR_cut)
 
                 for m in signal_mass:
                     fit_signal(year, jet, m, SR, SR_cut)
