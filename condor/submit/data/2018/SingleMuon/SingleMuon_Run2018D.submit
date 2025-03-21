@@ -6,7 +6,7 @@ Universe = vanilla
 
 # Jobs which exceed the maximum runtime will be terminated
 ## "tomorrow" = 1 day
-+JobFlavour = "testmatch"
++JobFlavour = "nextweek"
 JobBatchName = data/2018/SingleMuon/SingleMuon_Run2018D
 
 # EXECUTABLE is the program your job will run It's often useful 
@@ -20,8 +20,9 @@ should_transfer_files   = YES
 transfer_input_files    = ../src
 when_to_transfer_output = ON_EXIT_OR_EVICT
 transfer_output_files   = output.parq, stats.yml
-transfer_output_remaps  = "output.parq = output/data/2018/SingleMuon/SingleMuon_Run2018D/data_2018_SingleMuon-$(Process).parq; stats.yml = output/data/2018/SingleMuon/SingleMuon_Run2018D/data_2018_SingleMuon-$(Process).yml"
-#output_destination = output_test/data/2018/SingleMuon/SingleMuon_Run2018D/ ## not tested yet
+transfer_output_remaps  = "output.parq = data_2018_SingleMuon-$(Process).parq; stats.yml = data_2018_SingleMuon-$(Process).yml"
+output_destination = root://eosuser.cern.ch/root://eosuser.cern.ch//eos/user/d/dfu/bbgamma_output/output/data/2018/SingleMuon/SingleMuon_Run2018D
+MY.XRDCP_CREATE_DIR = True
 
 # If one wants to use local condor batch to analyze user/group skims 
 # located at remote sites. The only modification needed is adding
@@ -33,7 +34,7 @@ use_x509userproxy       = true
 # that HTCondor returns from the remote host.
 # The LOG file is where HTCondor places information about your 
 # job's status, success, and resource consumption. 
-#Error = log/data/2018/SingleMuon/SingleMuon_Run2018D/$(Cluster).$(Process).err
+Error = log/data/2018/SingleMuon/SingleMuon_Run2018D/$(Cluster).$(Process).err
 #Output = log/data/2018/SingleMuon/SingleMuon_Run2018D/$(Cluster).$(Process).out
 #Log = log/data/2018/SingleMuon/SingleMuon_Run2018D/$(Cluster).log
 

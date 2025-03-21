@@ -59,12 +59,12 @@ def main() -> None:
 
     if len(result) >= 1:
         result = ak.concatenate(result, axis=0)
-        ak.to_parquet(result, destination=os.path.join(args.outdir, 'output.parq'))
+        ak.to_parquet(result, destination=os.path.join(args.outdir, file.replace('root', 'parq'))
     else:
-        with open(os.path.join(args.outdir, 'output.parq'), 'w') as f:
+        with open(os.path.join(args.outdir, file.replace('root', 'parq')), 'w') as f:
             pass
 
-    with open(os.path.join(args.outdir, 'stats.yml'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(args.outdir, file.replace('root', 'yml'), 'w', encoding='utf-8') as f:
         yaml.dump(stats, f)
 
     print()
