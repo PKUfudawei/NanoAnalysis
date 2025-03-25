@@ -5,7 +5,7 @@ import argparse, os, glob, yaml, json, subprocess
 def parse_commandline():
     parser = argparse.ArgumentParser(description='Parse dataset to filelists and condor job-submit files')
     parser.add_argument('-d', '--directory', help='To specify base directory', default=os.path.abspath('../datasets'))
-    parser.add_argument('-o', '--outdir', help='Which directory to stroe output', default='root://eosuser.cern.ch//eos/user/d/dfu/bbgamma_output')
+    parser.add_argument('-o', '--outdir', help='Which directory to stroe output', default='/eos/user/d/dfu/bbgamma_ntuple/condor')
     parser.add_argument('-t', '--type', help='To specify jobs in mc/ or data/', choices=('data', 'mc', '*'), default='*')
     parser.add_argument('-y', '--year', help='To specify jobs in which year', choices=('2018', '2017', '2016pre', '2016post'), default='*')
     parser.add_argument('-c', '--channel', help='To specify jobs in which channel', default='*')
@@ -40,8 +40,7 @@ def dataset_to_filelist(card_path: str, args: argparse.Namespace):
             else:
                 filelist.append('root://cms-xrd-global.cern.ch/' + file_info['file'][0]['name'])
 
-        if not os.path.exists(f'./filelists/{name}'):
-            os.makedirs(f'./filelists/{name}')
+        os.makedirs(f'./filelists/{name}', exist_ok=True)
         with open(f'./filelists/{name}/{k}.txt', 'w') as f:
             f.write('\n'.join(filelist))
         print(f'\tGenerated filelists/{name}/{k}.txt')
@@ -51,21 +50,14 @@ def dataset_to_filelist(card_path: str, args: argparse.Namespace):
 
 def filelist_to_submit(filelist: str, template: str, args: argparse.Namespace):
     print(f'Processing {filelist}')
+    os.makedirs(filelist.replace('filelists', 'submit'), exist_ok=True)
     name = os.path.join(*filelist.split('.')[0].split('/')[-4:])
-    if not os.path.exists(os.path.join('output', name)):
-        os.makedirs(os.path.join('output', name))
-    if not os.path.exists(os.path.join('log', name)):
-        os.makedirs(os.path.join('log', name))
-
-    folder = os.path.join('./submit', *name.split('/')[:-1])
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+    os.makedirs(os.path.join(args.outdir, name), exist_ok=True)
 
     mode = '_'.join([args.type, args.year, args.channel])
-    out_dir = os.path.join(args.outdir, 'output', name)
     with open(f'./submit/{name}.submit', 'w') as f:
         f.write(
-            template.replace('${template}', name).replace('${mode}', mode).replace('${param_dir}', './src/parameters/').replace('${out_dir}', out_dir)
+            template.replace('${template}', name).replace('${mode}', mode).replace('${param_dir}', './src/parameters/')
         )
 
     print(f'\tGenerated submit/{name}.submit')
@@ -76,7 +68,7 @@ def main() -> None:
     args = parse_commandline()
 
     print('#' * 150)
-    dataset_cards = os.path.join(args.directory, args.type, args.year, args.channel, args.version + '.yaml')
+    dataset_cards = os.path.join(args.directory, args.type, args.year, args.channel, args.version+'.yaml')
     dataset_cards = set(glob.glob(dataset_cards))
     print(f'Start generating filelist(s) from {len(dataset_cards)} dataset-cards')
 
@@ -93,14 +85,13 @@ def main() -> None:
 
     with open('./.template.submit', 'r') as f:
         template = f.read()
-
     succeeded = 0
     for filelist in filelists:
         args.type, args.year, args.channel = filelist.split('/')[-4:-1]
         succeeded += filelist_to_submit(filelist=filelist, template=template, args=args)
     print(f'Generated {succeeded} condor-submit file(s) in total')
     print('#' * 150)
-    print('Generated corresponding empty log/ and output/ directories')
+    print(f'Generated empty output directories under {args.outdir}')
 
 
 if __name__ == "__main__":

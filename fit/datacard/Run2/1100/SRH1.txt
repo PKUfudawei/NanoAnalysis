@@ -2,9 +2,9 @@ imax *  # number of channels
 jmax *  # number of backgrounds
 kmax *  # number of nuisance parameters (sources of systematic uncertainties)
 ---------------------------------------------
-shapes      bbgamma_2016    SRH1      workspace/2016/1100/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
-shapes      bbgamma_2017    SRH1      workspace/2017/1100/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
-shapes      bbgamma_2018    SRH1      workspace/2018/1100/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
+shapes      bbgamma_2016    SRH1      workspace/Run2/1100/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
+shapes      bbgamma_2017    SRH1      workspace/Run2/1100/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
+shapes      bbgamma_2018    SRH1      workspace/Run2/1100/signal_SRH1.root      workspace_signal:model_bbgamma_SRH1
 shapes      background      SRH1      workspace/Run2/data_SRH1.root      workspace_SRH1:multipdf_SRH1
 shapes      data_obs     SRH1      workspace/Run2/data_SRH1.root      workspace_SRH1:data_SRH1
 ---------------------------------------------
@@ -14,7 +14,7 @@ observation     -1
 bin             SRH1    SRH1    SRH1        SRH1
 process         bbgamma_2016    bbgamma_2017    bbgamma_2018      background
 process         0           -1  -2  1
-rate		47.06409841592241	53.677751696293775	76.94258871944349	1.0
+rate		45.93757153996869	54.19869539980812	77.84386671678402	1.0
 ---------------------------------------------
 lumi_13TeV_2016		lnN	1.010   -   -	-
 lumi_13TeV_2017		lnN	-   1.020   -	-
@@ -25,7 +25,9 @@ L1_prefiring		lnN	1.004	1.004	1.004	-
 pile-up		lnN	1.01	1.01	1.01	-
 photon_ID		lnN	1.044	1.044	1.044	-
 CSEV		lnN	1.001	1.001	1.001	-
-Xbb_tagger_SR1		lnN	1.052	1.052	1.052	-
+tagger_SF_2016		lnN	1.033	-	-	-
+tagger_SF_2017		lnN	-	1.033	-	-
+tagger_SF_2018		lnN	-	-	1.033	-
 PDF		lnN	1.003	1.003	1.003	-
 QCD_scale		lnN	1.005	1.005	1.005	-
 Br_Hbb          lnN 0.9874/1.0124   0.9874/1.0124   0.9874/1.0124 -

@@ -5,7 +5,7 @@ import awkward as ak
 
 def parse_commanline():
     parser = argparse.ArgumentParser(description='Do cross-section reweighting on files')
-    parser.add_argument('-i', '--indir', help='Specify input directory of arrays', default='../../condor/output/')
+    parser.add_argument('-i', '--indir', help='Specify input directory of arrays', default='/eos/user/d/dfu/bbgamma_ntuple/condor')
     parser.add_argument('-t', '--sample_type', help='Specify jobs in mc/ or data/', default='*', choices=('data', 'mc', '*'))
     parser.add_argument('-y', '--year', help='Specify jobs in which year', choices=('2018', '2017', '2016pre', '2016post'), default='*')
     parser.add_argument('-c', '--channel', help='Specify jobs in which channel', default='*')
@@ -24,51 +24,47 @@ def merge(cutflow, array_list, yaml_file, parquet_file, merge_input):
         new_cutflow = yaml.safe_load(f)
     for (key, value) in new_cutflow.items():
         cutflow[key] = cutflow.get(key, 0) + int(value)
-    if os.path.exists(parquet_file) and os.path.getsize(parquet_file) != 0 and new_cutflow.get('final', 0) > 0:
-        array_list.append(ak.from_parquet(parquet_file))
+    if os.path.exists(parquet_file):
         merge_input.append(parquet_file)
+        if os.path.getsize(parquet_file) != 0 and new_cutflow.get('final', 0) > 0:
+            array_list.append(ak.from_parquet(parquet_file))
 
     return cutflow, array_list, merge_input
+
 
 def merge_files(indir, outdir):
     print(indir)
     mode = '_'.join(indir.split('/')[-4:-1])
     print('\tStart postprocessing files:')
-    os.system(f"rm -rf {os.path.join(indir.replace('output', 'log'), '*')}")
+    os.system(f"rm -rf {os.path.join(indir, '*.err')}")
+    os.system(f"rm -rf {os.path.join(indir, '*.out')}")
 
-    cutflow = {}
-    arrays = []
-    merge_input = []
+    cutflow, arrays, merge_input = {}, [], []
 
-    for yml_file in glob.glob(os.path.join(indir, '*.yml')):
-        parq_file = yml_file.replace('yml', 'parq')
+    for yml_file in glob.glob(os.path.join(indir, '*.yaml')):
+        parq_file = yml_file.replace('yaml', 'parquet')
         cutflow, arrays, merge_input = merge(cutflow, arrays, yml_file, parq_file, merge_input)
 
-    merged_yaml = os.path.join(outdir, f'{mode}.yaml')
-    merged_parquet = os.path.join(outdir, f'{mode}.parquet')
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-    else:
-        cutflow, arrays, merge_input = merge(cutflow, arrays, merged_yaml, merged_parquet, merge_input)
+    os.makedirs(outdir, exist_ok=True)
+    merged_path = os.path.join(outdir, mode)
 
     if len(cutflow.keys()) > 0:
         print('\tMerging cutflows...')
-        with open(merged_yaml+'.new', 'w', encoding='utf-8') as file:
+        with open(merged_path+'.yaml.merged', 'w', encoding='utf-8') as file:
             yaml.dump(cutflow, file)
     if cutflow.get('final', 0) > 0 and len(arrays) > 0:
         print('\tMerging arrays...')
-        ak.to_parquet(ak.concatenate(arrays, axis=0), merged_parquet+'.new')
+        ak.to_parquet(ak.concatenate(arrays, axis=0), merged_path+'.parquet.merged')
     else:
         print('\tNo events passed final cut!')
-    
 
     print(f'\tFinished, merged files are stored in {outdir}')
     for f in merge_input:
         os.remove(f)
-    if os.path.exists(merged_yaml+'.new'):
-        os.rename(merged_yaml+'.new', merged_yaml)
-    if os.path.exists(merged_parquet+'.new'):
-        os.rename(merged_parquet+'.new', merged_parquet)
+    if os.path.exists(merged_path+'.yaml.merged'):
+        os.rename(merged_path+'.yaml.merged', merged_path+'.yaml')
+    if os.path.exists(merged_path+'.parquet.merged'):
+        os.rename(merged_path+'.parquet.merged', merged_path+'.parquet')
 
 
 def main():

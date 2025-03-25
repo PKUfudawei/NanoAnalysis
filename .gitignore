@@ -64,3 +64,4 @@ plots/
 test/
 .nfs*
 *.out
+combine_logger.out

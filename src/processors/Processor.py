@@ -341,7 +341,7 @@ class Processor(processor.ProcessorABC):
 
         self.object['AK8jet']['pt'] = self.object['AK8jet'].pt_JEC_nominal
         self.object['AK8jet']['mass'] = self.object['AK8jet'].mass_JEC_nominal
-        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
+        self.object['photon+jet'] = self.object['AK8jet'].add(self.object['photon'])
         self.variable[f'photon+jet_mass_JEC_nominal'] = self.object['photon+jet'].mass
         for direction in ['up', 'down']:
             for i in ['JES', 'JER']:
@@ -358,7 +358,7 @@ class Processor(processor.ProcessorABC):
                 self.variable[f'photon+jet_mass_{i}_{direction}'] = self.object['photon+jet'].mass
             self.object['photon']['pt'] = self.object['photon'].pt_nominal
 
-        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
+        self.object['photon+jet'] = self.object['AK8jet'].add(self.object['photon'])
 
         # Event-level
         self.variable['PUWeight_nominal'], self.variable['PUWeight_up'], self.variable['PUWeight_down'] = self.calculate_PU_SF()    
@@ -383,7 +383,7 @@ class Processor(processor.ProcessorABC):
         for obj, vars in vars.items():
             for var in vars:
                 if obj != 'event':
-                    array = getattr(self.object[obj], var)
+                    array = self.object[obj][var] if var in self.object[obj].fields else getattr(self.object[obj], var)
                 elif obj == 'event' and '_' in var:
                     array = self.event[var.split('_')[0]]['_'.join(var.split('_')[1:])]
                 elif obj == 'event' and var == 'genWeight':
@@ -446,7 +446,7 @@ class Processor(processor.ProcessorABC):
         # Photon-Jet Delta_R
         self.variable['photon-jet_deltaR'] = self.object['AK8jet'].delta_r(self.object['photon'])
         self.pass_cut(name='photon-jet_cleaning', cut=(self.variable['photon-jet_deltaR']>1.1))
-        self.object['photon+jet'] = self.object['photon'] + self.object['AK8jet']
+        self.object['photon+jet'] = self.object['AK8jet'].add(self.object['photon'])
         
         #pj_pair = ak.cartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
         #pj_index_pair = ak.argcartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)

@@ -14,8 +14,8 @@ def parse_commandline():
     parser.add_argument('-f', '--file', help='To specify file path', default=None)
     parser.add_argument('-p', '--param_dir', help='To specify input parameters directory', default='./parameters/')
     parser.add_argument('-o', '--outdir', help='To specify output directory', default='./')
+    parser.add_argument('-n', '--name', help='To specify output name', default='out')
     parser.add_argument('-m', '--mode', help='To specify $type_$year_$channel mode', default='mc_2018_ZpToHGamma')
-    parser.add_argument('-n', '--ncpu', help='To specify the number of CPUs', default=1)
     args = parser.parse_args()
     return args
 
@@ -35,7 +35,7 @@ def main() -> None:
     else:
         if ':' in args.file:
             os.system(f"xrdcp {args.file} .")  
-            file = os.path.join('.', args.file.split('/')[-1])
+            file = args.file.split('/')[-1]
         else:
             file = args.file
 
@@ -59,12 +59,12 @@ def main() -> None:
 
     if len(result) >= 1:
         result = ak.concatenate(result, axis=0)
-        ak.to_parquet(result, destination=os.path.join(args.outdir, file.replace('root', 'parq'))
+        ak.to_parquet(result, destination=os.path.join(args.outdir, f'{args.name}.parquet'))
     else:
-        with open(os.path.join(args.outdir, file.replace('root', 'parq')), 'w') as f:
+        with open(os.path.join(args.outdir, f'{args.name}.parquet'), 'w') as f:
             pass
 
-    with open(os.path.join(args.outdir, file.replace('root', 'yml'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(args.outdir, f'{args.name}.yaml'), 'w', encoding='utf-8') as f:
         yaml.dump(stats, f)
 
     print()

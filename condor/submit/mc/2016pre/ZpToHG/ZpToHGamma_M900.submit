@@ -12,16 +12,17 @@ JobBatchName = mc/2016pre/ZpToHG/ZpToHGamma_M900
 # EXECUTABLE is the program your job will run It's often useful 
 # to create a shell script to "wrap" your actual work. 
 Executable = ./Execute.sh
-Arguments = mc_2016pre_ZpToHG ./src/parameters/ $(file)
+Arguments = mc_2016pre_ZpToHG ./src/parameters/ $(file) mc/2016pre/ZpToHG/ZpToHGamma_M900 $(Process)
 
 # Setting the should_transfer_files command explicitly enables 
 # or disables the file transfer mechanism
 should_transfer_files   = YES
 transfer_input_files    = ../src
 when_to_transfer_output = ON_EXIT_OR_EVICT
-transfer_output_files   = output.parq, stats.yml
-transfer_output_remaps  = "output.parq = mc_2016pre_ZpToHG-$(Process).parq; stats.yml = mc_2016pre_ZpToHG-$(Process).yml"
-output_destination = root://eosuser.cern.ch/root://eosuser.cern.ch//eos/user/d/dfu/bbgamma_output/output/mc/2016pre/ZpToHG/ZpToHGamma_M900
+transfer_output_files = ""
+#transfer_output_files   = output.parq, stats.yml
+#transfer_output_remaps  = "output.parq = mc_2016pre_ZpToHG-$(Process).parq; stats.yml = mc_2016pre_ZpToHG-$(Process).yml"
+output_destination = root://eosuser.cern.ch//eos/user/d/dfu/bbgamma_ntuple/condor/mc/2016pre/ZpToHG/ZpToHGamma_M900
 MY.XRDCP_CREATE_DIR = True
 
 # If one wants to use local condor batch to analyze user/group skims 
@@ -34,8 +35,8 @@ use_x509userproxy       = true
 # that HTCondor returns from the remote host.
 # The LOG file is where HTCondor places information about your 
 # job's status, success, and resource consumption. 
-Error = log/mc/2016pre/ZpToHG/ZpToHGamma_M900/$(Cluster).$(Process).err
-#Output = log/mc/2016pre/ZpToHG/ZpToHGamma_M900/$(Cluster).$(Process).out
+Error = $(Cluster).$(Process).err
+Output = $(Cluster).$(Process).out
 #Log = log/mc/2016pre/ZpToHG/ZpToHGamma_M900/$(Cluster).log
 
 # Specify CPU,Memory and Disk

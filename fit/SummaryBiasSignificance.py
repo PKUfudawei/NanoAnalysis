@@ -131,8 +131,8 @@ axs[2].set_yscale("log")
 axs[2].set_ylabel("Type-1 error rate [%]", fontsize=20)
 axs[2].legend(loc='best', fontsize=16, frameon=True)
 
-fig.savefig("plots/summary_significance.pdf", bbox_inches="tight")
-fig.savefig("plots/summary_significance.png")
+fig.savefig("../plots/summary_significance.pdf", bbox_inches="tight")
+fig.savefig("../plots/summary_significance.png")
 
 axs[1].clear()
 axs[2].clear()
