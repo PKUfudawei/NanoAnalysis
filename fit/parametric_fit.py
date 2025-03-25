@@ -34,6 +34,97 @@ def Garwood_eror(number, direction):
         return None
 
 
+def plot_signal_fit(model, result, fit_variable, mc, region, mass, bin_width=50, width='N'):
+    x_min = max(2/3*mass//bin_width*bin_width + bin_width*(2/3*mass%bin_width>0), 650)
+    x_max = min(4/3*mass//bin_width*bin_width, 4000)
+    bins = int((x_max-x_min)/bin_width)
+
+    # Create a canvas and split it into two pads
+    canvas = ROOT.TCanvas("canvas", "canvas", 800, 800)
+    top_pad = ROOT.TPad("top_pad", "top_pad", 0, 0.3, 1, 1)  # Top pad (main plot)
+    bottom_pad = ROOT.TPad("bottom_pad", "bottom_pad", 0, 0, 1, 0.3)  # Bottom pad (pull plot)
+    top_pad.Draw()
+    bottom_pad.Draw()
+
+
+    # Draw the main plot in the top pad
+    top_pad.cd()
+    top_pad.SetBottomMargin(0.02)  # Reduce margin between pads
+
+    legend = ROOT.TLegend(0.1, 0.7, 0.9, 0.89)
+    legend.SetBorderSize(0)
+    legend.SetNColumns(2)
+    legend.SetTextSize(0.05)
+    legend.SetFillColorAlpha(ROOT.kWhite, 0)
+
+    frame = fit_variable.frame(x_min, x_max, bins)
+    mc.plotOn(frame)
+    
+    # plot errorbands
+    model.plotOn(frame, LineColor='kBlue')
+    chi2_ndf = frame.chiSquare(len(result.floatParsFinal()))
+    legend.AddEntry(frame.getObject(0), "signal MC", "ep")
+    legend.AddEntry(frame.getObject(1), f"DCB fit, #chi^{{2}}/NDF = {chi2_ndf:.2f}", "l")
+    hpull = frame.pullHist(frame.getObject(0).GetName(), frame.getObject(1).GetName())
+    for i in range(hpull.GetN()):
+        hpull.SetPointError(i, 0, 0, 1, 1)  # Set x-error to 0 and y-error to 1
+
+    #frame.SetMinimum(1e-2)
+    frame.SetMaximum(1.2*frame.GetMaximum())
+    frame.SetTitle("")
+    frame.GetXaxis().SetLabelSize(0)  # Hide x-axis labels
+    frame.GetXaxis().SetTickLength(0) # Hide x-axis ticks
+    #frame.GetYaxis().SetTitleSize(0.1)
+    #frame.GetXaxis().SetTitle('m_{j\gamma} [GeV]')
+    frame.Draw()
+    legend.Draw()
+    
+    ##########################################
+    # Draw the pull plot in the bottom pad
+
+    bottom_pad.cd()
+    bottom_pad.SetTopMargin(0.04)  # Reduce margin between pads
+    bottom_pad.SetBottomMargin(0.25)  # Increase bottom margin for labels
+
+    bottom_legend = ROOT.TLegend(0.65, 0.2, 0.95, 0.5)
+    #legend.SetTextSize(0.05)
+    bottom_legend.SetBorderSize(0)
+    bottom_legend.SetFillColorAlpha(ROOT.kWhite, 0)
+    bottom_legend.SetNColumns(2)
+    bottom_legend.SetTextSize(0.08)
+
+    # Create a frame for the pull plot
+    pull_frame = fit_variable.frame(x_min, x_max, bins)
+    # Add a horizontal line at y = 0 for reference
+    zero_line = ROOT.TLine(x_min, 0, x_max, 0)
+    zero_line.SetLineColor(ROOT.kBlue)
+    zero_line.SetLineWidth(3)
+    pull_frame.addObject(zero_line)
+    bottom_legend.AddEntry(pull_frame.getObject(0), 'fit', "l")
+
+    # Calculate and plot the pulls for expow1
+    pull_frame.addPlotable(hpull, "P")
+    bottom_legend.AddEntry(pull_frame.getObject(1), '(MC - fit)/#sigma_{STAT}', "ep")
+
+    # plot
+    pull_frame.SetTitle("")
+    pull_frame.GetYaxis().SetLabelSize(0.1)
+    pull_frame.GetYaxis().SetTitle("(MC - fit) / #sigma_{STAT}")
+    pull_frame.GetYaxis().SetTitleOffset(0.4)
+    pull_frame.GetYaxis().SetTitleSize(0.1)
+
+    pull_frame.GetXaxis().SetTitle('m_{j#gamma} (GeV)')
+    pull_frame.GetXaxis().SetTitleSize(0.1)
+    pull_frame.GetXaxis().SetLabelSize(0.1)
+    pull_frame.Draw()
+    pull_frame.SetMaximum(+3)
+    pull_frame.SetMinimum(-3)
+    #bottom_legend.Draw()
+    
+    os.makedirs(f'../plots/fit/{year}/{mass}', exist_ok=True)
+    canvas.SaveAs(f"../plots/fit/{year}/{mass}/signal_fit_{region}_{mass}_{width}.pdf")
+
+
 def fit_signal(year, jet, signal_mass, region, cut):
     signal_region = region[:2]+jet+region[2:]
     m = int(str(signal_mass).split('_')[0])
@@ -41,7 +132,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
     with open('../src/parameters/uncertainty/systematics.yaml', 'r', encoding='utf-8') as f:
         systematics = yaml.safe_load(f)
 
-    if '_' in str(signal_mass):
+    if isinstance(signal_mass, str):
         sigma = m * (0.056 if '_5p6' in signal_mass else 0.10)
     else:
         f = uproot.open(f"input/{year}/{signal_mass}/bbgamma_SR{jet}.root")
@@ -92,7 +183,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
 
     # Fit signal model to MC
     model_signal = ROOT.RooCrystalBall(f"model_bbgamma_{signal_region}", f"model_bbgamma_{signal_region}", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
-    model_signal.fitTo(mc, ROOT.RooFit.Range('fit_range'),  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True))
+    result = model_signal.fitTo(mc, ROOT.RooFit.Range('fit_range'),  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True), Save=True)
     fit_range_norm = mc.sumEntries('', 'fit_range')
     fit_range_frac = model_signal.createIntegral(fit_mass, ROOT.RooFit.NormSet(fit_mass), ROOT.RooFit.Range("fit_range"))
     signal_norm = ROOT.RooRealVar(f"model_bbgamma_{signal_region}_norm", f"Number of signal events in {signal_region}", fit_range_norm, 0, 5*fit_range_norm)
@@ -134,15 +225,23 @@ def fit_signal(year, jet, signal_mass, region, cut):
             'fraction': fit_range_frac.getVal()
         }
         yaml.dump(info, f)
+    
+    width = 'W' if '_5p6' in str(signal_mass) else 'VW' if '_10p0' in str(signal_mass) else 'N'
+    x_max = min(4/3*m, 4000)
+    x_min = max(650, 2/3*m)
+    if width != 'W':
+        bin_width = round((x_max-x_min)/50/5)*5
+    else:
+        bin_width = round((x_max-x_min)/50/10)*5
+    plot_signal_fit(model=model_signal, result=result, fit_variable=fit_mass, mc=mc, region=signal_region, mass=m, bin_width=bin_width, width=width)
 
 
-def plot_b_only_fit(candidates, model, result, fit_variable, data_region, SR, jet, x_min=650, x_max=3700, bin_width=50):
+def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min=650, x_max=3700, bin_width=50):
     line_color = {'expow1': ROOT.kRed, 'expow2': ROOT.kGreen+1, 'dijet2': ROOT.kYellow+2, 'dijet3': ROOT.kCyan, 'invpow2':ROOT.kBlue, 'invpow3': ROOT.kMagenta}
     band_color = {'expow1': ROOT.kPink, 'expow2': ROOT.kYellow, 'dijet2': ROOT.kGreen, 'dijet3': ROOT.kCyan, 'invpow2':ROOT.kAzure, 'invpow3': ROOT.kMagenta}
 
     ## plot
     bins = int((x_max-x_min)/bin_width)
-    plot_name = (candidates[0] if len(candidates) == 1 else f"{len(candidates)}")
 
     # Create a canvas and split it into two pads
     canvas = ROOT.TCanvas("canvas", "canvas", 800, 800)
@@ -166,14 +265,14 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data_region, SR, je
     frame = fit_variable.frame(x_min, x_max, bins)
 
     # Create a histogram from the RooDataSet
-    hist_data = data_region.createHistogram(f"hist_data", fit_variable, ROOT.RooFit.Binning(bins, x_min, x_max))
+    hist_data = data.createHistogram(f"hist_data", fit_variable, ROOT.RooFit.Binning(bins, x_min, x_max))
 
     # Convert the histogram to a RooHist object
     data_hist = ROOT.RooHist(hist_data)
     for i in range(data_hist.GetN()):
         y = data_hist.GetPointY(i)
         data_hist.SetPointError(i, 0, 0, Garwood_eror(y, 'down'), Garwood_eror(y, 'up'))
-    data_region.plotOn(frame, ROOT.RooFit.MarkerColor(ROOT.kBlack), ROOT.RooFit.LineColor(ROOT.kWhite))
+    data.plotOn(frame, ROOT.RooFit.MarkerColor(ROOT.kBlack), ROOT.RooFit.LineColor(ROOT.kWhite))
     
     # plot errorbands
     for k in candidates:
@@ -188,7 +287,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data_region, SR, je
     #return bins
     hpull = frame.pullHist(frame.getObject(2*len(candidates)+1).GetName(), frame.getObject(len(candidates)+1).GetName())
     for i in range(hpull.GetN()):
-        hpull.SetPointError(i, 0, 0, 1, 1)  # Set x-error to 0 and y-error to 1return frame.getObject(2)
+        hpull.SetPointError(i, 0, 0, 1, 1)  # Set x-error to 0 and y-error to 1
     
     canvas.SetLogy()
     frame.SetMinimum(1e-2)
@@ -276,7 +375,8 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data_region, SR, je
     bottom_legend.Draw()
     
     os.makedirs('../plots/fit/Run2', exist_ok=True)
-    canvas.SaveAs(f"../plots/fit/Run2/b_only_fit_{SR}_{jet}_{plot_name}.pdf")
+    plot_name = candidates[0] if len(candidates)==1 else len(candidates)
+    canvas.SaveAs(f"../plots/fit/Run2/b_only_fit_{region}_{plot_name}.pdf")
 
 
 def fit_background(year, jet, region, cut):
@@ -346,9 +446,9 @@ def fit_background(year, jet, region, cut):
         if k in p3:
             p3[k].setConstant(True)
         models.add(model[k])
-        plot_b_only_fit(candidates=[k], model=model, result=result, fit_variable=fit_mass, data_region=data_region, SR=SR, jet=jet, x_min=fit_range_down, x_max=fit_range_up-300, bin_width=50)
+        plot_b_only_fit(candidates=[k], model=model, result=result, fit_variable=fit_mass, data=data_region, region=region, x_min=fit_range_down, x_max=fit_range_up-300, bin_width=50)
 
-    plot_b_only_fit(candidates=['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3'], model=model, result=result, fit_variable=fit_mass, data_region=data_region, SR=SR, jet=jet, x_min=fit_range_down, x_max=fit_range_up-300, bin_width=50)
+    plot_b_only_fit(candidates=['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3'], model=model, result=result, fit_variable=fit_mass, data=data_region, region=region, x_min=fit_range_down, x_max=fit_range_up-300, bin_width=50)
 
     # Build the RooMultiPdf object
     multipdf = ROOT.RooMultiPdf(f"multipdf_{region}", f"multipdf_{region}", category, models)
@@ -452,5 +552,5 @@ if __name__ == "__main__":
                 for m in signal_mass:
                     fit_signal(year, jet, m, SR, SR_cut)
                     if jet == 'Z':
-                        fit_signal(year, jet, str(m)+'_5p6', SR, SR_cut)
-                        fit_signal(year, jet, str(m)+'_10p0', SR, SR_cut)
+                        fit_signal(year, jet, f'{m}_5p6', SR, SR_cut)
+                        fit_signal(year, jet, f'{m}_10p0', SR, SR_cut)
