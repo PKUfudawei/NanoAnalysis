@@ -9,7 +9,7 @@ ROOT.gStyle.SetOptTitle(0)
 
 def parse_commandline():
     parser = argparse.ArgumentParser(description='parametric fitting')
-    parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2016', '2017', '2018', 'Run2'), default=None)
+    parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2016', '2017', '2018', 'Run2'), default='Run2')
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
     parser.add_argument('-d', '--fit_range_down', help='To specify the lower bound of fitting range', default=650, type=int)
@@ -34,9 +34,7 @@ def Garwood_eror(number, direction):
         return None
 
 
-def plot_signal_fit(model, result, fit_variable, mc, region, mass, bin_width=50, width='N'):
-    x_min = max(2/3*mass//bin_width*bin_width + bin_width*(2/3*mass%bin_width>0), 650)
-    x_max = min(4/3*mass//bin_width*bin_width, 4000)
+def plot_signal_fit(model, result, fit_variable, mc, region, mass, x_max, x_min, bin_width=50, width='N'):
     bins = int((x_max-x_min)/bin_width)
 
     # Create a canvas and split it into two pads
@@ -51,7 +49,7 @@ def plot_signal_fit(model, result, fit_variable, mc, region, mass, bin_width=50,
     top_pad.cd()
     top_pad.SetBottomMargin(0.02)  # Reduce margin between pads
 
-    legend = ROOT.TLegend(0.1, 0.7, 0.9, 0.89)
+    legend = ROOT.TLegend(0.2, 0.7, 0.8, 0.89)
     legend.SetBorderSize(0)
     legend.SetNColumns(2)
     legend.SetTextSize(0.05)
@@ -64,7 +62,7 @@ def plot_signal_fit(model, result, fit_variable, mc, region, mass, bin_width=50,
     model.plotOn(frame, LineColor='kBlue')
     chi2_ndf = frame.chiSquare(len(result.floatParsFinal()))
     legend.AddEntry(frame.getObject(0), "signal MC", "ep")
-    legend.AddEntry(frame.getObject(1), f"DCB fit, #chi^{{2}}/NDF = {chi2_ndf:.2f}", "l")
+    legend.AddEntry(frame.getObject(1), f"DCB fit", "l")
     hpull = frame.pullHist(frame.getObject(0).GetName(), frame.getObject(1).GetName())
     for i in range(hpull.GetN()):
         hpull.SetPointError(i, 0, 0, 1, 1)  # Set x-error to 0 and y-error to 1
@@ -128,6 +126,8 @@ def plot_signal_fit(model, result, fit_variable, mc, region, mass, bin_width=50,
 def fit_signal(year, jet, signal_mass, region, cut):
     signal_region = region[:2]+jet+region[2:]
     m = int(str(signal_mass).split('_')[0])
+    x_max = 4000 if 4000 < 4/3*m else round(4/3*m/50)*50
+    x_min = 650 if 650 > 2/3*m else round(2/3*m/50)*50
 
     with open('../src/parameters/uncertainty/systematics.yaml', 'r', encoding='utf-8') as f:
         systematics = yaml.safe_load(f)
@@ -148,19 +148,19 @@ def fit_signal(year, jet, signal_mass, region, cut):
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
-    fit_mass.setRange("fit_range", max(650, 2*m/3), min(4000, 4*m/3))
+    fit_mass.setRange("fit_range", x_min, x_max)
 
     # Convert to RooDataSet
     mc = ROOT.RooDataSet("signal", "signal", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
 
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", m, m - 50, m + 50)
-    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma, 10, 3*sigma)
-    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma, 10, 3*sigma)
-    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 1, 0.4, 3)
-    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1, 0.3, 3)
-    nL = ROOT.RooRealVar("nL", "nL", 2, 0.4, 10)
-    nR = ROOT.RooRealVar("nR", "nR", 2, 1, 4.5)
+    sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma/2, 10, 2*sigma)
+    sigmaR = ROOT.RooRealVar("sigmaR", "sigmaR", sigma/2, 10, 2*sigma)
+    alphaL = ROOT.RooRealVar("alphaL", "alphaL", 0.5, 0.3, 3)
+    alphaR = ROOT.RooRealVar("alphaR", "alphaR", 1.5, 0.3, 3)
+    nL = ROOT.RooRealVar("nL", "nL", 2, 0.3, 20)
+    nR = ROOT.RooRealVar("nR", "nR", 2, 1, 6)
 
     if year != 'Run2':
         JES = ROOT.RooRealVar(f"JES_{year}", f"JES_{year}", 0, -5, 5)
@@ -183,6 +183,7 @@ def fit_signal(year, jet, signal_mass, region, cut):
 
     # Fit signal model to MC
     model_signal = ROOT.RooCrystalBall(f"model_bbgamma_{signal_region}", f"model_bbgamma_{signal_region}", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
+    model_signal.fitTo(mc, ROOT.RooFit.Range('fit_range'),  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True))
     result = model_signal.fitTo(mc, ROOT.RooFit.Range('fit_range'),  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True), Save=True)
     fit_range_norm = mc.sumEntries('', 'fit_range')
     fit_range_frac = model_signal.createIntegral(fit_mass, ROOT.RooFit.NormSet(fit_mass), ROOT.RooFit.Range("fit_range"))
@@ -227,13 +228,19 @@ def fit_signal(year, jet, signal_mass, region, cut):
         yaml.dump(info, f)
     
     width = 'W' if '_5p6' in str(signal_mass) else 'VW' if '_10p0' in str(signal_mass) else 'N'
-    x_max = min(4/3*m, 4000)
-    x_min = max(650, 2/3*m)
-    if width != 'W':
-        bin_width = round((x_max-x_min)/50/5)*5
+    bin_width_list = [5, 10, 25, 50]
+    if width == 'N':
+        for bw in bin_width_list[::-1]:
+            if (x_max-x_min)/bw>50:
+                bin_width = bw
+                break
     else:
-        bin_width = round((x_max-x_min)/50/10)*5
-    plot_signal_fit(model=model_signal, result=result, fit_variable=fit_mass, mc=mc, region=signal_region, mass=m, bin_width=bin_width, width=width)
+        for bw in bin_width_list:
+            if (x_max-x_min)/bw<50:
+                bin_width = bw
+                break
+    
+    plot_signal_fit(model=model_signal, result=result, fit_variable=fit_mass, mc=mc, region=signal_region, mass=m, x_max=x_max, x_min=x_min, bin_width=bin_width, width=width)
 
 
 def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min=650, x_max=3700, bin_width=50):
