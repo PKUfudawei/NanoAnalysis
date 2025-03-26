@@ -14,7 +14,7 @@ observation     -1
 bin             SRZ1    SRZ1    SRZ1        SRZ1
 process         bbgamma_2016    bbgamma_2017    bbgamma_2018      background
 process         0           -1  -2  1
-rate		5.859400905973007	6.816463157508152	9.427203921405303	1.0
+rate		9.453768685092394	10.94433477812593	14.938694244132213	1.0
 ---------------------------------------------
 lumi_13TeV_2016		lnN	1.010   -   -	-
 lumi_13TeV_2017		lnN	-   1.020   -	-

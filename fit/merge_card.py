@@ -1,5 +1,7 @@
 import os
-for year in ['Run2']:
+for year in os.listdir('datacard'):
+    if year != 'Run2':
+        continue
     for mass in os.listdir(f'datacard/{year}'):
         prefix = f'datacard/{year}/{mass}'
         for file in set(os.listdir(prefix)):
