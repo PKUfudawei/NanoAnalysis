@@ -4,14 +4,14 @@ jmax 3 number of processes minus 1
 kmax 21 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
 shapes background    SRH1          workspace/Run2/data_SRH1.root workspace_SRH1:multipdf_SRH1
-shapes bbgamma_2016  SRH1          workspace/Run2/2200/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
-shapes bbgamma_2017  SRH1          workspace/Run2/2200/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
-shapes bbgamma_2018  SRH1          workspace/Run2/2200/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
+shapes bbgamma_2016  SRH1          workspace/2016/2200/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
+shapes bbgamma_2017  SRH1          workspace/2017/2200/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
+shapes bbgamma_2018  SRH1          workspace/2018/2200/signal_SRH1.root workspace_signal:model_bbgamma_SRH1
 shapes data_obs      SRH1          workspace/Run2/data_SRH1.root workspace_SRH1:data_SRH1
 shapes background    SRH2          workspace/Run2/data_SRH2.root workspace_SRH2:multipdf_SRH2
-shapes bbgamma_2016  SRH2          workspace/Run2/2200/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
-shapes bbgamma_2017  SRH2          workspace/Run2/2200/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
-shapes bbgamma_2018  SRH2          workspace/Run2/2200/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
+shapes bbgamma_2016  SRH2          workspace/2016/2200/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
+shapes bbgamma_2017  SRH2          workspace/2017/2200/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
+shapes bbgamma_2018  SRH2          workspace/2018/2200/signal_SRH2.root workspace_signal:model_bbgamma_SRH2
 shapes data_obs      SRH2          workspace/Run2/data_SRH2.root workspace_SRH2:data_SRH2
 ----------------------------------------------------------------------------------------------------------------------------------
 bin          SRH1           SRH2         
@@ -45,4 +45,4 @@ PES           param  0.0 1.0
 PER           param  0.0 1.0
 pdfindex_SRH1  discrete
 pdfindex_SRH2  discrete
-theory group = Br_Hbb PDF QCD_scale
+theory group = PDF Br_Hbb QCD_scale

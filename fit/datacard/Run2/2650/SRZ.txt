@@ -4,14 +4,14 @@ jmax 3 number of processes minus 1
 kmax 19 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
 shapes background    SRZ1          workspace/Run2/data_SRZ1.root workspace_SRZ1:multipdf_SRZ1
-shapes bbgamma_2016  SRZ1          workspace/Run2/2650/signal_SRZ1.root workspace_signal:model_bbgamma_SRZ1
-shapes bbgamma_2017  SRZ1          workspace/Run2/2650/signal_SRZ1.root workspace_signal:model_bbgamma_SRZ1
-shapes bbgamma_2018  SRZ1          workspace/Run2/2650/signal_SRZ1.root workspace_signal:model_bbgamma_SRZ1
+shapes bbgamma_2016  SRZ1          workspace/2016/2650/signal_SRZ1.root workspace_signal:model_bbgamma_SRZ1
+shapes bbgamma_2017  SRZ1          workspace/2017/2650/signal_SRZ1.root workspace_signal:model_bbgamma_SRZ1
+shapes bbgamma_2018  SRZ1          workspace/2018/2650/signal_SRZ1.root workspace_signal:model_bbgamma_SRZ1
 shapes data_obs      SRZ1          workspace/Run2/data_SRZ1.root workspace_SRZ1:data_SRZ1
 shapes background    SRZ2          workspace/Run2/data_SRZ2.root workspace_SRZ2:multipdf_SRZ2
-shapes bbgamma_2016  SRZ2          workspace/Run2/2650/signal_SRZ2.root workspace_signal:model_bbgamma_SRZ2
-shapes bbgamma_2017  SRZ2          workspace/Run2/2650/signal_SRZ2.root workspace_signal:model_bbgamma_SRZ2
-shapes bbgamma_2018  SRZ2          workspace/Run2/2650/signal_SRZ2.root workspace_signal:model_bbgamma_SRZ2
+shapes bbgamma_2016  SRZ2          workspace/2016/2650/signal_SRZ2.root workspace_signal:model_bbgamma_SRZ2
+shapes bbgamma_2017  SRZ2          workspace/2017/2650/signal_SRZ2.root workspace_signal:model_bbgamma_SRZ2
+shapes bbgamma_2018  SRZ2          workspace/2018/2650/signal_SRZ2.root workspace_signal:model_bbgamma_SRZ2
 shapes data_obs      SRZ2          workspace/Run2/data_SRZ2.root workspace_SRZ2:data_SRZ2
 ----------------------------------------------------------------------------------------------------------------------------------
 bin          SRZ1           SRZ2         

@@ -152,7 +152,7 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     x_min = fit_range_low if (1-k)*m<fit_range_low else round((1-k)*m/50)*50
 
     ## Signal modeling
-    f = ROOT.TFile(f"input/Run2/{signal_mass}/bbgamma_SR{jet}.root", "r")
+    f = ROOT.TFile(f"input/{year}/{signal_mass}/bbgamma_SR{jet}.root", "r")
     # Load TTree
     tree = f.Get("Events")
 
@@ -169,7 +169,7 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     if isinstance(signal_mass, str):
         sigma = m * (0.056 if '_5p6' in signal_mass else 0.10)
     else:
-        f = uproot.open(f"input/Run2/{signal_mass}/bbgamma_SR{jet}.root")
+        f = uproot.open(f"input/{year}/{signal_mass}/bbgamma_SR{jet}.root")
         sigma = np.std(f['Events']['fit_mass'].array())
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", m, m - 50, m + 50)
@@ -181,22 +181,19 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     nR = ROOT.RooRealVar("nR", "nR", 2, 0.5, 10)
 
     # shape uncertainties
-    #if year != 'Run2':
-    #    JES = ROOT.RooRealVar(f"JES_{year}", f"JES_{year}", 0, -5, 5)
-    #else:
-    #    JES = ROOT.RooRealVar("JES", f"JES", 0, -5, 5)
-    JES_2016 = ROOT.RooRealVar("JES_2016", "JES_2016", 0, -5, 5)
-    JES_2017 = ROOT.RooRealVar("JES_2017", "JES_2017", 0, -5, 5)
-    JES_2018 = ROOT.RooRealVar("JES_2018", "JES_2018", 0, -5, 5)
+    if year != 'Run2':
+        JES = ROOT.RooRealVar(f"JES_{year}", f"JES_{year}", 0, -5, 5)
+    else:
+        JES = ROOT.RooRealVar("JES", f"JES", 0, -5, 5)
     JER = ROOT.RooRealVar("JER", "JER", 0, -5, 5)
     PES = ROOT.RooRealVar("PES", "PES", 0, -5, 5)
     PER = ROOT.RooRealVar("PER", "PER", 0, -5, 5)
-    JES_2016.setConstant(True); JES_2017.setConstant(True); JES_2018.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
+    JES.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
     with open('../src/parameters/uncertainty/systematics.yaml', 'r', encoding='utf-8') as f:
         systematics = yaml.safe_load(f)
-    mean = ROOT.RooFormulaVar("mean", "mean", 
-        "@0*(1+%f*@1+%f*(0.26*@2+0.3*@3+0.44*@4))"%((systematics['PES'][region][m]-1)/2, systematics['JES'][region][m]-1), 
-        ROOT.RooArgList(x0, PES, JES_2016, JES_2017, JES_2018))
+    mean = ROOT.RooFormulaVar("mean", "mean",
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JES'][region][m]-1, (systematics['PES'][region][m]-1)/2), 
+        ROOT.RooArgList(x0, JES, PES))
     widthL = ROOT.RooFormulaVar("widthL", "widthL", 
         "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][region][jet][signal_mass]-1, systematics['PER'][region][jet][signal_mass]-1), 
         ROOT.RooArgList(sigmaL, JER, PER))
@@ -570,7 +567,7 @@ if __name__ == "__main__":
                     (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
                 )"""
                 #get_SR_data(year, SR, SR_cut, jet)
-                if year == 'Run2':
+                if year=='Run2':
                     fit_background(year, jet, SR,SR_cut)
 
                 for m in signal_mass:

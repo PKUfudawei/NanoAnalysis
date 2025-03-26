@@ -2,9 +2,9 @@ imax *  # number of channels
 jmax *  # number of backgrounds
 kmax *  # number of nuisance parameters (sources of systematic uncertainties)
 ---------------------------------------------
-shapes      bbgamma_2016    SRH2      workspace/Run2/2650/signal_SRH2.root      workspace_signal:model_bbgamma_SRH2
-shapes      bbgamma_2017    SRH2      workspace/Run2/2650/signal_SRH2.root      workspace_signal:model_bbgamma_SRH2
-shapes      bbgamma_2018    SRH2      workspace/Run2/2650/signal_SRH2.root      workspace_signal:model_bbgamma_SRH2
+shapes      bbgamma_2016    SRH2      workspace/2016/2650/signal_SRH2.root      workspace_signal:model_bbgamma_SRH2
+shapes      bbgamma_2017    SRH2      workspace/2017/2650/signal_SRH2.root      workspace_signal:model_bbgamma_SRH2
+shapes      bbgamma_2018    SRH2      workspace/2018/2650/signal_SRH2.root      workspace_signal:model_bbgamma_SRH2
 shapes      background      SRH2      workspace/Run2/data_SRH2.root      workspace_SRH2:multipdf_SRH2
 shapes      data_obs     SRH2      workspace/Run2/data_SRH2.root      workspace_SRH2:data_SRH2
 ---------------------------------------------
