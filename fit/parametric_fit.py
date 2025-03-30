@@ -9,7 +9,7 @@ ROOT.gStyle.SetOptTitle(0)
 
 def parse_commandline():
     parser = argparse.ArgumentParser(description='parametric fitting')
-    parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2016', '2017', '2018', 'Run2'), default=None)
+    parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2016', '2017', '2018', 'Run2'), default='Run2')
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
     parser.add_argument('-d', '--fit_range_down', help='To specify the lower bound of fitting range', default=650, type=int)
@@ -152,16 +152,15 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     x_min = fit_range_low if (1-k)*m<fit_range_low else round((1-k)*m/50)*50
 
     ## Signal modeling
-    f = ROOT.TFile(f"input/{year}/{signal_mass}/bbgamma_SR{jet}.root", "r")
+    f = ROOT.TFile(f"input/Run2/{signal_mass}/bbgamma_SR{jet}.root", "r")
     # Load TTree
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, fit_range_low, fit_range_high)
+    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, x_min, x_max)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
-    fit_mass.setRange("fit_range", x_min, x_max)
 
     # Convert to RooDataSet
     mc = ROOT.RooDataSet("signal", "signal", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
@@ -169,7 +168,7 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     if isinstance(signal_mass, str):
         sigma = m * (0.056 if '_5p6' in signal_mass else 0.10)
     else:
-        f = uproot.open(f"input/{year}/{signal_mass}/bbgamma_SR{jet}.root")
+        f = uproot.open(f"input/Run2/{signal_mass}/bbgamma_SR{jet}.root")
         sigma = np.std(f['Events']['fit_mass'].array())
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", m, m - 50, m + 50)
@@ -181,19 +180,19 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     nR = ROOT.RooRealVar("nR", "nR", 2, 0.5, 10)
 
     # shape uncertainties
-    if year != 'Run2':
-        JES = ROOT.RooRealVar(f"JES_{year}", f"JES_{year}", 0, -5, 5)
-    else:
-        JES = ROOT.RooRealVar("JES", f"JES", 0, -5, 5)
+    JES_2016 = ROOT.RooRealVar("JES_2016", "JES_2016", 0, -5, 5)
+    JES_2017 = ROOT.RooRealVar("JES_2017", "JES_2017", 0, -5, 5)
+    JES_2018 = ROOT.RooRealVar("JES_2018", "JES_2018", 0, -5, 5)
     JER = ROOT.RooRealVar("JER", "JER", 0, -5, 5)
     PES = ROOT.RooRealVar("PES", "PES", 0, -5, 5)
     PER = ROOT.RooRealVar("PER", "PER", 0, -5, 5)
-    JES.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
+    JES_2016.setConstant(True); JES_2017.setConstant(True); JES_2018.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
+
     with open('../src/parameters/uncertainty/systematics.yaml', 'r', encoding='utf-8') as f:
         systematics = yaml.safe_load(f)
     mean = ROOT.RooFormulaVar("mean", "mean",
-        "@0*(1+%f*@1+%f*@2)"%(systematics['JES'][region][m]-1, (systematics['PES'][region][m]-1)/2), 
-        ROOT.RooArgList(x0, JES, PES))
+        "@0*(1+%f*(0.264*@1+0.301*@2+0.435*@3)+%f*@4)"%(systematics['JES'][region][m]-1, (systematics['PES'][region][m]-1)/2), 
+        ROOT.RooArgList(x0, JES_2016, JES_2017, JES_2018, PES))
     widthL = ROOT.RooFormulaVar("widthL", "widthL", 
         "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][region][jet][signal_mass]-1, systematics['PER'][region][jet][signal_mass]-1), 
         ROOT.RooArgList(sigmaL, JER, PER))
@@ -203,11 +202,16 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
 
     # Fit signal model to MC
     model_signal = ROOT.RooCrystalBall(f"model_bbgamma_{signal_region}", f"model_bbgamma_{signal_region}", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
-    model_signal.fitTo(mc, ROOT.RooFit.Range('fit_range'),  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True))
-    result = model_signal.fitTo(mc, ROOT.RooFit.Range('fit_range'),  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True), Save=True)
-    fit_range_norm = get_signal_norm(year=year, jet=jet, signal_mass=signal_mass, cut=cut, x_min=x_min, x_max=x_max)
-    fit_range_frac = model_signal.createIntegral(fit_mass, ROOT.RooFit.NormSet(fit_mass), ROOT.RooFit.Range("fit_range"))
-    signal_norm = ROOT.RooRealVar(f"model_bbgamma_{signal_region}_norm", f"Number of signal events in {signal_region}", fit_range_norm, 0, 5*fit_range_norm)
+    model_signal.fitTo(mc,  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True))
+    result = model_signal.fitTo(mc,  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True), Save=True)
+    
+    norm = {
+        year: get_signal_norm(year=year, jet=jet, signal_mass=signal_mass, cut=cut, x_min=x_min, x_max=x_max) for year in ['2016', '2017', '2018', 'Run2']
+    }
+    signal_norm = {
+        year: ROOT.RooRealVar(f"model_bbgamma_{signal_region}_norm_{year}", f"Number of signal events in {signal_region} {year}", norm[year], 0, 5*norm[year])
+        for year in norm
+    }
 
     x0.setConstant(True)
     sigmaL.setConstant(True)
@@ -218,9 +222,9 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     nR.setConstant(True)
     #signal_norm.setConstant(True)
 
-    sig_model_dir = f'workspace/{year}/{signal_mass}'
+    sig_model_dir = f'workspace/{year}/{m}'
     os.makedirs(sig_model_dir, exist_ok=True)
-    f_out = ROOT.TFile(f"{sig_model_dir}/signal_{signal_region}.root", "RECREATE")
+    f_out = ROOT.TFile(f"{sig_model_dir}/{signal_region}_{width}.root", "RECREATE")
     w_sig = ROOT.RooWorkspace("workspace_signal", "workspace_signal")
     getattr(w_sig, "import")(model_signal)
     #getattr(w_sig, "import")(signal_norm)
@@ -228,7 +232,7 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     w_sig.Write()
     f_out.Close()
 
-    with open(f'{sig_model_dir}/signal_{signal_region}.yaml', 'w', encoding='utf-8') as f:
+    with open(f'{sig_model_dir}/{signal_region}_{width}.yaml', 'w', encoding='utf-8') as f:
         info = {
             'x0': x0.getVal(),
             'mean': mean.getVal(),
@@ -241,10 +245,10 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
             'nL': nL.getVal(),
             'nR': nR.getVal(),
             'event_sum': mc.sumEntries(),
-            'norm': signal_norm.getVal(),
             'sigma': float(sigma),
-            'fraction': fit_range_frac.getVal()
         }
+        for year in ['2016', '2017', '2018', 'Run2']:
+            info[f'norm_{year}'] = signal_norm[year].getVal()
         yaml.dump(info, f)
 
     bin_width_list = [5, 10, 25, 50]
@@ -253,7 +257,7 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
         if (x_max-x_min)/bw<=50:
             bin_width = bw
             break
-    
+
     plot_signal_fit(model=model_signal, result=result, fit_variable=fit_mass, mc=mc, region=signal_region, mass=m, x_max=x_max, x_min=x_min, bin_width=bin_width, width=width)
 
 
