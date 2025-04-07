@@ -66,8 +66,10 @@ for Z in Z_points:
 
 p_fixed = np.array( p_fixed )
 p_envelope = np.array( p_envelope )
-err_fixed = np.array( err_fixed )
-err_envelope = np.array( err_envelope )
+p_fixed = np.cbrt(p_fixed * p_gaus**2)
+p_envelope = np.cbrt(p_envelope * p_gaus**2) 
+err_fixed = np.array( err_fixed ) / 3
+err_envelope = np.array( err_envelope ) / 3
 
 axs = []
 left, width=0.08,0.82
