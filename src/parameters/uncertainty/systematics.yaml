@@ -1406,8 +1406,8 @@ QCD_scale:
     3450: 1.012
     3500: 1.012
 Xbb_tagger:
-  SR1: 1.033
-  SR2: 1.04
+  SR1: 1.055
+  SR2: 1.070
 lumi_Run2: 1.016
 photon_ID: 1.044
 pile-up: 1.01
