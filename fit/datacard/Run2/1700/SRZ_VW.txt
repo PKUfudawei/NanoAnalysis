@@ -1,7 +1,7 @@
 Combination of SRZ1_VW=SRZ1_VW.txt  SRZ2_VW=SRZ2_VW.txt
 imax 2 number of bins
 jmax 3 number of processes minus 1
-kmax 19 number of nuisance parameters
+kmax 20 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
 shapes background    SRZ1_VW       workspace/Run2/data_SRZ1.root workspace_SRZ1:multipdf_SRZ1
 shapes bbgamma_2016  SRZ1_VW       workspace/Run2/1700/SRZ1_VW.root workspace_signal:model_bbgamma_SRZ1
@@ -20,7 +20,7 @@ observation  -1             -1
 bin                                      SRZ1_VW        SRZ1_VW        SRZ1_VW        SRZ1_VW        SRZ2_VW        SRZ2_VW        SRZ2_VW        SRZ2_VW      
 process                                  bbgamma_2016   bbgamma_2017   bbgamma_2018   background     bbgamma_2016   bbgamma_2017   bbgamma_2018   background   
 process                                  -2             -1             0              1              -2             -1             0              1            
-rate                                     4.9342627691   5.6790270034   7.9532604787   1              4.7913964052   5.8934711328   8.5990322514   1            
+rate                                     5.1399247583   5.5978096662   7.8558453178   1              5.0964495901   5.97747342     8.2993157187   1            
 ----------------------------------------------------------------------------------------------------------------------------------
 Br_Zbb                  lnN              0.9874/1.0124  0.9874/1.0124  0.9874/1.0124  -              0.9874/1.0124  0.9874/1.0124  0.9874/1.0124  -            
 CSEV                    lnN              1.001          1.001          1.001          -              1.001          1.001          1.001          -            
@@ -32,9 +32,10 @@ lumi_13TeV_2018         lnN              -              -              1.015    
 lumi_13TeV_correlated   lnN              1.006          1.009          1.02           -              1.006          1.009          1.02           -            
 photon_ID               lnN              1.044          1.044          1.044          -              1.044          1.044          1.044          -            
 pile-up                 lnN              1.01           1.01           1.01           -              1.01           1.01           1.01           -            
-tagger_SF_2016          lnN              1.033          -              -              -              1.04           -              -              -            
-tagger_SF_2017          lnN              -              1.033          -              -              -              1.04           -              -            
-tagger_SF_2018          lnN              -              -              1.033          -              -              -              1.04           -            
+tagger_SF_stat_2016     lnN              1.039          -              -              -              1.081          -              -              -            
+tagger_SF_stat_2017     lnN              -              1.021          -              -              -              1.035          -              -            
+tagger_SF_stat_2018     lnN              -              -              1.02           -              -              -              1.032          -            
+tagger_SF_sys           lnN              1.051          1.031          1.027          -              1.055          1.06           1.045          -            
 JES_2016      param  0.0 1.0
 JES_2017      param  0.0 1.0
 JES_2018      param  0.0 1.0

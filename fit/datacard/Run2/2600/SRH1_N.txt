@@ -14,7 +14,7 @@ observation     -1
 bin             SRH1    SRH1    SRH1        SRH1
 process         bbgamma_2016    bbgamma_2017    bbgamma_2018      background
 process         0           -1  -2  1
-rate		2.503523258354567	2.9667824427456093	4.11541258227244	1.0
+rate		2.6106502922228274	2.901983032655971	4.066097474726093	1.0
 ---------------------------------------------
 lumi_13TeV_2016		lnN	1.010   -   -	-
 lumi_13TeV_2017		lnN	-   1.020   -	-
@@ -25,11 +25,12 @@ L1_prefiring		lnN	1.004	1.004	1.004	-
 pile-up		lnN	1.01	1.01	1.01	-
 photon_ID		lnN	1.044	1.044	1.044	-
 CSEV		lnN	1.001	1.001	1.001	-
-tagger_SF_2016		lnN	1.033	-	-	-
-tagger_SF_2017		lnN	-	1.033	-	-
-tagger_SF_2018		lnN	-	-	1.033	-
-PDF		lnN	1.012	1.012	1.012	-
-QCD_scale		lnN	1.01	1.01	1.01	-
+tagger_SF_sys		lnN	1.055	1.023	1.028	-
+tagger_SF_stat_2016		lnN	1.048	-	-	-
+tagger_SF_stat_2017		lnN	-	1.026	-	-
+tagger_SF_stat_2018		lnN	-	-	1.022	-
+PDF		lnN	1.051	1.051	1.051	-
+QCD_scale		lnN	1.012	1.012	1.012	-
 Br_Hbb          lnN 0.9874/1.0124   0.9874/1.0124   0.9874/1.0124 -
 ---------------------------------------------
 JES_2016	param	0.0	1.0

@@ -14,7 +14,7 @@ observation     -1
 bin             SRZ1    SRZ1    SRZ1        SRZ1
 process         bbgamma_2016    bbgamma_2017    bbgamma_2018      background
 process         0           -1  -2  1
-rate		7.616322638795824	9.074227454245142	12.704674765330871	1.0
+rate		7.940851570477878	8.882056065313636	12.550266151169616	1.0
 ---------------------------------------------
 lumi_13TeV_2016		lnN	1.010   -   -	-
 lumi_13TeV_2017		lnN	-   1.020   -	-
@@ -25,9 +25,10 @@ L1_prefiring		lnN	1.004	1.004	1.004	-
 pile-up		lnN	1.01	1.01	1.01	-
 photon_ID		lnN	1.044	1.044	1.044	-
 CSEV		lnN	1.001	1.001	1.001	-
-tagger_SF_2016		lnN	1.033	-	-	-
-tagger_SF_2017		lnN	-	1.033	-	-
-tagger_SF_2018		lnN	-	-	1.033	-
+tagger_SF_sys		lnN	1.055	1.024	1.028	-
+tagger_SF_stat_2016		lnN	1.047	-	-	-
+tagger_SF_stat_2017		lnN	-	1.025	-	-
+tagger_SF_stat_2018		lnN	-	-	1.022	-
 
 
 Br_Zbb          lnN 0.9874/1.0124   0.9874/1.0124   0.9874/1.0124 -
