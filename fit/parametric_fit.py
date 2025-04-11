@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import ROOT, os, yaml, argparse, uproot
 import numpy as np
+import pandas as pd
 from scipy.interpolate import CubicSpline
 
 ROOT.gROOT.SetBatch(True)
@@ -188,16 +189,16 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     PER = ROOT.RooRealVar("PER", "PER", 0, -5, 5)
     JES_2016.setConstant(True); JES_2017.setConstant(True); JES_2018.setConstant(True); JER.setConstant(True); PES.setConstant(True); PER.setConstant(True)
 
-    with open('../src/parameters/uncertainty/systematics.yaml', 'r', encoding='utf-8') as f:
-        systematics = yaml.safe_load(f)
+    systematics = pd.read_csv('../src/parameters/uncertainty/systematics.csv', index_col=(0, 1))
+    index = (m, f'{signal_region}_{width}')
     mean = ROOT.RooFormulaVar("mean", "mean",
-        "@0*(1+%f*(0.264*@1+0.301*@2+0.435*@3)+%f*@4)"%(systematics['JES'][region][m]-1, (systematics['PES'][region][m]-1)/2), 
+        "@0*(1+%f*(0.264*@1+0.301*@2+0.435*@3)+%f*@4)"%(systematics['JES'][index]-1, (systematics['PES'][index]-1)/2), 
         ROOT.RooArgList(x0, JES_2016, JES_2017, JES_2018, PES))
     widthL = ROOT.RooFormulaVar("widthL", "widthL", 
-        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][region][jet][signal_mass]-1, systematics['PER'][region][jet][signal_mass]-1), 
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][index]-1, systematics['PER'][index]-1), 
         ROOT.RooArgList(sigmaL, JER, PER))
     widthR = ROOT.RooFormulaVar("widthR", "widthR", 
-        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][region][jet][signal_mass]-1, systematics['PER'][region][jet][signal_mass]-1),
+        "@0*(1+%f*@1+%f*@2)"%(systematics['JER'][index]-1, systematics['PER'][index]-1),
         ROOT.RooArgList(sigmaR, JER, PER))
 
     # Fit signal model to MC
