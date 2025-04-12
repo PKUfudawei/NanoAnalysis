@@ -1,7 +1,7 @@
 Combination of SRH1_N=SRH1_N.txt  SRH2_N=SRH2_N.txt
 imax 2 number of bins
 jmax 3 number of processes minus 1
-kmax 25 number of nuisance parameters
+kmax 26 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
 shapes background    SRH1_N        workspace/Run2/data_SRH1.root workspace_SRH1:multipdf_SRH1
 shapes bbgamma_2016  SRH1_N        workspace/Run2/2400/SRH1_N.root workspace_signal:model_bbgamma_SRH1
@@ -35,12 +35,13 @@ lumi_13TeV_correlated   lnN                 1.006          1.009          1.02  
 photon_ID               lnN                 1.044          1.044          1.044          -              1.044          1.044          1.044          -            
 pile-up                 lnN                 1.01           1.01           1.01           -              1.01           1.01           1.01           -            
 tagger_SF_stat_2016_SRH1   lnN              1.048          -              -              -              -              -              -              -            
-tagger_SF_stat_2016_SRH2   lnN              -              -              -              -              1.014          -              -              -            
+tagger_SF_stat_2016_SRH2   lnN              -              -              -              -              1.091          -              -              -            
 tagger_SF_stat_2017_SRH1   lnN              -              1.026          -              -              -              -              -              -            
-tagger_SF_stat_2017_SRH2   lnN              -              -              -              -              -              1.008          -              -            
+tagger_SF_stat_2017_SRH2   lnN              -              -              -              -              -              1.036          -              -            
 tagger_SF_stat_2018_SRH1   lnN              -              -              1.022          -              -              -              -              -            
-tagger_SF_stat_2018_SRH2   lnN              -              -              -              -              -              -              1.013          -            
-tagger_SF_sys           lnN                 1.055          1.023          1.028          -              1.056          1.064          1.046          -            
+tagger_SF_stat_2018_SRH2   lnN              -              -              -              -              -              -              1.032          -            
+tagger_SF_sys_SRH1      lnN                 1.055          1.023          1.028          -              -              -              -              -            
+tagger_SF_sys_SRH2      lnN                 -              -              -              -              1.056          1.064          1.046          -            
 JES_2016      param  0.0 1.0
 JES_2017      param  0.0 1.0
 JES_2018      param  0.0 1.0
@@ -49,4 +50,4 @@ PES           param  0.0 1.0
 PER           param  0.0 1.0
 pdfindex_SRH1  discrete
 pdfindex_SRH2  discrete
-theory group = Br_Hbb PDF QCD_scale
+theory group = Br_Hbb QCD_scale PDF

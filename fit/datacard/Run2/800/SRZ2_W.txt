@@ -25,10 +25,10 @@ L1_prefiring		lnN	1.004	1.004	1.004	-
 pile-up		lnN	1.01	1.01	1.01	-
 photon_ID		lnN	1.044	1.044	1.044	-
 CSEV		lnN	1.001	1.001	1.001	-
-tagger_SF_sys		lnN	1.053	1.087	1.05	-
-tagger_SF_stat_2016_SRZ2		lnN	1.014	-	-	-
-tagger_SF_stat_2017_SRZ2		lnN	-	1.008	-	-
-tagger_SF_stat_2018_SRZ2		lnN	-	-	1.013	-
+tagger_SF_sys_SRZ2		lnN	1.053	1.087	1.05	-
+tagger_SF_stat_2016_SRZ2		lnN	1.038	-	-	-
+tagger_SF_stat_2017_SRZ2		lnN	-	1.035	-	-
+tagger_SF_stat_2018_SRZ2		lnN	-	-	1.033	-
 
 
 Br_Zbb          lnN 0.9874/1.0124   0.9874/1.0124   0.9874/1.0124 -
