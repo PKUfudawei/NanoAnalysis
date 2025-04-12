@@ -29,8 +29,8 @@ tagger_SF_sys		lnN	1.053	1.048	1.042	-
 tagger_SF_stat_2016_SRH2		lnN	1.014	-	-	-
 tagger_SF_stat_2017_SRH2		lnN	-	1.008	-	-
 tagger_SF_stat_2018_SRH2		lnN	-	-	1.013	-
-PDF		lnN	1.051	1.051	1.051	-
-QCD_scale		lnN	1.012	1.012	1.012	-
+PDF		lnN	1.004	1.004	1.004	-
+QCD_scale		lnN	1.005	1.005	1.005	-
 Br_Hbb          lnN 0.9874/1.0124   0.9874/1.0124   0.9874/1.0124 -
 ---------------------------------------------
 JES_2016	param	0.0	1.0

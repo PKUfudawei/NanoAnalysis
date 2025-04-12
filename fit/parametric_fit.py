@@ -10,6 +10,7 @@ ROOT.gStyle.SetOptTitle(0)
 
 def parse_commandline():
     parser = argparse.ArgumentParser(description='parametric fitting')
+    parser.add_argument('-i', '--in_dir', help='To specify the input directory', type=str, default='./slimmed_ntuple/')
     parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2016', '2017', '2018', 'Run2'), default='Run2')
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--SR', help='To specify which signal region', choices=('SR1', 'SR2', None), default=None)
@@ -35,16 +36,14 @@ def Garwood_eror(number, direction):
         return None
 
 
-def get_signal_norm(year, jet, signal_mass, cut, x_min, x_max):
-    m = int(str(signal_mass).split('_')[0])
-
+def get_signal_norm(file_path, mass, cut, x_min, x_max):
     ## Signal modeling
-    f = ROOT.TFile(f"input/{year}/{signal_mass}/bbgamma_SR{jet}.root", "r")
+    f = ROOT.TFile(file_path, "r")
     # Load TTree
     tree = f.Get("Events")
 
     # Define mass and weight variables
-    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", m, x_min, x_max)
+    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", mass, x_min, x_max)
     weight = ROOT.RooRealVar("weight", "weight", 0.1, 0, 100)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
@@ -144,7 +143,7 @@ def plot_signal_fit(model, result, fit_variable, mc, region, mass, x_max, x_min,
     canvas.SaveAs(f"../plots/fit/{year}/{mass}/signal_fit_{region}_{mass}_{width}.pdf")
 
 
-def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range_high=4000):
+def fit_signal(in_dir, jet, signal_mass, region, cut, year='Run2', fit_range_low=650, fit_range_high=4000):
     signal_region = region[:2]+jet+region[2:]
     m = int(str(signal_mass).split('_')[0])
     width = 'W' if '_5p6' in str(signal_mass) else 'VW' if '_10p0' in str(signal_mass) else 'N'
@@ -153,7 +152,7 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     x_min = fit_range_low if (1-k)*m<fit_range_low else round((1-k)*m/50)*50
 
     ## Signal modeling
-    f = ROOT.TFile(f"input/Run2/{signal_mass}/bbgamma_SR{jet}.root", "r")
+    f = ROOT.TFile(os.path.join(in_dir, year, signal_mass, f"bbgamma_SR{jet}.root"), "r")
     # Load TTree
     tree = f.Get("Events")
 
@@ -169,7 +168,6 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     if isinstance(signal_mass, str):
         sigma = m * (0.056 if '_5p6' in signal_mass else 0.10)
     else:
-        f = uproot.open(f"input/Run2/{signal_mass}/bbgamma_SR{jet}.root")
         sigma = np.std(f['Events']['fit_mass'].array())
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", m, m - 50, m + 50)
@@ -205,9 +203,9 @@ def fit_signal(year, jet, signal_mass, region, cut, fit_range_low=650, fit_range
     model_signal = ROOT.RooCrystalBall(f"model_bbgamma_{signal_region}", f"model_bbgamma_{signal_region}", fit_mass, mean, widthL, widthR, alphaL, nL, alphaR, nR)
     model_signal.fitTo(mc,  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True))
     result = model_signal.fitTo(mc,  ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.SumW2Error(True), Save=True)
-    
+
     norm = {
-        year: get_signal_norm(year=year, jet=jet, signal_mass=signal_mass, cut=cut, x_min=x_min, x_max=x_max) for year in ['2016', '2017', '2018', 'Run2']
+        year: get_signal_norm(file_path=os.path.join(in_dir, year, signal_mass, f"bbgamma_SR{jet}.root"), mass=m, cut=cut, x_min=x_min, x_max=x_max) for year in ['2016', '2017', '2018', 'Run2']
     }
     signal_norm = {
         year: ROOT.RooRealVar(f"model_bbgamma_{signal_region}_norm_{year}", f"Number of signal events in {signal_region} {year}", norm[year], 0, 5*norm[year])
@@ -405,12 +403,12 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     canvas.SaveAs(f"../plots/fit/Run2/b_only_fit_{region}_{plot_name}.pdf")
 
 
-def fit_background(year, jet, region, cut):
+def fit_background(in_dir, jet, region, cut, year='Run2', fit_range_down=650, fit_range_up=4000):
     region = region[:2]+jet+region[2:]
     bkg_model_dir = f'workspace/{year}'
     
     # # Background modelling
-    f = ROOT.TFile(f"input/{year}/data.root", "r")
+    f = ROOT.TFile(os.path.join(in_dir, year, 'data.root'), "r")
     # Load TTree
     tree = f.Get("Events")
 
@@ -505,10 +503,9 @@ def fit_background(year, jet, region, cut):
     f_out.Close()
 
 
-def get_SR_data(year, region, cut, jet):
+def get_SR_data(in_dir, year, region, cut, jet):
     # # Data in SR
-    f = ROOT.TFile(f"input/{year}/data_CR_to_SR{jet}.root", "r")
-    #f = ROOT.TFile(f"input/{year}/background_mc.root", "r")
+    f = ROOT.TFile(os.path.join(in_dir, year, f'data_CR_to_SR{jet}.root'), "r")
     tree = f.Get("Events")
 
     # Define mass and weight variables
@@ -573,10 +570,10 @@ if __name__ == "__main__":
                 )"""
                 #get_SR_data(year, SR, SR_cut, jet)
                 if year=='Run2':
-                    fit_background(year, jet, SR,SR_cut)
+                    fit_background(args.in_dir, jet, SR,SR_cut)
 
                 for m in signal_mass:
-                    fit_signal(year, jet, m, SR, SR_cut)
+                    fit_signal(args.in_dir, jet, m, SR, SR_cut)
                     if jet == 'Z':
-                        fit_signal(year, jet, f'{m}_5p6', SR, SR_cut)
-                        fit_signal(year, jet, f'{m}_10p0', SR, SR_cut)
+                        fit_signal(args.in_dir, jet, f'{m}_5p6', SR, SR_cut)
+                        fit_signal(args.in_dir, jet, f'{m}_10p0', SR, SR_cut)

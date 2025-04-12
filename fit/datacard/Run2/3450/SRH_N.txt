@@ -25,7 +25,7 @@ rate                                        0.518161051    0.5026773196   0.7705
 Br_Hbb                  lnN                 0.9874/1.0124  0.9874/1.0124  0.9874/1.0124  -              0.9874/1.0124  0.9874/1.0124  0.9874/1.0124  -            
 CSEV                    lnN                 1.001          1.001          1.001          -              1.001          1.001          1.001          -            
 L1_prefiring            lnN                 1.004          1.004          1.004          -              1.004          1.004          1.004          -            
-PDF                     lnN                 1.051          1.051          1.051          -              1.051          1.051          1.051          -            
+PDF                     lnN                 1.029          1.029          1.029          -              1.048          1.048          1.048          -            
 QCD_scale               lnN                 1.012          1.012          1.012          -              1.012          1.012          1.012          -            
 lumi_13TeV_1718         lnN                 -              1.006          1.002          -              -              1.006          1.002          -            
 lumi_13TeV_2016         lnN                 1.01           -              -              -              1.01           -              -              -            
@@ -49,4 +49,4 @@ PES           param  0.0 1.0
 PER           param  0.0 1.0
 pdfindex_SRH1  discrete
 pdfindex_SRH2  discrete
-theory group = PDF QCD_scale Br_Hbb
+theory group = Br_Hbb QCD_scale PDF

@@ -49,4 +49,4 @@ PES           param  0.0 1.0
 PER           param  0.0 1.0
 pdfindex_SRH1  discrete
 pdfindex_SRH2  discrete
-theory group = Br_Hbb PDF QCD_scale
+theory group = Br_Hbb QCD_scale PDF
