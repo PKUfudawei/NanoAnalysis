@@ -2,7 +2,7 @@ import os, uproot, yaml
 import pandas as pd
 
 
-def run_rate_limit(input_dir='./', year='Run2', out_dir='./AsymptoticLimits', width=None):
+def run_rate_limit(input_dir='./', year='Run2', out_dir='./limit_results', width=None):
     os.makedirs(os.path.join(out_dir, year), exist_ok=True)
     datacard_dir = os.path.join(input_dir, 'datacard', year)
     for mass in os.listdir(datacard_dir):
@@ -17,7 +17,7 @@ def run_rate_limit(input_dir='./', year='Run2', out_dir='./AsymptoticLimits', wi
             print()
            
 
-def convert_to_csv(in_dir='./AsymptoticLimits', year='Run2', signal_region='SRH', width='N', out_dir='./limit_results', xsec_file='../src/parameters/cross-section.yaml'):
+def convert_to_csv(in_dir='./limit_results', year='Run2', signal_region='SRH', width='N', out_dir='./limit_results', xsec_file='../src/parameters/cross-section.yaml'):
     rate_limit = {} 
 
     root_dir = os.path.join(in_dir, year)

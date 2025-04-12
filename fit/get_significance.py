@@ -2,7 +2,7 @@ import os, uproot
 import pandas as pd
 
 
-def run_significance(input_dir='./', year='Run2', out_dir='./Significance', width=None):
+def run_significance(input_dir='./', year='Run2', out_dir='./significance_results', width=None):
     os.makedirs(os.path.join(out_dir, year), exist_ok=True)
     datacard_dir = os.path.join(input_dir, 'datacard', year)
     for mass in os.listdir(datacard_dir):
@@ -19,7 +19,7 @@ def run_significance(input_dir='./', year='Run2', out_dir='./Significance', widt
             print()
 
 
-def convert_to_csv(in_dir='./Significance', year='Run2', signal_region='SRH', width='N', out_dir='./significance_results'):
+def convert_to_csv(in_dir='./significance_results', year='Run2', signal_region='SRH', width='N', out_dir='./significance_results'):
     significance = {m: {'expected': -1, 'observed': -1} for m in range(700, 3501, 50)} 
 
     root_dir = os.path.join(in_dir, year)

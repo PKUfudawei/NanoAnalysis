@@ -26,9 +26,9 @@ pile-up		lnN	1.01	1.01	1.01	-
 photon_ID		lnN	1.044	1.044	1.044	-
 CSEV		lnN	1.001	1.001	1.001	-
 tagger_SF_sys		lnN	1.055	1.061	1.045	-
-tagger_SF_stat_2016		lnN	1.084	-	-	-
-tagger_SF_stat_2017		lnN	-	1.035	-	-
-tagger_SF_stat_2018		lnN	-	-	1.032	-
+tagger_SF_stat_2016_SRZ2		lnN	1.014	-	-	-
+tagger_SF_stat_2017_SRZ2		lnN	-	1.008	-	-
+tagger_SF_stat_2018_SRZ2		lnN	-	-	1.013	-
 
 
 Br_Zbb          lnN 0.9874/1.0124   0.9874/1.0124   0.9874/1.0124 -
