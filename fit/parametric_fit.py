@@ -166,10 +166,10 @@ def fit_signal(in_file, out_dir, mass, signal_region, cut, year='Run2', fit_rang
     # Convert to RooDataSet
     mc = ROOT.RooDataSet("signal", "signal", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
 
-    if isinstance(signal_mass, str):
-        sigma = mass * (0.056 if '_5p6' in signal_mass else 0.10)
-    else:
+    if width == 'N':
         sigma = np.std(uproot.open(in_file)['Events']['fit_mass'].array())
+    else:
+        sigma = mass * (0.056 if width=='W' else 0.10)
     # Introduce RooRealVars into the workspace for the fitted variable
     x0 = ROOT.RooRealVar("x0", "x0", mass, mass - 100, mass + 100)
     sigmaL = ROOT.RooRealVar("sigmaL", "sigmaL", sigma/2, 10, 2*sigma)
