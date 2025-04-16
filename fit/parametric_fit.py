@@ -14,7 +14,7 @@ def parse_commandline():
     parser.add_argument('-o', '--out_dir', help='To specify the input directory', type=str, default='./workspace/')
     parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2016', '2017', '2018', 'Run2'), default='Run2')
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
-    parser.add_argument('-R', '--signal_region', help='To specify which signal region', choices=('SRH1_N', 'SRH2_N', 'SRZ1_N', 'SRZ2_N', 'SRZ1_W', 'SRZ2_W', 'SRZ1_VW', 'SRZ2_VW', None), default=None)
+    parser.add_argument('-R', '--signal_region', help='To specify which signal region', choices=('SRH1_N', 'SRH2_N', 'SRZ1_N', 'SRZ2_N', 'SRZ1_W', 'SRZ2_W', 'SRZ1_VW', 'SRZ2_VW', 'CR1', 'CR2', None), default=None)
     parser.add_argument('-d', '--fit_range_low', help='To specify the lower bound of fitting range', default=650, type=int)
     parser.add_argument('-u', '--fit_range_high', help='To specify the higher bound of fitting range', default=4000, type=int)
     args = parser.parse_args()
@@ -70,14 +70,14 @@ def plot_signal_fit(model, result, fit_variable, mc, signal_region, mass, x_max,
     top_pad.cd()
     top_pad.SetBottomMargin(0.02)  # Reduce margin between pads
 
-    legend = ROOT.TLegend(0.2, 0.7, 0.8, 0.89)
+    legend = ROOT.TLegend(0.7, 0.5, 0.9, 0.9)
     legend.SetBorderSize(0)
-    legend.SetNColumns(2)
-    legend.SetTextSize(0.05)
+    legend.SetNColumns(1)
+    #legend.SetTextSize(0.05)
     legend.SetFillColorAlpha(ROOT.kWhite, 0)
 
     frame = fit_variable.frame(x_min, x_max, bins)
-    mc.plotOn(frame)
+    mc.plotOn(frame, ROOT.RooFit.DrawOption("PZ"))
     
     # plot errorbands
     model.plotOn(frame, LineColor='kBlue')
@@ -105,13 +105,6 @@ def plot_signal_fit(model, result, fit_variable, mc, signal_region, mass, x_max,
     bottom_pad.SetTopMargin(0.04)  # Reduce margin between pads
     bottom_pad.SetBottomMargin(0.25)  # Increase bottom margin for labels
 
-    bottom_legend = ROOT.TLegend(0.65, 0.2, 0.95, 0.5)
-    #legend.SetTextSize(0.05)
-    bottom_legend.SetBorderSize(0)
-    bottom_legend.SetFillColorAlpha(ROOT.kWhite, 0)
-    bottom_legend.SetNColumns(2)
-    bottom_legend.SetTextSize(0.08)
-
     # Create a frame for the pull plot
     pull_frame = fit_variable.frame(x_min, x_max, bins)
     # Add a horizontal line at y = 0 for reference
@@ -119,11 +112,9 @@ def plot_signal_fit(model, result, fit_variable, mc, signal_region, mass, x_max,
     zero_line.SetLineColor(ROOT.kBlue)
     zero_line.SetLineWidth(3)
     pull_frame.addObject(zero_line)
-    bottom_legend.AddEntry(pull_frame.getObject(0), 'fit', "l")
 
     # Calculate and plot the pulls for expow1
-    pull_frame.addPlotable(hpull, "P")
-    bottom_legend.AddEntry(pull_frame.getObject(1), '(MC - fit)/#sigma_{STAT}', "ep")
+    pull_frame.addPlotable(hpull, "PZ")
 
     # plot
     pull_frame.SetTitle("")
@@ -140,8 +131,8 @@ def plot_signal_fit(model, result, fit_variable, mc, signal_region, mass, x_max,
     pull_frame.SetMinimum(-3)
     #bottom_legend.Draw()
     
-    os.makedirs(f'../plots/fit/{year}/{mass}', exist_ok=True)
-    canvas.SaveAs(f"../plots/fit/{year}/{mass}/signal_fit_{signal_region}.pdf")
+    os.makedirs(f'../postprocess/plots/fit/{year}/{mass}', exist_ok=True)
+    canvas.SaveAs(f"../postprocess/plots/fit/{year}/{mass}/signal_fit_{signal_region}.pdf")
 
 
 def fit_signal(in_file, out_dir, mass, signal_region, cut, year='Run2', fit_range_low=650, fit_range_high=4000):
@@ -280,10 +271,10 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     top_pad.SetLogy()
     top_pad.SetBottomMargin(0.02)  # Reduce margin between pads
 
-    legend = ROOT.TLegend(0.35, 0.6, 0.89, 0.89)
+    legend = ROOT.TLegend(0.5, 0.5, 0.89, 0.89)
     legend.SetBorderSize(0)
-    legend.SetNColumns(2)
-    legend.SetTextSize(0.03)
+    legend.SetNColumns(1)
+    #legend.SetTextSize(0.03)
     #legend.SetFillColorAlpha(ROOT.kWhite, 0)
 
     frame = fit_variable.frame(x_min, x_max, bins)
@@ -296,7 +287,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     for i in range(data_hist.GetN()):
         y = data_hist.GetPointY(i)
         data_hist.SetPointError(i, 0, 0, Garwood_eror(y, 'down'), Garwood_eror(y, 'up'))
-    data.plotOn(frame, ROOT.RooFit.MarkerColor(ROOT.kBlack), ROOT.RooFit.LineColor(ROOT.kWhite))
+    data.plotOn(frame, ROOT.RooFit.MarkerColor(ROOT.kBlack), ROOT.RooFit.LineColor(ROOT.kWhite), ROOT.RooFit.DrawOption("PZ"))
     
     # plot errorbands
     for k in candidates:
@@ -305,23 +296,45 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
         model[k].plotOn(frame, LineColor=line_color[k], Name=k)
         chi2_ndf = frame.chiSquare(len(result[k].floatParsFinal()))
         legend.AddEntry(frame.getObject(i+len(candidates)+1), f"{k}, #chi^{{2}}/NDF = {chi2_ndf:.2f}", "l")
-    frame.addPlotable(data_hist, "P")
+    frame.addPlotable(data_hist, "PZ")
     legend.AddEntry(frame.getObject(2*len(candidates)+1), "Data", "ep")
     legend.AddEntry(frame.getObject(1), '#sigma_{SYS}', "f")
     #return bins
     hpull = frame.pullHist(frame.getObject(2*len(candidates)+1).GetName(), frame.getObject(len(candidates)+1).GetName())
     for i in range(hpull.GetN()):
         hpull.SetPointError(i, 0, 0, 1, 1)  # Set x-error to 0 and y-error to 1
-    
+
     canvas.SetLogy()
     frame.SetMinimum(1e-2)
+    frame.SetMaximum(1e2*frame.GetMaximum())
     frame.SetTitle("")
     frame.GetXaxis().SetLabelSize(0)  # Hide x-axis labels
     frame.GetXaxis().SetTickLength(0) # Hide x-axis ticks
     #frame.GetXaxis().SetTitle('m_{j\gamma} [GeV]')
     frame.Draw()
     legend.Draw()
-    
+
+    cms_label = ROOT.TLatex()
+    cms_label.SetNDC(True)
+    cms_label.SetTextFont(61)
+    cms_label.SetTextSize(0.06)
+    cms_label.DrawLatex(0.12, 0.82, "CMS")
+
+    """
+    preliminary_label = ROOT.TLatex()
+    preliminary_label.SetNDC(True)
+    preliminary_label.SetTextFont(52)
+    preliminary_label.SetTextSize(0.045)
+    preliminary_label.DrawLatex(0.15, 0.80, "Preliminary")
+    """
+
+    lumi_label = ROOT.TLatex()
+    lumi_label.SetNDC(True)
+    lumi_label.SetTextFont(42)
+    lumi_label.SetTextSize(0.045)
+    lumi_label.SetTextAlign(31)
+    lumi_label.DrawLatex(0.9, 0.92, "138 fb^{-1} (13 TeV)")
+
     ##########################################
     # Draw the pull plot in the bottom pad
 
@@ -329,12 +342,11 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     bottom_pad.SetTopMargin(0.04)  # Reduce margin between pads
     bottom_pad.SetBottomMargin(0.25)  # Increase bottom margin for labels
 
-    bottom_legend = ROOT.TLegend(0.3, 0.25, 0.95, 0.5)
-    #legend.SetTextSize(0.05)
+    bottom_legend = ROOT.TLegend(0.5, 0.25, 0.89, 0.5)
     bottom_legend.SetBorderSize(0)
     bottom_legend.SetFillColorAlpha(ROOT.kWhite, 0)
-    bottom_legend.SetNColumns(3)
-    bottom_legend.SetTextSize(0.08)
+    bottom_legend.SetNColumns(2)
+    #bottom_legend.SetTextSize(0.08)
 
     # Create a frame for the pull plot
     pull_frame = fit_variable.frame(x_min, x_max, bins)
@@ -374,19 +386,19 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
 
     # Add a horizontal line at y = 0 for reference
     zero_line = ROOT.TLine(x_min, 0, x_max, 0)
-    zero_line.SetLineColor(line_color[candidates[0]])
+    zero_line.SetLineColor(ROOT.kBlack)
     zero_line.SetLineWidth(2)
     pull_frame.addObject(zero_line)
-    bottom_legend.AddEntry(pull_frame.getObject(1), candidates[0], "l")
+    #bottom_legend.AddEntry(pull_frame.getObject(1), candidates[0], "l")
 
     # Calculate and plot the pulls for expow1
-    pull_frame.addPlotable(hpull, "P")
-    bottom_legend.AddEntry(pull_frame.getObject(2), '(Data - '+candidates[0]+')/#sigma_{STAT}', "ep")
+    pull_frame.addPlotable(hpull, "PZ")
+    bottom_legend.AddEntry(pull_frame.getObject(2), '(Data - best-fit)/#sigma_{STAT}', "ep")
 
     # plot
     pull_frame.SetTitle("")
     pull_frame.GetYaxis().SetLabelSize(0.1)
-    pull_frame.GetYaxis().SetTitle("Pull")
+    pull_frame.GetYaxis().SetTitle("Pull wrt. best-fit")
     pull_frame.GetYaxis().SetTitleOffset(0.4)
     pull_frame.GetYaxis().SetTitleSize(0.1)
 
@@ -453,7 +465,7 @@ def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650
     # invpow3 model
     p1['invpow3'] = ROOT.RooRealVar("p1_invpow3", "p1_invpow3", 1e-2, 0, 10)
     p2['invpow3'] = ROOT.RooRealVar("p2_invpow3", "p2_invpow3", -2, -30, 0)
-    p3['invpow3'] = ROOT.RooRealVar("p3_invpow3", "p3_invpow3", 0.5, -0.05 if region=='SRH2' else -1, 1)
+    p3['invpow3'] = ROOT.RooRealVar("p3_invpow3", "p3_invpow3", 0.5, -0.05 if region in ['SRH2', 'CR2'] else -1, 1)
     model['invpow3'] = ROOT.RooGenericPdf("model_background_invpow3", "model_background_invpow3", f"TMath::Power(1 + @1*@0/{energy}, @2 + @3*@0/{energy})", ROOT.RooArgList(fit_mass, p1['invpow3'], p2['invpow3'], p3['invpow3']))
 
     # Make a RooCategory object: this will control which PDF is "active"
@@ -559,19 +571,18 @@ if __name__ == "__main__":
             mass_low, mass_high = mass_cut[jet]
             tagger_region = signal_region[:2]+signal_region[3]
             tagger_cut_low, tagger_cut_high = tagger_cut[tagger_region]
-            CR = signal_region.replace('S', 'C')
+            CR = 'CR1' if '1' in  signal_region else 'CR2'
             CR_cut = f"""(
                 (((jet_mass>50) & (jet_mass<{mass_cut['Z'][0]})) | (jet_mass>{mass_cut['H'][1]})) & 
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
             )"""
-
-
             SR_cut = f"""(
                 (jet_mass>{mass_low}) & (jet_mass<{mass_high}) & 
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
             )"""
             if year=='Run2':
-                fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=signal_region.split('_')[0], cut=SR_cut)
+                #fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=signal_region.split('_')[0], cut=SR_cut)
+                fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=CR, cut=CR_cut)
 
             for mass in signal_mass:
                 fit_signal(
