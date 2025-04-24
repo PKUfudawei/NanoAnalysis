@@ -515,30 +515,6 @@ def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650
     f_out.Close()
 
 
-def get_SR_data(in_dir, year, region, cut, jet):
-    # # Data in SR
-    f = ROOT.TFile(os.path.join(in_dir, year, f'data_CR_to_SR{jet}.root'), "r")
-    tree = f.Get("Events")
-
-    # Define mass and weight variables
-    fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", 1500, fit_range_low, fit_range_high)
-    weight = ROOT.RooRealVar("weight", "weight", 1, 0, 10)
-    jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 500)
-    tagger = ROOT.RooRealVar("tagger", "tagger", 0, 0, 2)
-
-    # Convert to RooDataSet
-    data_region = ROOT.RooDataSet(f"data_{region}", f"data_{region}", tree, ROOT.RooArgSet(fit_mass, weight, jet_mass, tagger), cut, "weight")
-
-    data_dir = f"./workspace/{year}"
-    os.makedirs(data_dir, exist_ok=True)
-    f_out = ROOT.TFile(f"{data_dir}/data_{jet}bb_{region}.root", "RECREATE")
-    w = ROOT.RooWorkspace(f"workspace_{region}", f"workspace_{region}")
-    getattr(w, "import")(data_region)
-    w.Print()
-    w.Write()
-    f_out.Close()
-
-
 if __name__ == "__main__":
     tagger_cut = {
         'SR1': [0.8, 0.98],
@@ -571,7 +547,7 @@ if __name__ == "__main__":
             mass_low, mass_high = mass_cut[jet]
             tagger_region = signal_region[:2]+signal_region[3]
             tagger_cut_low, tagger_cut_high = tagger_cut[tagger_region]
-            CR = 'CR1' if '1' in  signal_region else 'CR2'
+            CR = 'CR1' if '1' in signal_region else 'CR2'
             CR_cut = f"""(
                 (((jet_mass>50) & (jet_mass<{mass_cut['Z'][0]})) | (jet_mass>{mass_cut['H'][1]})) & 
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
