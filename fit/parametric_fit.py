@@ -272,7 +272,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     top_pad.SetLogy()
     top_pad.SetBottomMargin(0.02)  # Reduce margin between pads
 
-    legend = ROOT.TLegend(0.5, 0.5, 0.89, 0.89)
+    legend = ROOT.TLegend(0.49, 0.5, 0.89, 0.89)
     legend.SetBorderSize(0)
     legend.SetNColumns(1)
     #legend.SetTextSize(0.03)
@@ -302,7 +302,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     frame.addPlotable(data_hist, "PZ")
     legend.AddEntry(frame.getObject(2*len(candidates)+1), "Data", "ep")
     for i, k in enumerate(candidates):
-        legend.AddEntry(frame.getObject(len(candidates)+1+i), f"{k}, #chi^{{2}}/NDF = {chi_square[i]:.2f}", "l")
+        legend.AddEntry(frame.getObject(len(candidates)+1+i), f"{k}, #chi^{{2}}/NDF = {chi_square[i]:.3f}", "l")
     legend.AddEntry(frame.getObject(1), '#sigma_{SYS}', "f")
 
     hpull = frame.pullHist(frame.getObject(2*len(candidates)+1).GetName(), frame.getObject(len(candidates)+1+best_fit_index).GetName())
