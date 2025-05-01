@@ -94,7 +94,7 @@ def plot_signal_fit(model, result, fit_variable, mc, signal_region, mass, x_max,
     frame.GetXaxis().SetLabelSize(0)  # Hide x-axis labels
     frame.GetXaxis().SetTickLength(0) # Hide x-axis ticks
     #frame.GetYaxis().SetTitleSize(0.1)
-    #frame.GetXaxis().SetTitle('m_{j\gamma} [GeV]')
+    #frame.GetXaxis().SetTitle('m_{j\gamma} (GeV)')
     frame.Draw()
     legend.Draw()
     
@@ -113,7 +113,7 @@ def plot_signal_fit(model, result, fit_variable, mc, signal_region, mass, x_max,
     zero_line.SetLineWidth(3)
     pull_frame.addObject(zero_line)
 
-    # Calculate and plot the pulls for expow1
+    # Calculate and plot the pulls for ExPow1
     pull_frame.addPlotable(hpull, "PZ")
 
     # plot
@@ -252,8 +252,9 @@ def fit_signal(in_file, out_dir, mass, signal_region, cut, year='Run2', fit_rang
 
 
 def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min=650, x_max=3700, bin_width=50):
-    line_color = {'expow1': ROOT.kRed, 'expow2': ROOT.kGreen+1, 'dijet2': ROOT.kYellow+2, 'dijet3': ROOT.kCyan, 'invpow2':ROOT.kBlue, 'invpow3': ROOT.kMagenta}
-    band_color = {'expow1': ROOT.kPink, 'expow2': ROOT.kYellow, 'dijet2': ROOT.kGreen, 'dijet3': ROOT.kCyan, 'invpow2':ROOT.kAzure, 'invpow3': ROOT.kMagenta}
+    line_color = {'ExPow1': ROOT.kViolet+2, 'ExPow2': ROOT.kBlue, 'DiJet2': ROOT.kAzure+1, 'DiJet3': ROOT.kGreen+2, 'InvPow2': ROOT.kOrange-3, 'InvPow3': ROOT.kRed+1}
+    #line_color = {'ExPow1': ROOT.kRed, 'ExPow2': ROOT.kGreen+1, 'DiJet2': ROOT.kYellow+2, 'DiJet3': ROOT.kCyan, 'InvPow2':ROOT.kBlue, 'InvPow3': ROOT.kMagenta}
+    #band_color = {'ExPow1': ROOT.kPink, 'ExPow2': ROOT.kYellow, 'DiJet2': ROOT.kGreen, 'DiJet3': ROOT.kCyan, 'InvPow2':ROOT.kAzure, 'InvPow3': ROOT.kMagenta}
 
     ## plot
     bins = int((x_max-x_min)/bin_width)
@@ -261,7 +262,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     # Create a canvas and split it into two pads
     canvas = ROOT.TCanvas("canvas", "canvas", 800, 800)
     top_pad = ROOT.TPad("top_pad", "top_pad", 0, 0.3, 1, 1)  # Top pad (main plot)
-    bottom_pad = ROOT.TPad("bottom_pad", "bottom_pad", 0, 0, 1, 0.3)  # Bottom pad (pull plot)
+    bottom_pad = ROOT.TPad("bottom_pad", "bottom_pad", 0, 0, 1, 0.31)  # Bottom pad (pull plot)
     top_pad.Draw()
     bottom_pad.Draw()
 
@@ -278,60 +279,71 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     #legend.SetFillColorAlpha(ROOT.kWhite, 0)
 
     frame = fit_variable.frame(x_min, x_max, bins)
+    data.plotOn(frame, ROOT.RooFit.MarkerColor(ROOT.kBlack), ROOT.RooFit.LineColor(ROOT.kWhite), ROOT.RooFit.DrawOption("PZ"))
 
     # Create a histogram from the RooDataSet
     hist_data = data.createHistogram(f"hist_data", fit_variable, ROOT.RooFit.Binning(bins, x_min, x_max))
-
     # Convert the histogram to a RooHist object
     data_hist = ROOT.RooHist(hist_data)
     for i in range(data_hist.GetN()):
         y = data_hist.GetPointY(i)
         data_hist.SetPointError(i, 0, 0, Garwood_eror(y, 'down'), Garwood_eror(y, 'up'))
-    data.plotOn(frame, ROOT.RooFit.MarkerColor(ROOT.kBlack), ROOT.RooFit.LineColor(ROOT.kWhite), ROOT.RooFit.DrawOption("PZ"))
     
-    # plot errorbands
+    # plot errorbands, len(candiates)
     for k in candidates:
         model[k].plotOn(frame, VisualizeError=(result[k], 1), FillColor='kGray', LineColor='kWhite', Name=f'error_{k}')
+
+    chi_square = {}
     for i, k in enumerate(candidates):
         model[k].plotOn(frame, LineColor=line_color[k], Name=k)
-        chi2_ndf = frame.chiSquare(len(result[k].floatParsFinal()))
-        legend.AddEntry(frame.getObject(i+len(candidates)+1), f"{k}, #chi^{{2}}/NDF = {chi2_ndf:.2f}", "l")
+        chi_square[i] = frame.chiSquare(len(result[k].floatParsFinal()))
+    best_fit_index = min(chi_square, key=lambda i: chi_square[i])
+
     frame.addPlotable(data_hist, "PZ")
     legend.AddEntry(frame.getObject(2*len(candidates)+1), "Data", "ep")
+    for i, k in enumerate(candidates):
+        legend.AddEntry(frame.getObject(len(candidates)+1+i), f"{k}, #chi^{{2}}/NDF = {chi_square[i]:.2f}", "l")
     legend.AddEntry(frame.getObject(1), '#sigma_{SYS}', "f")
-    #return bins
-    hpull = frame.pullHist(frame.getObject(2*len(candidates)+1).GetName(), frame.getObject(len(candidates)+1).GetName())
+
+    hpull = frame.pullHist(frame.getObject(2*len(candidates)+1).GetName(), frame.getObject(len(candidates)+1+best_fit_index).GetName())
     for i in range(hpull.GetN()):
         hpull.SetPointError(i, 0, 0, 1, 1)  # Set x-error to 0 and y-error to 1
 
     canvas.SetLogy()
-    frame.SetMinimum(1e-2)
-    frame.SetMaximum(1e2*frame.GetMaximum())
+    frame.SetMinimum(7e-2)
+    frame.SetMaximum(3e2)
     frame.SetTitle("")
     frame.GetXaxis().SetLabelSize(0)  # Hide x-axis labels
-    frame.GetXaxis().SetTickLength(0) # Hide x-axis ticks
-    #frame.GetXaxis().SetTitle('m_{j\gamma} [GeV]')
+    frame.GetXaxis().SetTickLength(0.02)
+    frame.GetXaxis().SetTitleSize(0)
+    frame.GetYaxis().SetTitleSize(0.07)
+    frame.GetYaxis().SetTitle("Events / 50 GeV")
+    frame.GetYaxis().SetTitleOffset(0.6)
     frame.Draw()
     legend.Draw()
 
     cms_label = ROOT.TLatex()
     cms_label.SetNDC(True)
     cms_label.SetTextFont(61)
-    cms_label.SetTextSize(0.06)
-    cms_label.DrawLatex(0.12, 0.82, "CMS")
+    cms_label.SetTextSize(0.08)
+    cms_label.DrawLatex(0.15, 0.82, "CMS")
 
-    """
     preliminary_label = ROOT.TLatex()
     preliminary_label.SetNDC(True)
     preliminary_label.SetTextFont(52)
-    preliminary_label.SetTextSize(0.045)
-    preliminary_label.DrawLatex(0.15, 0.80, "Preliminary")
-    """
+    preliminary_label.SetTextSize(0.06)
+    preliminary_label.DrawLatex(0.28, 0.82, "Preliminary")
+
+    region_label = ROOT.TLatex()
+    region_label.SetNDC(True)
+    region_label.SetTextFont(42)
+    region_label.SetTextSize(0.06)
+    region_label.DrawLatex(0.2, 0.75, region)
 
     lumi_label = ROOT.TLatex()
     lumi_label.SetNDC(True)
     lumi_label.SetTextFont(42)
-    lumi_label.SetTextSize(0.045)
+    lumi_label.SetTextSize(0.06)
     lumi_label.SetTextAlign(31)
     lumi_label.DrawLatex(0.9, 0.92, "138 fb^{-1} (13 TeV)")
 
@@ -342,10 +354,10 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     bottom_pad.SetTopMargin(0.04)  # Reduce margin between pads
     bottom_pad.SetBottomMargin(0.25)  # Increase bottom margin for labels
 
-    bottom_legend = ROOT.TLegend(0.5, 0.25, 0.89, 0.5)
+    bottom_legend = ROOT.TLegend(0.55, 0.68, 0.89, 0.99)
     bottom_legend.SetBorderSize(0)
     bottom_legend.SetFillColorAlpha(ROOT.kWhite, 0)
-    bottom_legend.SetNColumns(2)
+    bottom_legend.SetNColumns(1)
     #bottom_legend.SetTextSize(0.08)
 
     # Create a frame for the pull plot
@@ -380,9 +392,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     roohist.SetFillColor(ROOT.kGray)
     #roohist.SetFillStyle(3001)
     #roohist.SetMarkerSize(0)
-
     pull_frame.addPlotable(roohist, "E2")
-    bottom_legend.AddEntry(pull_frame.getObject(0), '#sigma_{SYS}/#sigma_{STAT}', "f")
 
     # Add a horizontal line at y = 0 for reference
     zero_line = ROOT.TLine(x_min, 0, x_max, 0)
@@ -391,23 +401,25 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     pull_frame.addObject(zero_line)
     #bottom_legend.AddEntry(pull_frame.getObject(1), candidates[0], "l")
 
-    # Calculate and plot the pulls for expow1
+    # Calculate and plot the pulls for best-fit function
     pull_frame.addPlotable(hpull, "PZ")
-    bottom_legend.AddEntry(pull_frame.getObject(2), '(Data - best-fit)/#sigma_{STAT}', "ep")
+    bottom_legend.AddEntry(pull_frame.getObject(2), '(Data - '+candidates[best_fit_index]+') / #sigma_{STAT}', "ep")
+    bottom_legend.AddEntry(pull_frame.getObject(0), '#sigma_{SYS}/#sigma_{STAT}', "f")
 
     # plot
     pull_frame.SetTitle("")
     pull_frame.GetYaxis().SetLabelSize(0.1)
-    pull_frame.GetYaxis().SetTitle("Pull wrt. best-fit")
-    pull_frame.GetYaxis().SetTitleOffset(0.4)
-    pull_frame.GetYaxis().SetTitleSize(0.1)
+    pull_frame.GetYaxis().SetTitle("Pull")
+    pull_frame.GetYaxis().SetTitleOffset(0.3)
+    pull_frame.GetYaxis().SetTitleSize(0.15)
 
-    pull_frame.GetXaxis().SetTitle('m_{j#gamma} (GeV)')
-    pull_frame.GetXaxis().SetTitleSize(0.1)
-    pull_frame.GetXaxis().SetLabelSize(0.1)
+    pull_frame.GetXaxis().SetTitle("m_{j#gamma} (GeV)")
+    pull_frame.GetXaxis().SetTitleSize(0.15)
+    pull_frame.GetXaxis().SetLabelSize(0.08)
+    pull_frame.GetXaxis().SetTitleOffset(0.68)
     pull_frame.Draw()
-    pull_frame.SetMaximum(+3)
-    pull_frame.SetMinimum(-3)
+    pull_frame.SetMaximum(+3.5)
+    pull_frame.SetMinimum(-3.5)
     bottom_legend.Draw()
     
     os.makedirs('../postprocess/plots/fit/Run2', exist_ok=True)
@@ -437,36 +449,36 @@ def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650
     model, p1, p2, p3, result = {}, {}, {}, {}, {}
     energy = 1e2
 
-    # expow1 model
-    p1['expow1'] = ROOT.RooRealVar("p1_expow1", "p1_expow1", -1, -10, 0)
-    model['expow1'] = ROOT.RooGenericPdf("model_background_expow1", "model_background_expow1", f"TMath::Power(@0/{energy}, @1)", ROOT.RooArgList(fit_mass, p1['expow1']))
+    # ExPow1 model
+    p1['ExPow1'] = ROOT.RooRealVar("p1_ExPow1", "p1_ExPow1", -1, -10, 0)
+    model['ExPow1'] = ROOT.RooGenericPdf("model_background_ExPow1", "model_background_ExPow1", f"TMath::Power(@0/{energy}, @1)", ROOT.RooArgList(fit_mass, p1['ExPow1']))
 
-    # expow2 model
-    p1['expow2'] = ROOT.RooRealVar("p1_expow2", "p1_expow2", -1, -10, 0)
-    p2['expow2'] = ROOT.RooRealVar("p2_expow2", "p2_expow2", -1e-2, -0.5, 0.5)
-    model['expow2'] = ROOT.RooGenericPdf("model_background_expow2", "model_background_expow2", f"TMath::Power(@0/{energy}, @1) * TMath::Exp(@2 * @0/{energy})", ROOT.RooArgList(fit_mass, p1['expow2'], p2['expow2']))
+    # ExPow2 model
+    p1['ExPow2'] = ROOT.RooRealVar("p1_ExPow2", "p1_ExPow2", -1, -10, 0)
+    p2['ExPow2'] = ROOT.RooRealVar("p2_ExPow2", "p2_ExPow2", -1e-2, -0.5, 0.5)
+    model['ExPow2'] = ROOT.RooGenericPdf("model_background_ExPow2", "model_background_ExPow2", f"TMath::Power(@0/{energy}, @1) * TMath::Exp(@2 * @0/{energy})", ROOT.RooArgList(fit_mass, p1['ExPow2'], p2['ExPow2']))
 
-    # dijet2 model
-    p1['dijet2'] = ROOT.RooRealVar("p1_dijet2", "p1_dijet2", -2, -10, 0)
-    p2['dijet2'] = ROOT.RooRealVar("p2_dijet2", "p2_dijet2", -1, -5, 0)
-    model['dijet2'] = ROOT.RooGenericPdf("model_background_dijet2", "model_background_dijet2", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}))", ROOT.RooArgList(fit_mass, p1['dijet2'], p2['dijet2']))
+    # DiJet2 model
+    p1['DiJet2'] = ROOT.RooRealVar("p1_DiJet2", "p1_DiJet2", -2, -10, 0)
+    p2['DiJet2'] = ROOT.RooRealVar("p2_DiJet2", "p2_DiJet2", -1, -5, 0)
+    model['DiJet2'] = ROOT.RooGenericPdf("model_background_DiJet2", "model_background_DiJet2", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}))", ROOT.RooArgList(fit_mass, p1['DiJet2'], p2['DiJet2']))
 
-    # dijet3 model
-    p1['dijet3'] = ROOT.RooRealVar("p1_dijet3", "p1_dijet3", -1, -10, 0)
-    p2['dijet3'] = ROOT.RooRealVar("p2_dijet3", "p2_dijet3", -1, -5, 0)
-    p3['dijet3'] = ROOT.RooRealVar("p3_dijet3", "p3_dijet3", -1e-3, -0.1, 0.1)
-    model['dijet3'] = ROOT.RooGenericPdf("model_background_dijet3", "model_background_dijet3", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}) + @3 * TMath::Power(TMath::Log(@0/{energy}), 2))", ROOT.RooArgList(fit_mass, p1['dijet3'], p2['dijet3'], p3['dijet3']))
+    # DiJet3 model
+    p1['DiJet3'] = ROOT.RooRealVar("p1_DiJet3", "p1_DiJet3", -1, -10, 0)
+    p2['DiJet3'] = ROOT.RooRealVar("p2_DiJet3", "p2_DiJet3", -1, -5, 0)
+    p3['DiJet3'] = ROOT.RooRealVar("p3_DiJet3", "p3_DiJet3", -1e-3, -0.1, 0.1)
+    model['DiJet3'] = ROOT.RooGenericPdf("model_background_DiJet3", "model_background_DiJet3", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}) + @3 * TMath::Power(TMath::Log(@0/{energy}), 2))", ROOT.RooArgList(fit_mass, p1['DiJet3'], p2['DiJet3'], p3['DiJet3']))
 
-    # invpow2 model
-    p1['invpow2'] = ROOT.RooRealVar("p1_invpow2", "p1_invpow2", 1e-2, 0, 10)
-    p2['invpow2'] = ROOT.RooRealVar("p2_invpow2", "p2_invpow2", -2, -30, 0)
-    model['invpow2'] = ROOT.RooGenericPdf("model_background_invpow2", "model_background_invpow2", f"TMath::Power(1 + @1*@0/{energy}, @2)", ROOT.RooArgList(fit_mass, p1['invpow2'], p2['invpow2']))
+    # InvPow2 model
+    p1['InvPow2'] = ROOT.RooRealVar("p1_InvPow2", "p1_InvPow2", 1e-2, 0, 10)
+    p2['InvPow2'] = ROOT.RooRealVar("p2_InvPow2", "p2_InvPow2", -2, -30, 0)
+    model['InvPow2'] = ROOT.RooGenericPdf("model_background_InvPow2", "model_background_InvPow2", f"TMath::Power(1 + @1*@0/{energy}, @2)", ROOT.RooArgList(fit_mass, p1['InvPow2'], p2['InvPow2']))
 
-    # invpow3 model
-    p1['invpow3'] = ROOT.RooRealVar("p1_invpow3", "p1_invpow3", 1e-2, 0, 10)
-    p2['invpow3'] = ROOT.RooRealVar("p2_invpow3", "p2_invpow3", -2, -30, 0)
-    p3['invpow3'] = ROOT.RooRealVar("p3_invpow3", "p3_invpow3", 0.5, -0.05 if region in ['SRH2', 'CR2'] else -1, 1)
-    model['invpow3'] = ROOT.RooGenericPdf("model_background_invpow3", "model_background_invpow3", f"TMath::Power(1 + @1*@0/{energy}, @2 + @3*@0/{energy})", ROOT.RooArgList(fit_mass, p1['invpow3'], p2['invpow3'], p3['invpow3']))
+    # InvPow3 model
+    p1['InvPow3'] = ROOT.RooRealVar("p1_InvPow3", "p1_InvPow3", 1e-2, 0, 10)
+    p2['InvPow3'] = ROOT.RooRealVar("p2_InvPow3", "p2_InvPow3", -2, -30, 0)
+    p3['InvPow3'] = ROOT.RooRealVar("p3_InvPow3", "p3_InvPow3", 0.5, -0.05 if region in ['SRH2', 'CR2'] else -1, 1)
+    model['InvPow3'] = ROOT.RooGenericPdf("model_background_InvPow3", "model_background_InvPow3", f"TMath::Power(1 + @1*@0/{energy}, @2 + @3*@0/{energy})", ROOT.RooArgList(fit_mass, p1['InvPow3'], p2['InvPow3'], p3['InvPow3']))
 
     # Make a RooCategory object: this will control which PDF is "active"
     category = ROOT.RooCategory(f"pdfindex_{region}", "Index of Pdf which is active")
@@ -474,7 +486,7 @@ def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650
     models = ROOT.RooArgList()
 
     # Fit models
-    for k in ['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3']:
+    for k in ['ExPow1', 'ExPow2', 'DiJet2', 'DiJet3', 'InvPow2', 'InvPow3']:
         model[k].fitTo(data_region, ROOT.RooFit.SumW2Error(True))
         result[k] = model[k].fitTo(data_region, ROOT.RooFit.SumW2Error(True), Save=True)
         p1[k].setConstant(True)
@@ -485,7 +497,7 @@ def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650
         models.add(model[k])
         plot_b_only_fit(candidates=[k], model=model, result=result, fit_variable=fit_mass, data=data_region, region=region, x_min=fit_range_low, x_max=fit_range_high-300, bin_width=50)
 
-    plot_b_only_fit(candidates=['expow1', 'expow2', 'dijet2', 'dijet3', 'invpow2', 'invpow3'], model=model, result=result, fit_variable=fit_mass, data=data_region, region=region, x_min=fit_range_low, x_max=fit_range_high-300, bin_width=50)
+    plot_b_only_fit(candidates=['ExPow1', 'ExPow2', 'DiJet2', 'DiJet3', 'InvPow2', 'InvPow3'], model=model, result=result, fit_variable=fit_mass, data=data_region, region=region, x_min=fit_range_low, x_max=fit_range_high-300, bin_width=50)
 
     # Build the RooMultiPdf object
     multipdf = ROOT.RooMultiPdf(f"multipdf_{region}", f"multipdf_{region}", category, models)
@@ -557,7 +569,7 @@ if __name__ == "__main__":
                 (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
             )"""
             if year=='Run2':
-                #fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=signal_region.split('_')[0], cut=SR_cut)
+                fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=signal_region.split('_')[0], cut=SR_cut)
                 fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=CR, cut=CR_cut)
 
             for mass in signal_mass:
