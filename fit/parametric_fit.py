@@ -425,6 +425,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     os.makedirs('../postprocess/plots/fit/Run2', exist_ok=True)
     plot_name = candidates[0] if len(candidates)==1 else len(candidates)
     canvas.SaveAs(f"../postprocess/plots/fit/Run2/b_only_fit_{region}_{plot_name}.pdf")
+    canvas.SaveAs(f"../postprocess/plots/fit/Run2/b_only_fit_{region}_{plot_name}.C")
 
 
 def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650, fit_range_high=4000):
