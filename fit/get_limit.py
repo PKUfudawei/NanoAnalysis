@@ -54,6 +54,7 @@ def convert_to_csv(in_dir='./limit_results', year='Run2', signal_region='SRH', w
         'limit_m2': [rate_limit[m]['limit_m2'] * xsec[m] for m in range(700, 3501, 50)],
         'limit_exp': [rate_limit[m]['exp'] * xsec[m] for m in range(700, 3501, 50)],
         'limit_obs': [rate_limit[m]['obs'] * xsec[m] for m in range(700, 3501, 50)],
+        'nominal_cross-section': [xsec[m] for m in range(700, 3501, 50)],
     }
 
     df = pd.DataFrame(limit).round(4)
