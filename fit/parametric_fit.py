@@ -200,7 +200,7 @@ def fit_signal(in_file, out_dir, mass, signal_region, cut, year='Run2', fit_rang
     norm = {
         year: get_signal_norm(file_path=in_file.replace('Run2', year), mass=mass, cut=cut, x_min=x_min, x_max=x_max) for year in ['2016', '2017', '2018']
     }
-    norm['norm_Run2'] = sum(list(norm.values()))
+    norm['Run2'] = sum(list(norm.values()))
     signal_norm = {
         year: ROOT.RooRealVar(f"model_bbgamma_{SR}_norm_{year}", f"Number of signal events in {SR} {year}", norm[year], 0, 5*norm[year])
         for year in norm
