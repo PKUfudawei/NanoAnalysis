@@ -200,6 +200,7 @@ def fit_signal(in_file, out_dir, mass, signal_region, cut, year='Run2', fit_rang
     norm = {
         year: get_signal_norm(file_path=in_file.replace('Run2', year), mass=mass, cut=cut, x_min=x_min, x_max=x_max) for year in ['2016', '2017', '2018']
     }
+    norm['norm_Run2'] = sum(list(norm.values()))
     signal_norm = {
         year: ROOT.RooRealVar(f"model_bbgamma_{SR}_norm_{year}", f"Number of signal events in {SR} {year}", norm[year], 0, 5*norm[year])
         for year in norm
@@ -332,16 +333,16 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
         df = pd.read_csv(f'./limit_results/limit_{signal_region[:3]+signal_region[4:]}.csv', index_col=0)
         with open(f'workspace/{year}/{signal_mass}/{signal_region}.yaml', 'r') as f:
             info_signal = yaml.safe_load(f)
-        signal_norm = info_signal['norm_2016']+info_signal['norm_2017']+info_signal['norm_2018']
+        signal_norm = info_signal['norm_Run2']
 
         model_signal = load_signal_model(signal_region=signal_region, mass=signal_mass)
         model_signal.plotOn(
-            frame, ROOT.RooFit.LineColor(ROOT.kMagenta), ROOT.RooFit.LineStyle(ROOT.kDashed), ROOT.RooFit.LineWidth(3),
+            frame, ROOT.RooFit.LineColor(ROOT.kMagenta if 'SRH' in signal_region else ROOT.kCyan), ROOT.RooFit.LineStyle(9), ROOT.RooFit.LineWidth(3),
             ROOT.RooFit.Normalization(df['limit_obs'][signal_mass]/df['nominal_cross-section'][signal_mass]*signal_norm/data.sumEntries())
         )
         resonance = "Z'" if 'SRH' in signal_region else 'S'
         frac_width = '0.01%' if 'SRH' in signal_region else '0.014%'
-        legend.AddEntry(frame.getObject(2*len(candidates)+2), f'm_{{{resonance}}} = {signal_mass/1000} TeV, #frac{{#Gamma}}{{m_{{{resonance}}}}} = {frac_width}, #sigma = obs. limit', "l")
+        legend.AddEntry(frame.getObject(2*len(candidates)+2), f'm_{{{resonance}}} = {signal_mass/1000} TeV, #frac{{#Gamma}}{{m_{{{resonance}}}}} = {frac_width}', "l")
 
     canvas.SetLogy()
     frame.SetMinimum(7e-2)
