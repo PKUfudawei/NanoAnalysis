@@ -333,7 +333,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
         df = pd.read_csv(f'./limit_results/limit_{signal_region[:3]+signal_region[4:]}.csv', index_col=0)
         with open(f'workspace/{year}/{signal_mass}/{signal_region}.yaml', 'r') as f:
             info_signal = yaml.safe_load(f)
-        signal_norm = info_signal['norm_Run2']
+        signal_norm = info_signal['norm_2016']+info_signal['norm_2017']+info_signal['norm_2018']
 
         model_signal = load_signal_model(signal_region=signal_region, mass=signal_mass)
         model_signal.plotOn(
