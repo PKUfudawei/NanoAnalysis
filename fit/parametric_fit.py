@@ -87,6 +87,8 @@ def plot_signal_fit(model, result, fit_variable, mc, signal_region, mass, x_max,
     hpull = frame.pullHist(frame.getObject(0).GetName(), frame.getObject(1).GetName())
     for i in range(hpull.GetN()):
         hpull.SetPointError(i, 0, 0, 1, 1)  # Set x-error to 0 and y-error to 1
+    hpull.SetMarkerSize(0.8)
+    hpull.SetLineWidth(2)
 
     #frame.SetMinimum(1e-2)
     frame.SetMaximum(1.2*frame.GetMaximum())
@@ -289,17 +291,19 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
 
     # Draw the main plot in the top pad
     top_pad.cd()
+    top_pad.SetTickx(1)
+    top_pad.SetTicky(1)
     top_pad.SetLogy()
     top_pad.SetBottomMargin(0.02)  # Reduce margin between pads
 
-    legend = ROOT.TLegend(0.42, 0.45, 0.89, 0.89)
+    legend = ROOT.TLegend(0.42, 0.47, 0.89, 0.88)
     legend.SetBorderSize(0)
     legend.SetNColumns(1)
     #legend.SetTextSize(0.03)
     legend.SetFillColorAlpha(ROOT.kWhite, 0)
 
     frame = fit_variable.frame(x_min, x_max, bins)
-    data.plotOn(frame, ROOT.RooFit.MarkerColor(ROOT.kBlack), ROOT.RooFit.LineColor(ROOT.kWhite), ROOT.RooFit.DrawOption("PZ"))
+    data.plotOn(frame, ROOT.RooFit.MarkerColor(ROOT.kBlack), ROOT.RooFit.LineColor(ROOT.kWhite), ROOT.RooFit.DrawOption("PZ"), ROOT.RooFit.MarkerSize(0.7), ROOT.RooFit.LineWidth(2))
 
     # Create a histogram from the RooDataSet
     hist_data = data.createHistogram(f"hist_data", fit_variable, ROOT.RooFit.Binning(bins, x_min, x_max))
@@ -308,6 +312,8 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     for i in range(data_hist.GetN()):
         y = data_hist.GetPointY(i)
         data_hist.SetPointError(i, 0, 0, Garwood_eror(y, 'down'), Garwood_eror(y, 'up'))
+    data_hist.SetMarkerSize(0.8)
+    data_hist.SetLineWidth(2)
 
     # plot errorbands, len(candiates)
     for k in candidates:
@@ -322,12 +328,14 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     frame.addPlotable(data_hist, "PZ")
     legend.AddEntry(frame.getObject(2*len(candidates)+1), "Data", "ep")
     for i, k in enumerate(candidates):
-        legend.AddEntry(frame.getObject(len(candidates)+1+i), f"{k}, #chi^{{2}}/NDF = {chi_square[i]:.3f}", "l")
-    legend.AddEntry(frame.getObject(1), '#sigma_{SYS}', "f")
+        legend.AddEntry(frame.getObject(len(candidates)+1+i), f"{k}, #chi^{{2}}/ndf = {chi_square[i]:.2f}", "l")
+    legend.AddEntry(frame.getObject(1), '#sigma_{sys}', "f")
 
     hpull = frame.pullHist(frame.getObject(2*len(candidates)+1).GetName(), frame.getObject(len(candidates)+1+best_fit_index).GetName())
     for i in range(hpull.GetN()):
         hpull.SetPointError(i, 0, 0, 1, 1)  # Set x-error to 0 and y-error to 1
+    hpull.SetMarkerSize(0.8)
+    hpull.SetLineWidth(2)
     
     if signal_mass is not None:
         df = pd.read_csv(f'./limit_results/limit_{signal_region[:3]+signal_region[4:]}.csv', index_col=0)
@@ -352,8 +360,8 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     frame.GetXaxis().SetTickLength(0.02)
     frame.GetXaxis().SetTitleSize(0)
 
-    frame.GetYaxis().SetLabelSize(0.05)
-    frame.GetYaxis().SetTitleSize(0.06)
+    frame.GetYaxis().SetLabelSize(0.046)
+    frame.GetYaxis().SetTitleSize(0.05)
     frame.GetYaxis().SetTitle(f"Events / {bin_width} GeV")
     frame.GetYaxis().SetTitleOffset(0.8)
     frame.Draw()
@@ -388,10 +396,12 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     # Draw the pull plot in the bottom pad
 
     bottom_pad.cd()
+    bottom_pad.SetTickx(1)
+    bottom_pad.SetTicky(1)
     bottom_pad.SetTopMargin(0.04)  # Reduce margin between pads
     bottom_pad.SetBottomMargin(0.25)  # Increase bottom margin for labels
 
-    bottom_legend = ROOT.TLegend(0.55, 0.68, 0.89, 0.99)
+    bottom_legend = ROOT.TLegend(0.55, 0.7, 0.87, 0.97)
     bottom_legend.SetBorderSize(0)
     bottom_legend.SetFillColorAlpha(ROOT.kWhite, 0)
     bottom_legend.SetNColumns(1)
@@ -440,8 +450,8 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
 
     # Calculate and plot the pulls for best-fit function
     pull_frame.addPlotable(hpull, "PZ")
-    bottom_legend.AddEntry(pull_frame.getObject(2), '(Data - '+candidates[best_fit_index]+') / #sigma_{STAT}', "ep")
-    bottom_legend.AddEntry(pull_frame.getObject(0), '#sigma_{SYS} / #sigma_{STAT}', "f")
+    bottom_legend.AddEntry(pull_frame.getObject(2), '(Data - '+candidates[best_fit_index]+') / #sigma_{stat}', "ep")
+    bottom_legend.AddEntry(pull_frame.getObject(0), '#sigma_{sys} / #sigma_{stat}', "f")
 
     # plot
     pull_frame.SetTitle("")
