@@ -373,11 +373,11 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     cms_label.SetTextSize(0.08)
     cms_label.DrawLatex(0.12, 0.82, "CMS")
 
-    preliminary_label = ROOT.TLatex()
-    preliminary_label.SetNDC(True)
-    preliminary_label.SetTextFont(52)
-    preliminary_label.SetTextSize(0.05)
-    preliminary_label.DrawLatex(0.25, 0.82, "Preliminary")
+    #preliminary_label = ROOT.TLatex()
+    #preliminary_label.SetNDC(True)
+    #preliminary_label.SetTextFont(52)
+    #preliminary_label.SetTextSize(0.05)
+    #preliminary_label.DrawLatex(0.25, 0.82, "Preliminary")
 
     region_label = ROOT.TLatex()
     region_label.SetNDC(True)
