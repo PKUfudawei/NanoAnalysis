@@ -321,7 +321,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
 
     chi_square = {}
     for i, k in enumerate(candidates):
-        model[k].plotOn(frame, LineColor=line_color[k], Name=k)
+        model[k].plotOn(frame, LineColor=line_color[k], Name=k, LineStyle=i)
         chi_square[i] = frame.chiSquare(len(result[k].floatParsFinal()))
     best_fit_index = min(chi_square, key=lambda i: chi_square[i])
 
