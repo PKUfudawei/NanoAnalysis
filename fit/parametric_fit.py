@@ -321,7 +321,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
 
     chi_square = {}
     for i, k in enumerate(candidates):
-        model[k].plotOn(frame, LineColor=line_color[k], Name=k, LineStyle=i)
+        model[k].plotOn(frame, LineColor=line_color[k], Name=k, LineStyle=i+2)
         chi_square[i] = frame.chiSquare(len(result[k].floatParsFinal()))
     best_fit_index = min(chi_square, key=lambda i: chi_square[i])
 
@@ -345,7 +345,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
 
         model_signal = load_signal_model(signal_region=signal_region, mass=signal_mass)
         model_signal.plotOn(
-            frame, ROOT.RooFit.LineColor(ROOT.kMagenta if 'SRH' in signal_region else ROOT.kCyan), ROOT.RooFit.LineStyle(9), ROOT.RooFit.LineWidth(3),
+            frame, ROOT.RooFit.LineColor(ROOT.kMagenta if 'SRH' in signal_region else ROOT.kCyan), ROOT.RooFit.LineStyle(1), ROOT.RooFit.LineWidth(3),
             ROOT.RooFit.Normalization(df['limit_obs'][signal_mass]/df['nominal_cross-section'][signal_mass]*signal_norm/data.sumEntries())
         )
         resonance = "Z'" if 'SRH' in signal_region else 'S'
