@@ -45,7 +45,7 @@ def main() -> None:
 
     ## processing
     events = NanoEventsFactory.from_root(
-        {file: 'Events'}, schemaclass=NanoAODSchema, delayed=False
+        {file: 'Events'}, schemaclass=NanoAODSchema, mode='eager',
     ).events()
     p = Processor(outdir=args.outdir, mode=args.mode, param_dir=args.param_dir)
     cutflow = p.process(events)

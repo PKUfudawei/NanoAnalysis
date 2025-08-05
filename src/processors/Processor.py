@@ -420,7 +420,7 @@ class Processor(processor.ProcessorABC):
             self.object['AK8jet'] = self.AK8jet_correction(self.object['AK8jet'])
 
         # Higgs candidate
-        qcd= 'inclParTMDV2_probQCD'
+        qcd = 'inclParTMDV2_probQCD'
         self.object['AK8jet']['QCD_score'] = (
             self.object['AK8jet'][f'{qcd}b']+self.object['AK8jet'][f'{qcd}bb']+self.object['AK8jet'][f'{qcd}c']+
             self.object['AK8jet'][f'{qcd}cc']+self.object['AK8jet'][f'{qcd}others']
@@ -446,7 +446,7 @@ class Processor(processor.ProcessorABC):
         # Photon-Jet Delta_R
         self.variable['photon-jet_deltaR'] = self.object['AK8jet'].delta_r(self.object['photon'])
         self.pass_cut(name='photon-jet_cleaning', cut=(self.variable['photon-jet_deltaR']>1.1))
-        self.object['photon+jet'] = self.object['AK8jet'].add(self.object['photon'])
+        self.object['photon+jet'] = self.object['AK8jet'] + self.object['photon']
         
         #pj_pair = ak.cartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
         #pj_index_pair = ak.argcartesian({'photon': self.object['photon'], 'AK8jet': self.object['AK8jet']}, axis=1, nested=False)
