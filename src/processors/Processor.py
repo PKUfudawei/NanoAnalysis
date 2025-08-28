@@ -358,7 +358,7 @@ class Processor(processor.ProcessorABC):
                 self.variable[f'photon+jet_mass_{i}_{direction}'] = self.object['photon+jet'].mass
             self.object['photon']['pt'] = self.object['photon'].pt_nominal
 
-        self.object['photon+jet'] = self.object['AK8jet'].add(self.object['photon'])
+        self.object['photon+jet'] = self.object['AK8jet'] + self.object['photon']
 
         # Event-level
         self.variable['PUWeight_nominal'], self.variable['PUWeight_up'], self.variable['PUWeight_down'] = self.calculate_PU_SF()    
