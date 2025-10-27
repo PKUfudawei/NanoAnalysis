@@ -463,7 +463,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     pull_frame.GetXaxis().SetTitle("m_{j#gamma} (GeV)")
     pull_frame.GetXaxis().SetTitleSize(0.12)
     pull_frame.GetXaxis().SetLabelSize(0.1)
-    pull_frame.GetXaxis().SetTitleOffset(0.85)
+    pull_frame.GetXaxis().SetTitleOffset(0.8)
     pull_frame.Draw()
     pull_frame.SetMaximum(+3.5)
     pull_frame.SetMinimum(-3.5)
