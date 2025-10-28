@@ -257,7 +257,7 @@ def fit_signal(in_file, out_dir, mass, signal_region, cut, year='Run2', fit_rang
 
 
 def load_signal_model(signal_region, mass, year='Run2'):
-    sig_model_dir = os.path.join('workspace', year, str(mass))
+    sig_model_dir = os.path.join(args.out_dir, year, str(mass))
     file_path = os.path.join(sig_model_dir, f'{signal_region}.root')
     f = ROOT.TFile(file_path)
     if not f or f.IsZombie():
@@ -329,7 +329,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     legend.AddEntry(frame.getObject(2*len(candidates)+1), "Data", "ep")
     for i, k in enumerate(candidates):
         legend.AddEntry(frame.getObject(len(candidates)+1+i), f"{k}, #chi^{{2}}/ndf = {chi_square[i]:.2f}", "l")
-    legend.AddEntry(frame.getObject(1), '#sigma_{sys}', "f")
+    legend.AddEntry(frame.getObject(1), '#sigma_{syst}', "f")
 
     hpull = frame.pullHist(frame.getObject(2*len(candidates)+1).GetName(), frame.getObject(len(candidates)+1+best_fit_index).GetName())
     for i in range(hpull.GetN()):
@@ -339,7 +339,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     
     if signal_mass is not None:
         df = pd.read_csv(f'./limit_results/limit_{signal_region[:3]+signal_region[4:]}.csv', index_col=0)
-        with open(f'workspace/{year}/{signal_mass}/{signal_region}.yaml', 'r') as f:
+        with open(os.path.join(args.out_dir, f'{year}/{signal_mass}/{signal_region}.yaml'), 'r') as f:
             info_signal = yaml.safe_load(f)
         signal_norm = info_signal['norm_2016']+info_signal['norm_2017']+info_signal['norm_2018']
 
@@ -451,7 +451,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     # Calculate and plot the pulls for best-fit function
     pull_frame.addPlotable(hpull, "PZ")
     bottom_legend.AddEntry(pull_frame.getObject(2), '(Data - '+candidates[best_fit_index]+') / #sigma_{stat}', "ep")
-    bottom_legend.AddEntry(pull_frame.getObject(0), '#sigma_{sys} / #sigma_{stat}', "f")
+    bottom_legend.AddEntry(pull_frame.getObject(0), '#sigma_{syst} / #sigma_{stat}', "f")
 
     # plot
     pull_frame.SetTitle("")
@@ -463,7 +463,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     pull_frame.GetXaxis().SetTitle("m_{j#gamma} (GeV)")
     pull_frame.GetXaxis().SetTitleSize(0.12)
     pull_frame.GetXaxis().SetLabelSize(0.1)
-    pull_frame.GetXaxis().SetTitleOffset(0.8)
+    pull_frame.GetXaxis().SetTitleOffset(0.95)
     pull_frame.Draw()
     pull_frame.SetMaximum(+3.5)
     pull_frame.SetMinimum(-3.5)
