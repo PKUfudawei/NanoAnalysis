@@ -7,26 +7,26 @@ ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetCanvasColor(ROOT.kWhite)
 ROOT.gStyle.SetLineWidth(2)
 
-c = ROOT.TCanvas("c", "", 800, 470)
+c = ROOT.TCanvas("c", "", 800, 800)
 c.SetFrameFillStyle(0)
 c.SetFrameBorderMode(0)
 c.SetFrameLineColor(0)
 c.SetFrameLineWidth(0)
 
 # Adjust margins
-c.SetLeftMargin(0.08)
+c.SetLeftMargin(0.15)
 c.SetRightMargin(0.01)  # Reduced right margin
-c.SetTopMargin(0.08)
-c.SetBottomMargin(0.18)
+c.SetTopMargin(0.01)
+c.SetBottomMargin(0.12)
 
 # Axis range adjusted to remove space on the right
 h = ROOT.TH1F("h", "", 1, 40, 172.5)
 h.SetMinimum(0.76)
 h.SetMaximum(1.018)
-h.GetXaxis().SetTitleSize(0.058)
-h.GetXaxis().SetLabelSize(0.058)
-h.GetYaxis().SetTitleSize(0.058)
-h.GetYaxis().SetLabelSize(0.058)
+h.GetXaxis().SetTitleSize(0.04)
+h.GetXaxis().SetLabelSize(0.04)
+h.GetYaxis().SetTitleSize(0.04)
+h.GetYaxis().SetLabelSize(0.04)
 h.GetYaxis().SetNdivisions(503)
 h.GetXaxis().SetTickLength(0.02)
 h.GetYaxis().SetTickLength(0.02)
@@ -48,21 +48,21 @@ y_arrow.Draw()
 # Axis labels
 x_label = ROOT.TLatex()
 x_label.SetTextFont(42)
-x_label.SetTextSize(0.075)
+x_label.SetTextSize(0.05)
 x_label.SetTextAlign(21)
-x_label.DrawLatex(160, 0.7, "m_{j} (GeV)")
+x_label.DrawLatex(160, 0.732, "m_{j} (GeV)")
 
 y_label = ROOT.TLatex()
 y_label.SetTextFont(42)
-y_label.SetTextSize(0.075)
+y_label.SetTextSize(0.06)
 y_label.SetTextAlign(30)
 y_label.SetTextAngle(90)
-y_label.DrawLatex(31, 1.01, "Xbb score")
+y_label.DrawLatex(26, 1.01, "Xbb score")
 
 # Custom tick label at y = 0.98
 y_tick = ROOT.TLatex();
 y_tick.SetTextFont(42);
-y_tick.SetTextSize(0.053);
+y_tick.SetTextSize(0.04);
 y_tick.SetTextAlign(32);
 y_tick.DrawLatex(39.5, 0.98, "0.98");
 
@@ -83,7 +83,6 @@ for xval in [50, 80, 110, 150]:
     l.Draw()
     lines.append(l)
 
-c.SetLeftMargin(0.09);
 
 # Boxes for different regions
 cr2_box_A = ROOT.TBox(50, 0.98, 80, 1.0);     cr2_box_A.SetFillColorAlpha(17, 0.5); cr2_box_A.SetLineWidth(0); cr2_box_A.Draw("same")
@@ -98,7 +97,7 @@ SRH1_box  = ROOT.TBox(110, 0.8, 150, 0.98);    SRH1_box.SetFillColorAlpha(8, 0.5
 # Region labels
 text = ROOT.TLatex()
 text.SetTextFont(42)
-text.SetTextSize(0.077)
+text.SetTextSize(0.055)
 text.SetTextAlign(22)
 text.DrawLatex(65, 0.99, "CR2");  text.DrawLatex(162, 0.99, "CR2")
 text.DrawLatex(95, 0.99, "SRZ2"); text.DrawLatex(130, 0.99, "SRH2")
