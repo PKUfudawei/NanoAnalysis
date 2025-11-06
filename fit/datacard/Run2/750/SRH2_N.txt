@@ -23,6 +23,7 @@ lumi_13TeV_1718 	lnN	-   1.006   1.002	-
 lumi_13TeV_correlated	lnN	1.006   1.009   1.020	-
 L1_prefiring		lnN	1.004	1.004	1.004	-
 pile-up		lnN	1.01	1.01	1.01	-
+HLT_efficiency  lnN 1.01    1.01    1.01    -
 photon_ID		lnN	1.044	1.044	1.044	-
 CSEV		lnN	1.001	1.001	1.001	-
 tagger_SF_sys_SRH2		lnN	1.054	1.101	1.053	-
