@@ -300,7 +300,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     top_pad.SetLogy()
     top_pad.SetBottomMargin(0.02)  # Reduce margin between pads
 
-    legend = ROOT.TLegend(0.45, 0.47, 0.85, 0.88)
+    legend = ROOT.TLegend(0.45, 0.43, 0.88, 0.89)
     legend.SetBorderSize(0)
     legend.SetNColumns(1)
     legend.SetTextFont(42)
@@ -327,14 +327,15 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     chi_square = {}
     for i, k in enumerate(candidates):
         model[k].plotOn(frame, LineColor=line_color[k], Name=k, LineStyle=line_style[k])
-        chi_square[i] = frame.chiSquare(len(result[k].floatParsFinal()))
-    best_fit_index = min(chi_square, key=lambda i: chi_square[i])
-    best_fit = candidates[best_fit_index]
+        chi_square[k] = frame.chiSquare(len(result[k].floatParsFinal()))
+    best_fit = min(chi_square, key=lambda k: chi_square[k])
+    best_fit_index = line_style[best_fit] - 1
 
     frame.addPlotable(data_hist, "PZ")
     legend.AddEntry(frame.getObject(2*len(candidates)+1), "Data", "ep")
     for i, k in enumerate(candidates):
-        legend.AddEntry(frame.getObject(len(candidates)+1+i), f'f_{{{line_style[k]-1}}},  #chi^{{2}}/ndf = {chi_square[i]:.2f}', "l")
+        separator = {0: '  ', 1: '  ', 2: '    ', 3: '    ', 4: ' ', 5: ' '}
+        legend.AddEntry(frame.getObject(len(candidates)+1+i), f'f_{{{line_style[k]-1}}} ({k}),{separator[i]}#chi^{{2}}/ndf = {chi_square[k]:.2f}', "l")
     legend.AddEntry(frame.getObject(1), '#sigma_{syst}', "f")
 
     hpull = frame.pullHist(frame.getObject(2*len(candidates)+1).GetName(), best_fit)
@@ -378,9 +379,9 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     cms_label = ROOT.TLatex()
     cms_label.SetNDC(True)
     cms_label.SetTextFont(61)
-    cms_label.SetTextSize(0.08)
-    cms_label.SetTextAlign(33)
-    cms_label.DrawLatex(0.26, 0.88, "CMS")
+    cms_label.SetTextSize(0.09)
+    cms_label.SetTextAlign(13)
+    cms_label.DrawLatex(0.16, 0.88, "CMS")
 
     #preliminary_label = ROOT.TLatex()
     #preliminary_label.SetNDC(True)
@@ -393,7 +394,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     region_label.SetTextFont(42)
     region_label.SetTextSize(0.06)
     region_label.SetTextAlign(33)
-    region_label.DrawLatex(0.25, 0.8, region)
+    region_label.DrawLatex(0.28, 0.79, region)
 
     lumi_label = ROOT.TLatex()
     lumi_label.SetNDC(True)
@@ -460,14 +461,13 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
 
     # Add a horizontal line at y = 0 for reference
     zero_line = ROOT.TLine(x_min, 0, x_max, 0)
-    zero_line.SetLineColor(line_color[best_fit])
-    zero_line.SetLineStyle(line_style[best_fit])
+    zero_line.SetLineColor(ROOT.kBlack)
     zero_line.SetLineWidth(2)
     pull_frame.addObject(zero_line)
 
     # Calculate and plot the pulls for best-fit function
     pull_frame.addPlotable(hpull, "PZ")
-    bottom_legend.AddEntry(pull_frame.getObject(1), f'Best fit: f_{{{best_fit_index}}}', "l")
+    bottom_legend.AddEntry(pull_frame.getObject(1), f'Best fit: f_{{{best_fit_index}}} ({best_fit})', "l")
     bottom_legend2.AddEntry(pull_frame.getObject(0), '#sigma_{syst} / #sigma_{stat}', "f")
 
     # plot
@@ -487,10 +487,10 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     bottom_legend.Draw()
     bottom_legend2.Draw()
     
-    os.makedirs('../postprocess/plots/fit/Run2', exist_ok=True)
-    plot_name = candidates[0] if len(candidates)==1 else len(candidates)
-    canvas.SaveAs(f"../postprocess/plots/fit/Run2/b_only_fit_{region}_{plot_name}.pdf")
-    canvas.SaveAs(f"../postprocess/plots/fit/Run2/b_only_fit_{region}_{plot_name}.C")
+    func = candidates[0] if len(candidates)==1 else 'all'
+    os.makedirs(f'../postprocess/plots/fit/Run2/{func}', exist_ok=True)
+    canvas.SaveAs(f"../postprocess/plots/fit/Run2/{func}/b_only_fit_{region}.pdf")
+    canvas.SaveAs(f"../postprocess/plots/fit/Run2/{func}/b_only_fit_{region}.C")
 
 
 def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650, fit_range_high=4000, signal_mass=None, x_max=None):
@@ -504,6 +504,8 @@ def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650
 
     # Define mass and weight variables
     fit_mass = ROOT.RooRealVar("fit_mass", "fit_mass", 1500, fit_range_low, fit_range_high)
+    CoM_energy = 13e3
+    fit_mass_scaled = ROOT.RooFormulaVar("fit_mass_scaled", f"fit_mass/{CoM_energy}", ROOT.RooArgList(fit_mass))
     weight = ROOT.RooRealVar("weight", "weight", 1, -10, 1e3)
     jet_mass = ROOT.RooRealVar("jet_mass", "jet_mass", 125, 0, 9999)
     tagger = ROOT.RooRealVar("tagger", "tagger", 0.5, 0, 2)
@@ -513,38 +515,37 @@ def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650
 
     ## Multiple background models
     model, p1, p2, p3, result = {}, {}, {}, {}, {}
-    energy = 1e2
 
     # ExPow1 model
-    p1['ExPow1'] = ROOT.RooRealVar("p1_ExPow1", "p1_ExPow1", -1, -10, 0)
-    model['ExPow1'] = ROOT.RooGenericPdf("model_background_ExPow1", "model_background_ExPow1", f"TMath::Power(@0/{energy}, @1)", ROOT.RooArgList(fit_mass, p1['ExPow1']))
+    p1['ExPow1'] = ROOT.RooRealVar("p1_ExPow1", "p1_ExPow1", -1, -100, 0)
+    model['ExPow1'] = ROOT.RooGenericPdf("model_background_ExPow1", "model_background_ExPow1", "TMath::Power(@0, @1)", ROOT.RooArgList(fit_mass_scaled, p1['ExPow1']))
 
     # ExPow2 model
-    p1['ExPow2'] = ROOT.RooRealVar("p1_ExPow2", "p1_ExPow2", -1, -10, 0)
-    p2['ExPow2'] = ROOT.RooRealVar("p2_ExPow2", "p2_ExPow2", -1e-2, -0.5, 0.5)
-    model['ExPow2'] = ROOT.RooGenericPdf("model_background_ExPow2", "model_background_ExPow2", f"TMath::Power(@0/{energy}, @1) * TMath::Exp(@2 * @0/{energy})", ROOT.RooArgList(fit_mass, p1['ExPow2'], p2['ExPow2']))
+    p1['ExPow2'] = ROOT.RooRealVar("p1_ExPow2", "p1_ExPow2", -1, -100, 0)
+    p2['ExPow2'] = ROOT.RooRealVar("p2_ExPow2", "p2_ExPow2", -1, -100, 10)
+    model['ExPow2'] = ROOT.RooGenericPdf("model_background_ExPow2", "model_background_ExPow2", "TMath::Power(@0, @1) * TMath::Exp(@2 * @0)", ROOT.RooArgList(fit_mass_scaled, p1['ExPow2'], p2['ExPow2']))
 
     # DiJet2 model
-    p1['DiJet2'] = ROOT.RooRealVar("p1_DiJet2", "p1_DiJet2", -2, -10, 0)
-    p2['DiJet2'] = ROOT.RooRealVar("p2_DiJet2", "p2_DiJet2", -1, -5, 0)
-    model['DiJet2'] = ROOT.RooGenericPdf("model_background_DiJet2", "model_background_DiJet2", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}))", ROOT.RooArgList(fit_mass, p1['DiJet2'], p2['DiJet2']))
+    p1['DiJet2'] = ROOT.RooRealVar("p1_DiJet2", "p1_DiJet2", -1, -100, 0)
+    p2['DiJet2'] = ROOT.RooRealVar("p2_DiJet2", "p2_DiJet2", 0, -1e-1, 1e-1)
+    model['DiJet2'] = ROOT.RooGenericPdf("model_background_DiJet2", "model_background_DiJet2", "TMath::Power(@0, @1 + @2 * TMath::Log(@0))", ROOT.RooArgList(fit_mass_scaled, p1['DiJet2'], p2['DiJet2']))
 
     # DiJet3 model
-    p1['DiJet3'] = ROOT.RooRealVar("p1_DiJet3", "p1_DiJet3", -1, -10, 0)
-    p2['DiJet3'] = ROOT.RooRealVar("p2_DiJet3", "p2_DiJet3", -1, -5, 0)
-    p3['DiJet3'] = ROOT.RooRealVar("p3_DiJet3", "p3_DiJet3", -1e-3, -0.1, 0.1)
-    model['DiJet3'] = ROOT.RooGenericPdf("model_background_DiJet3", "model_background_DiJet3", f"TMath::Power(@0/{energy}, @1 + @2 * TMath::Log(@0/{energy}) + @3 * TMath::Power(TMath::Log(@0/{energy}), 2))", ROOT.RooArgList(fit_mass, p1['DiJet3'], p2['DiJet3'], p3['DiJet3']))
+    p1['DiJet3'] = ROOT.RooRealVar("p1_DiJet3", "p1_DiJet3", -1, -100, 0)
+    p2['DiJet3'] = ROOT.RooRealVar("p2_DiJet3", "p2_DiJet3", 0, -1e-1, 1e-1)
+    p3['DiJet3'] = ROOT.RooRealVar("p3_DiJet3", "p3_DiJet3", 0, -1e-1, 1e-1)
+    model['DiJet3'] = ROOT.RooGenericPdf("model_background_DiJet3", "model_background_DiJet3", "TMath::Power(@0, @1 + @2 * TMath::Log(@0) + @3 * TMath::Power(TMath::Log(@0), 2))", ROOT.RooArgList(fit_mass_scaled, p1['DiJet3'], p2['DiJet3'], p3['DiJet3']))
 
     # InvPow2 model
-    p1['InvPow2'] = ROOT.RooRealVar("p1_InvPow2", "p1_InvPow2", 0.01, 0, 0.1)
-    p2['InvPow2'] = ROOT.RooRealVar("p2_InvPow2", "p2_InvPow2", -100, -1000, 0)
-    model['InvPow2'] = ROOT.RooGenericPdf("model_background_InvPow2", "model_background_InvPow2", f"TMath::Power(1 + @1*@0/{energy}, @2)", ROOT.RooArgList(fit_mass, p1['InvPow2'], p2['InvPow2']))
+    p1['InvPow2'] = ROOT.RooRealVar("p1_InvPow2", "p1_InvPow2", 0.6, 0.1, 1)
+    p2['InvPow2'] = ROOT.RooRealVar("p2_InvPow2", "p2_InvPow2", -50, -100, -10)
+    model['InvPow2'] = ROOT.RooGenericPdf("model_background_InvPow2", "model_background_InvPow2", "TMath::Power(1 + @1*@0, @2)", ROOT.RooArgList(fit_mass_scaled, p1['InvPow2'], p2['InvPow2']))
 
     # InvPow3 model
-    p1['InvPow3'] = ROOT.RooRealVar("p1_InvPow3", "p1_InvPow3", 0.01, 0, 0.1)
-    p2['InvPow3'] = ROOT.RooRealVar("p2_InvPow3", "p2_InvPow3", -100, -1000, 0)
-    p3['InvPow3'] = ROOT.RooRealVar("p3_InvPow3", "p3_InvPow3", 0.01, 0, 0.1)
-    model['InvPow3'] = ROOT.RooGenericPdf("model_background_InvPow3", "model_background_InvPow3", f"TMath::Power(1 + @1*@0/{energy}, @2 + @3*@0/{energy})", ROOT.RooArgList(fit_mass, p1['InvPow3'], p2['InvPow3'], p3['InvPow3']))
+    p1['InvPow3'] = ROOT.RooRealVar("p1_InvPow3", "p1_InvPow3", 0.6, 0.1, 2)
+    p2['InvPow3'] = ROOT.RooRealVar("p2_InvPow3", "p2_InvPow3", -50, -150, -10)
+    p3['InvPow3'] = ROOT.RooRealVar("p3_InvPow3", "p3_InvPow3", -1e-3, -0.3, 0.3)
+    model['InvPow3'] = ROOT.RooGenericPdf("model_background_InvPow3", "model_background_InvPow3", "TMath::Power(1 + @1*@0, @2 + @3*@0)", ROOT.RooArgList(fit_mass_scaled, p1['InvPow3'], p2['InvPow3'], p3['InvPow3']))
 
     # Make a RooCategory object: this will control which PDF is "active"
     category = ROOT.RooCategory(f"pdfindex_{region}", "Index of Pdf which is active")
@@ -585,8 +586,6 @@ def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650
     w_bkg = ROOT.RooWorkspace(f"workspace_{region}", f"workspace_{region}")
     getattr(w_bkg, "import")(data_region)
     getattr(w_bkg, "import")(multipdf)
-    for k in model:
-        getattr(w_bkg, "import")(model[k])
     getattr(w_bkg, "import")(background_norm)
     w_bkg.Print()
     w_bkg.Write()
@@ -640,5 +639,5 @@ if __name__ == "__main__":
 
         if 'SRH' in signal_region:
             fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=CR, cut=CR_cut)
-        #if '_N' in signal_region:
-        #    fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=signal_region.split('_')[0], cut=SR_cut,signal_mass=(1550 if 'SRH' in signal_region else 1750))
+        if '_N' in signal_region:
+            fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=signal_region.split('_')[0], cut=SR_cut,signal_mass=(1550 if 'SRH' in signal_region else 1750))
