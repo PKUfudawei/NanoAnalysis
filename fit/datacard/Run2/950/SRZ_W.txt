@@ -1,0 +1,52 @@
+Combination of SRZ1_W=SRZ1_W.txt  SRZ2_W=SRZ2_W.txt
+imax 2 number of bins
+jmax 3 number of processes minus 1
+kmax 25 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes background    SRZ1_W        workspace/Run2/data_SRZ1.root workspace_SRZ1:multipdf_SRZ1
+shapes bbgamma_2016  SRZ1_W        workspace/Run2/950/SRZ1_W.root workspace_signal:model_bbgamma_SRZ1
+shapes bbgamma_2017  SRZ1_W        workspace/Run2/950/SRZ1_W.root workspace_signal:model_bbgamma_SRZ1
+shapes bbgamma_2018  SRZ1_W        workspace/Run2/950/SRZ1_W.root workspace_signal:model_bbgamma_SRZ1
+shapes data_obs      SRZ1_W        workspace/Run2/data_SRZ1.root workspace_SRZ1:data_SRZ1
+shapes background    SRZ2_W        workspace/Run2/data_SRZ2.root workspace_SRZ2:multipdf_SRZ2
+shapes bbgamma_2016  SRZ2_W        workspace/Run2/950/SRZ2_W.root workspace_signal:model_bbgamma_SRZ2
+shapes bbgamma_2017  SRZ2_W        workspace/Run2/950/SRZ2_W.root workspace_signal:model_bbgamma_SRZ2
+shapes bbgamma_2018  SRZ2_W        workspace/Run2/950/SRZ2_W.root workspace_signal:model_bbgamma_SRZ2
+shapes data_obs      SRZ2_W        workspace/Run2/data_SRZ2.root workspace_SRZ2:data_SRZ2
+----------------------------------------------------------------------------------------------------------------------------------
+bin          SRZ1_W         SRZ2_W       
+observation  -1             -1           
+----------------------------------------------------------------------------------------------------------------------------------
+bin                                         SRZ1_W         SRZ1_W         SRZ1_W         SRZ1_W         SRZ2_W         SRZ2_W         SRZ2_W         SRZ2_W       
+process                                     bbgamma_2016   bbgamma_2017   bbgamma_2018   background     bbgamma_2016   bbgamma_2017   bbgamma_2018   background   
+process                                     -2             -1             0              1              -2             -1             0              1            
+rate                                        9.0046555853   9.9721496225   13.7366171758  1              4.9189430657   5.7126046645   8.5055301908   1            
+----------------------------------------------------------------------------------------------------------------------------------
+Br_Zbb                  lnN                 0.9874/1.0124  0.9874/1.0124  0.9874/1.0124  -              0.9874/1.0124  0.9874/1.0124  0.9874/1.0124  -            
+CSEV                    lnN                 1.001          1.001          1.001          -              1.001          1.001          1.001          -            
+HLT_efficiency          lnN                 1.01           1.01           1.01           -              1.01           1.01           1.01           -            
+L1_prefiring            lnN                 1.004          1.004          1.004          -              1.004          1.004          1.004          -            
+lumi_13TeV_1718         lnN                 -              1.006          1.002          -              -              1.006          1.002          -            
+lumi_13TeV_2016         lnN                 1.01           -              -              -              1.01           -              -              -            
+lumi_13TeV_2017         lnN                 -              1.02           -              -              -              1.02           -              -            
+lumi_13TeV_2018         lnN                 -              -              1.015          -              -              -              1.015          -            
+lumi_13TeV_correlated   lnN                 1.006          1.009          1.02           -              1.006          1.009          1.02           -            
+photon_ID               lnN                 1.044          1.044          1.044          -              1.044          1.044          1.044          -            
+pile-up                 lnN                 1.01           1.01           1.01           -              1.01           1.01           1.01           -            
+tagger_SF_stat_2016_SRZ1   lnN              1.013          -              -              -              -              -              -              -            
+tagger_SF_stat_2016_SRZ2   lnN              -              -              -              -              1.041          -              -              -            
+tagger_SF_stat_2017_SRZ1   lnN              -              1.009          -              -              -              -              -              -            
+tagger_SF_stat_2017_SRZ2   lnN              -              -              -              -              -              1.033          -              -            
+tagger_SF_stat_2018_SRZ1   lnN              -              -              1.013          -              -              -              -              -            
+tagger_SF_stat_2018_SRZ2   lnN              -              -              -              -              -              -              1.033          -            
+tagger_SF_sys_SRZ1      lnN                 1.039          1.056          1.036          -              -              -              -              -            
+tagger_SF_sys_SRZ2      lnN                 -              -              -              -              1.053          1.064          1.045          -            
+JES_2016      param  0.0 1.0
+JES_2017      param  0.0 1.0
+JES_2018      param  0.0 1.0
+JER           param  0.0 1.0
+PES           param  0.0 1.0
+PER           param  0.0 1.0
+pdfindex_SRZ1  discrete
+pdfindex_SRZ2  discrete
+theory group = Br_Zbb

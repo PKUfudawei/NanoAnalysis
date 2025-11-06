@@ -1,7 +1,7 @@
 Combination of SRH1_N=SRH1_N.txt  SRH2_N=SRH2_N.txt
 imax 2 number of bins
 jmax 3 number of processes minus 1
-kmax 26 number of nuisance parameters
+kmax 27 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
 shapes background    SRH1_N        workspace/Run2/data_SRH1.root workspace_SRH1:multipdf_SRH1
 shapes bbgamma_2016  SRH1_N        workspace/Run2/3400/SRH1_N.root workspace_signal:model_bbgamma_SRH1
@@ -24,6 +24,7 @@ rate                                        0.5996014921   0.5651075944   0.8852
 ----------------------------------------------------------------------------------------------------------------------------------
 Br_Hbb                  lnN                 0.9874/1.0124  0.9874/1.0124  0.9874/1.0124  -              0.9874/1.0124  0.9874/1.0124  0.9874/1.0124  -            
 CSEV                    lnN                 1.001          1.001          1.001          -              1.001          1.001          1.001          -            
+HLT_efficiency          lnN                 1.01           1.01           1.01           -              1.01           1.01           1.01           -            
 L1_prefiring            lnN                 1.004          1.004          1.004          -              1.004          1.004          1.004          -            
 PDF                     lnN                 1.03           1.03           1.03           -              1.045          1.045          1.045          -            
 QCD_scale               lnN                 1.012          1.012          1.012          -              1.012          1.012          1.012          -            
@@ -50,4 +51,4 @@ PES           param  0.0 1.0
 PER           param  0.0 1.0
 pdfindex_SRH1  discrete
 pdfindex_SRH2  discrete
-theory group = QCD_scale PDF Br_Hbb
+theory group = Br_Hbb QCD_scale PDF

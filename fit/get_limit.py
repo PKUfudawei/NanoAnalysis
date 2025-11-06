@@ -7,7 +7,7 @@ def run_rate_limit(input_dir='./', year='Run2', out_dir='./limit_results', width
     datacard_dir = os.path.join(input_dir, 'datacard', year)
     for mass in os.listdir(datacard_dir):
         for f in set(os.listdir(os.path.join(datacard_dir, mass))):
-            if (width is not None and not f.endswith(f'_{width}.txt')) or not f.endswith(f'.txt'):
+            if (width is not None and not f.endswith(f'_{width}.txt')) or not f.endswith(f'.txt') or '1' in f or '2' in f:
                 continue
             file = os.path.join('datacard', year, mass, f)
             print(file)
@@ -65,14 +65,14 @@ def convert_to_csv(in_dir='./limit_results', year='Run2', signal_region='SRH', w
 if __name__ == "__main__":
     run_rate_limit()
     convert_to_csv(signal_region='SRH', width='N')
-    convert_to_csv(signal_region='SRH1', width='N')
-    convert_to_csv(signal_region='SRH2', width='N')
+    #convert_to_csv(signal_region='SRH1', width='N')
+    #convert_to_csv(signal_region='SRH2', width='N')
     convert_to_csv(signal_region='SRZ', width='N')
-    convert_to_csv(signal_region='SRZ1', width='N')
-    convert_to_csv(signal_region='SRZ2', width='N')
+    #convert_to_csv(signal_region='SRZ1', width='N')
+    #convert_to_csv(signal_region='SRZ2', width='N')
     convert_to_csv(signal_region='SRZ', width='W')
-    convert_to_csv(signal_region='SRZ1', width='W')
-    convert_to_csv(signal_region='SRZ2', width='W')
+    #convert_to_csv(signal_region='SRZ1', width='W')
+    #convert_to_csv(signal_region='SRZ2', width='W')
     convert_to_csv(signal_region='SRZ', width='VW')
-    convert_to_csv(signal_region='SRZ1', width='VW')
-    convert_to_csv(signal_region='SRZ2', width='VW')
+    #convert_to_csv(signal_region='SRZ1', width='VW')
+    #convert_to_csv(signal_region='SRZ2', width='VW')
