@@ -362,6 +362,8 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     canvas.SetLogy()
     frame.SetMinimum(7e-2)
     frame.SetMaximum(3e2)
+    #frame.SetMinimum(0)
+    #frame.SetMaximum(250)
     frame.SetTitle("")
     frame.GetXaxis().SetLabelSize(0)  # Hide x-axis labels
     frame.GetXaxis().SetTickLength(0.02)
