@@ -363,7 +363,10 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     frame.SetMinimum(7e-2)
     frame.SetMaximum(3e2)
     #frame.SetMinimum(0)
-    #frame.SetMaximum(250)
+    #if '2' in region:
+    #    frame.SetMaximum(20)
+    #else:
+    #    frame.SetMaximum(250)
     frame.SetTitle("")
     frame.GetXaxis().SetLabelSize(0)  # Hide x-axis labels
     frame.GetXaxis().SetTickLength(0.02)
@@ -414,14 +417,14 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     bottom_pad.SetTopMargin(0.04)  # Reduce margin between pads
     bottom_pad.SetBottomMargin(0.25)  # Increase bottom margin for labels
 
-    bottom_legend = ROOT.TLegend(0.55, 0.8, 0.85, 0.92)
+    bottom_legend = ROOT.TLegend(0.5, 0.8, 0.8, 0.92)
     bottom_legend.SetBorderSize(0)
     bottom_legend.SetFillColorAlpha(ROOT.kWhite, 0)
     bottom_legend.SetNColumns(1)
     bottom_legend.SetTextFont(42)
     #bottom_legend.SetTextSize(0.1)
 
-    bottom_legend2 = ROOT.TLegend(0.55, 0.3, 0.85, 0.42)
+    bottom_legend2 = ROOT.TLegend(0.56, 0.3, 0.86, 0.42)
     bottom_legend2.SetBorderSize(0)
     bottom_legend2.SetFillColorAlpha(ROOT.kWhite, 0)
     bottom_legend2.SetNColumns(1)
@@ -457,6 +460,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
         x = x_centers[i]
         roohist.addBinWithXYError(x, 0, bin_width/2, bin_width/2, error_sys_over_stats[i], error_sys_over_stats[i])
     roohist.SetFillColor(ROOT.kGray)
+    roohist.SetLineColor(0)
     #roohist.SetFillStyle(3001)
     #roohist.SetMarkerSize(0)
     pull_frame.addPlotable(roohist, "E2")
@@ -469,7 +473,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
 
     # Calculate and plot the pulls for best-fit function
     pull_frame.addPlotable(hpull, "PZ")
-    bottom_legend.AddEntry(pull_frame.getObject(1), f'Best fit: f_{{{best_fit_index}}} ({best_fit})', "l")
+    bottom_legend.AddEntry(pull_frame.getObject(1), f'Best fit: f_{{{best_fit_index}}} ({best_fit})', '')
     bottom_legend2.AddEntry(pull_frame.getObject(0), '#sigma_{syst} / #sigma_{stat}', "f")
 
     # plot
