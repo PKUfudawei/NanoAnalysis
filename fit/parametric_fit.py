@@ -275,7 +275,7 @@ def load_signal_model(signal_region, mass, year='Run2'):
 def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min=650, x_max=4000, bin_width=50, signal_mass=None):
     line_color = {'ExPow1': ROOT.kViolet+2, 'ExPow2': ROOT.kBlue, 'DiJet2': ROOT.kAzure+1, 'DiJet3': ROOT.kGreen+2, 'InvPow2': ROOT.kOrange-3, 'InvPow3': ROOT.kRed+1}
     #line_color = {'ExPow1': ROOT.kRed, 'ExPow2': ROOT.kGreen+1, 'DiJet2': ROOT.kYellow+2, 'DiJet3': ROOT.kCyan, 'InvPow2':ROOT.kBlue, 'InvPow3': ROOT.kMagenta}
-    line_style = {'ExPow1': 2, 'ExPow2': 3, 'DiJet2': 4, 'DiJet3': 5, 'InvPow2': 6, 'InvPow3': 7}
+    line_style = {'DiJet2': 2, 'DiJet3': 3, 'ExPow1': 4, 'ExPow2': 5, 'InvPow2': 6, 'InvPow3': 7}
 
     ## plot
     bins = int((x_max-x_min)/bin_width)
@@ -304,8 +304,15 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     legend.SetBorderSize(0)
     legend.SetNColumns(1)
     legend.SetTextFont(42)
-    #legend.SetTextSize(0.03)
+    legend.SetTextSize(0.042)
     legend.SetFillColorAlpha(ROOT.kWhite, 0)
+
+    legend2 = ROOT.TLegend(0.7, 0.43, 0.88, 0.89)
+    legend2.SetBorderSize(0)
+    legend2.SetNColumns(1)
+    legend2.SetTextFont(42)
+    legend2.SetTextSize(0.042)
+    legend2.SetFillColorAlpha(ROOT.kWhite, 0)
 
     frame = fit_variable.frame(x_min, x_max, bins)
     data.plotOn(frame, ROOT.RooFit.MarkerColor(ROOT.kBlack), ROOT.RooFit.LineColor(ROOT.kWhite), ROOT.RooFit.DrawOption("PZ"), ROOT.RooFit.MarkerSize(0.7), ROOT.RooFit.LineWidth(2))
@@ -333,10 +340,12 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
 
     frame.addPlotable(data_hist, "PZ")
     legend.AddEntry(frame.getObject(2*len(candidates)+1), "Data", "ep")
+    legend2.AddEntry(frame.getObject(2*len(candidates)+1), ' ', '')
     for i, k in enumerate(candidates):
-        separator = {0: '  ', 1: '  ', 2: '    ', 3: '    ', 4: ' ', 5: ' '}
-        legend.AddEntry(frame.getObject(len(candidates)+1+i), f'f_{{{line_style[k]-1}}} ({k}),{separator[i]}#chi^{{2}}/ndf = {chi_square[k]:.2f}', "l")
+        legend.AddEntry(frame.getObject(len(candidates)+1+i), f'f_{{{line_style[k]-1}}} ({k}),', 'l')
+        legend2.AddEntry(frame.getObject(len(candidates)+1+i), f'#chi^{{2}}/NDF = {chi_square[k]:.2f}', '')
     legend.AddEntry(frame.getObject(1), '#sigma_{syst}', "f")
+    legend2.AddEntry(frame.getObject(1), ' ', '')
 
     hpull = frame.pullHist(frame.getObject(2*len(candidates)+1).GetName(), best_fit)
     for i in range(hpull.GetN()):
@@ -357,16 +366,14 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
         )
         resonance = "Z'" if 'SRH' in signal_region else 'S'
         frac_width = '0.01%' if 'SRH' in signal_region else '0.014%'
-        legend.AddEntry(frame.getObject(2*len(candidates)+2), f'm_{{{resonance}}} = {signal_mass/1000} TeV, #frac{{#Gamma}}{{m_{{{resonance}}}}} = {frac_width}', "l")
+        legend.AddEntry(frame.getObject(2*len(candidates)+2), f'm_{{{resonance}}} = {signal_mass/1000} TeV,', 'l')
+        legend2.AddEntry(frame.getObject(2*len(candidates)+2), f'#frac{{#Gamma}}{{m_{{{resonance}}}}} = {frac_width}', '')
 
     canvas.SetLogy()
     frame.SetMinimum(7e-2)
     frame.SetMaximum(3e2)
     #frame.SetMinimum(0)
-    #if '2' in region:
-    #    frame.SetMaximum(20)
-    #else:
-    #    frame.SetMaximum(250)
+    #frame.SetMaximum(20) if '2' in region else frame.SetMaximum(250)
     frame.SetTitle("")
     frame.GetXaxis().SetLabelSize(0)  # Hide x-axis labels
     frame.GetXaxis().SetTickLength(0.02)
@@ -380,6 +387,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     frame.GetYaxis().SetTitleOffset(0.92)
     frame.Draw()
     legend.Draw()
+    legend2.Draw()
 
     cms_label = ROOT.TLatex()
     cms_label.SetNDC(True)
@@ -559,7 +567,7 @@ def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650
     models = ROOT.RooArgList()
 
     # Fit models
-    for k in ['ExPow1', 'ExPow2', 'DiJet2', 'DiJet3', 'InvPow2', 'InvPow3']:
+    for k in ['DiJet2', 'DiJet3', 'ExPow1', 'ExPow2', 'InvPow2', 'InvPow3']:
         model[k].fitTo(data_region, ROOT.RooFit.SumW2Error(True))
         result[k] = model[k].fitTo(data_region, ROOT.RooFit.SumW2Error(True), Save=True)
         p1[k].setConstant(True)
@@ -570,7 +578,7 @@ def fit_background(in_file, out_dir, region, cut, year='Run2', fit_range_low=650
         models.add(model[k])
         plot_b_only_fit(candidates=[k], model=model, result=result, fit_variable=fit_mass, data=data_region, region=region, x_min=fit_range_low, x_max=fit_range_high, signal_mass=signal_mass)
 
-    plot_b_only_fit(candidates=['ExPow1', 'ExPow2', 'DiJet2', 'DiJet3', 'InvPow2', 'InvPow3'], model=model, result=result, fit_variable=fit_mass, data=data_region, region=region, x_min=fit_range_low, x_max=fit_range_high, signal_mass=signal_mass)
+    plot_b_only_fit(candidates=['DiJet2', 'DiJet3', 'ExPow1', 'ExPow2', 'InvPow2', 'InvPow3'], model=model, result=result, fit_variable=fit_mass, data=data_region, region=region, x_min=fit_range_low, x_max=fit_range_high, signal_mass=signal_mass)
 
     # Build the RooMultiPdf object
     multipdf = ROOT.RooMultiPdf(f"multipdf_{region}", f"multipdf_{region}", category, models)
