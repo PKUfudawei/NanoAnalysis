@@ -1,0 +1,37 @@
+###### Pileup reweighing
+## 
+####################################################
+## Places to find UL files:
+## NanoAOD tools: https://github.com/cms-nanoAOD/nanoAOD-tools/tree/master/python/postprocessing/data/pileup
+## Get central PU data and MC profiles and calculate reweighting
+## Using the current UL recommendations in:
+##   https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData
+##   - 2018: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PileUp/UltraLegacy/
+##   - 2017: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PileUp/UltraLegacy/
+##   - 2016: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/PileUp/UltraLegacy/
+##
+## MC histograms from:
+##    https://github.com/CMS-LUMI-POG/PileupTools/
+
+mc:
+    '2016pre': 2016pre/pileup_2016BF.root
+    '2016post': 2016post/pileup_2016GH.root
+    '2017': 2017/pileup_2017_shifts.root
+    '2018': 2018/pileup_2018_shifts.root
+data:
+    '2016pre':
+        down:     2016pre/PileupHistogram-goldenJSON-13tev-2016-66000ub-99bins.root      
+        nominal:  2016pre/PileupHistogram-goldenJSON-13tev-2016-69200ub-99bins.root
+        up:       2016pre/PileupHistogram-goldenJSON-13tev-2016-72400ub-99bins.root
+    '2016post':
+        down:     2016post/PileupHistogram-goldenJSON-13tev-2016-66000ub-99bins.root      
+        nominal:  2016post/PileupHistogram-goldenJSON-13tev-2016-69200ub-99bins.root
+        up:       2016post/PileupHistogram-goldenJSON-13tev-2016-72400ub-99bins.root
+    '2017':
+        down:     2017/PileupHistogram-goldenJSON-13tev-2017-66000ub-99bins.root      
+        nominal:  2017/PileupHistogram-goldenJSON-13tev-2017-69200ub-99bins.root
+        up:       2017/PileupHistogram-goldenJSON-13tev-2017-72400ub-99bins.root      
+    '2018':
+        down:     2018/PileupHistogram-goldenJSON-13tev-2018-66000ub-99bins.root      
+        nominal:  2018/PileupHistogram-goldenJSON-13tev-2018-69200ub-99bins.root
+        up:       2018/PileupHistogram-goldenJSON-13tev-2018-72400ub-99bins.root

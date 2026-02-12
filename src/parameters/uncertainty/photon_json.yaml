@@ -1,0 +1,10 @@
+SF:
+    '2016pre': /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/EGM/2016preVFP_UL/photon.json.gz
+    '2016post': /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/EGM/2016postVFP_UL/photon.json.gz
+    '2017': /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/EGM/2017_UL/photon.json.gz
+    '2018': /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/EGM/2018_UL/photon.json.gz
+Scale:
+    '2016pre': 2016pre/EGM_ScaleUnc.json.gz
+    '2016post': 2016post/EGM_ScaleUnc.json.gz
+    '2017': 2017/EGM_ScaleUnc.json.gz
+    '2018': 2018/EGM_ScaleUnc.json.gz

@@ -1,0 +1,42 @@
+'2016pre':
+    - goodVertices
+    - globalSuperTightHalo2016Filter
+    - HBHENoiseFilter
+    - HBHENoiseIsoFilter
+    - EcalDeadCellTriggerPrimitiveFilter
+    - BadPFMuonFilter
+    - BadPFMuonDzFilter
+    - eeBadScFilter
+    - hfNoisyHitsFilter
+'2016post':
+    - goodVertices
+    - globalSuperTightHalo2016Filter
+    - HBHENoiseFilter
+    - HBHENoiseIsoFilter
+    - EcalDeadCellTriggerPrimitiveFilter
+    - BadPFMuonFilter
+    - BadPFMuonDzFilter
+    - eeBadScFilter
+    - hfNoisyHitsFilter
+'2017':
+    - goodVertices
+    - globalSuperTightHalo2016Filter
+    - HBHENoiseFilter
+    - HBHENoiseIsoFilter
+    - EcalDeadCellTriggerPrimitiveFilter
+    - BadPFMuonFilter
+    - BadPFMuonDzFilter
+    - hfNoisyHitsFilter
+    - eeBadScFilter
+    - ecalBadCalibFilter
+'2018':
+    - goodVertices
+    - globalSuperTightHalo2016Filter
+    - HBHENoiseFilter
+    - HBHENoiseIsoFilter
+    - EcalDeadCellTriggerPrimitiveFilter
+    - BadPFMuonFilter
+    - BadPFMuonDzFilter
+    - hfNoisyHitsFilter
+    - eeBadScFilter
+    - ecalBadCalibFilter
