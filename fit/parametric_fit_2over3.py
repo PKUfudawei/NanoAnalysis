@@ -81,13 +81,13 @@ def plot_signal_fit(model, result, fit_variable, mc, signal_region, mass, x_max,
     mc.plotOn(frame, DrawOption="PZ", MarkerColor="kRed", LineColor="kRed", XErrorSize=0, LineWidth=2)
 
     # plot errorbands
-    model.plotOn(frame, LineColor='kBlue')
+    model.plotOn(frame, LineColor='kGreen')
     chi2_ndf = frame.chiSquare(len(result.floatParsFinal()))
     legend.AddEntry(frame.getObject(0), "signal MC", "ep")
     if 'H' in signal_region:
-        legend.AddEntry(frame.getObject(1), "DCB fit within m_{Z'} #pm #frac{1}{3} m_{Z'}", "l")
+        legend.AddEntry(frame.getObject(1), "DCB fit within m_{Z'} #pm #frac{2}{3} m_{Z'}", "l")
     elif 'Z' in signal_region:
-        legend.AddEntry(frame.getObject(1), "DCB fit within m_{S} #pm #frac{1}{3} m_{S}", "l")
+        legend.AddEntry(frame.getObject(1), "DCB fit within m_{S} #pm #frac{2}{3} m_{S}", "l")
     hpull = frame.pullHist(frame.getObject(0).GetName(), frame.getObject(1).GetName())
     for i in range(hpull.GetN()):
         hpull.SetPointError(i, 0, 0, 1, 1)  # Set x-error to 0 and y-error to 1
@@ -118,7 +118,7 @@ def plot_signal_fit(model, result, fit_variable, mc, signal_region, mass, x_max,
     pull_frame = fit_variable.frame(x_min, x_max, bins)
     # Add a horizontal line at y = 0 for reference
     zero_line = ROOT.TLine(x_min, 0, x_max, 0)
-    zero_line.SetLineColor(ROOT.kBlue)
+    zero_line.SetLineColor(ROOT.kGreen)
     zero_line.SetLineWidth(3)
     pull_frame.addObject(zero_line)
 
@@ -150,7 +150,7 @@ def fit_signal(in_file, out_dir, mass, signal_region, cut, year='Run2', fit_rang
     os.makedirs(sig_model_dir, exist_ok=True)
 
     SR, width = signal_region.split('_')
-    k = 0.2 if width=='N' else 0.3 if width=='W' else 0.35
+    k = 0.2 if width=='N' else 0.65 if width=='W' else 0.65
     x_max = fit_range_high if (1+k)*mass > fit_range_high else round((1+k)*mass/50)*50
     x_min = fit_range_low if (1-k)*mass < fit_range_low else round((1-k)*mass/50)*50
 
@@ -253,7 +253,7 @@ def fit_signal(in_file, out_dir, mass, signal_region, cut, year='Run2', fit_rang
         yaml.dump(info, f)
 
     bin_width_list = [5, 10, 25, 50]
-    bin_width = bin_width_list[0]
+    bin_width = bin_width_list[-1]
     for bw in bin_width_list:
         if (x_max-x_min)/bw<=50:
             bin_width = bw
