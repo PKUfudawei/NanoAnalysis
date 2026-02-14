@@ -4,14 +4,11 @@ Universe = vanilla
 +JobFlavour = "testmatch"
 JobBatchName = SRH_N
 
-# EXECUTABLE is the program your job will run
 Executable = Execute.sh
 Arguments = ./input/$(mass)/SRH_N.txt
 
-# Setting the should_transfer_files command explicitly
 should_transfer_files   = YES
 transfer_input_files    = ../datacards/input
-
 when_to_transfer_output = ON_EXIT_OR_EVICT
 Error = $(Process).err
 Output = $(Process).out
@@ -22,8 +19,6 @@ transfer_output_files   = ""
 output_destination = root://eosuser.cern.ch//eos/user/d/dfu/B2G-24-007/hybridnew_limits/SRH_N
 MY.XRDCP_CREATE_DIR = True
 
-# If one wants to use local condor batch to analyze user/group skims 
-# located at remote sites. The only modification needed is adding
 use_x509userproxy       = true
 # For OLDER versions of HTCondor (before 8.0.0), you need
 # x509userproxy           = ~/.proxy
