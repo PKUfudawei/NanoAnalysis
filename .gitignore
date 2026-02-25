@@ -64,5 +64,6 @@ plots/
 test/
 .nfs*
 *.out
+*.log
 combine_logger.out
 workspace/

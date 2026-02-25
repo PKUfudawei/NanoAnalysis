@@ -12,7 +12,7 @@ transfer_input_files    = ../datacards/input
 when_to_transfer_output = ON_EXIT_OR_EVICT
 Error = $(Process).err
 Output = $(Process).out
-#Log = $(Cluster).log
+Log = $(Process).log
 
 transfer_output_files   = ""
 #transfer_output_remaps  = "out.parquet = ${mode}-$(Process).parquet; out.yaml = ${mode}-$(Process).yaml"
