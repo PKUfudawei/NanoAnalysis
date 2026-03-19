@@ -11,7 +11,7 @@ ROOT.gStyle.SetOptTitle(0)
 def parse_commandline():
     parser = argparse.ArgumentParser(description='parametric fitting')
     parser.add_argument('-i', '--in_dir', help='To specify the input directory', type=str, default='/eos/user/d/dfu/B2G-24-007/slimmed_ntuple/')
-    parser.add_argument('-o', '--out_dir', help='To specify the input directory', type=str, default='./workspace/')
+    parser.add_argument('-o', '--out_dir', help='To specify the input directory', type=str, default='/eos/user/d/dfu/B2G-24-007/workspace/')
     parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2016', '2017', '2018', 'Run2'), default='Run2')
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--signal_region', help='To specify which signal region', choices=('SRH1_N', 'SRH2_N', 'SRZ1_N', 'SRZ2_N', 'SRZ1_W', 'SRZ2_W', 'SRZ1_VW', 'SRZ2_VW', 'CR1', 'CR2', None), default=None)
@@ -349,8 +349,8 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     legend.AddEntry(frame.getObject(2*len(candidates)+1), "Data", "ep")
     legend2.AddEntry(frame.getObject(2*len(candidates)+1), ' ', '')
     for i, k in enumerate(candidates):
-        legend.AddEntry(frame.getObject(len(candidates)+1+i), f'f_{{{line_style[k]-1}}} ({k}),', 'l')
-        legend2.AddEntry(frame.getObject(len(candidates)+1+i), f'#chi^{{2}}/NDF = {chi_square[k]:.2f}', '')
+        legend.AddEntry(frame.getObject(len(candidates)+1+i), f'f_{{{line_style[k]-1}}} ({k})', 'l')
+        legend2.AddEntry(frame.getObject(len(candidates)+1+i), ' ', '') #f'#chi^{{2}}/NDF = {chi_square[k]:.2f}', '')
     legend.AddEntry(frame.getObject(1), '#sigma_{syst}', "f")
     legend2.AddEntry(frame.getObject(1), ' ', '')
 
@@ -361,7 +361,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     hpull.SetLineWidth(2)
 
     if signal_mass is not None:
-        df = pd.read_csv(f'./limit_results/limit_{signal_region[:3]+signal_region[4:]}.csv', index_col=0)
+        df = pd.read_csv(f'./datacards/limit_results/limit_{signal_region[:3]+signal_region[4:]}.csv', index_col=0)
         with open(os.path.join(args.out_dir, f'{year}/{signal_mass}/{signal_region}.yaml'), 'r') as f:
             info_signal = yaml.safe_load(f)
         signal_norm = info_signal['norm_2016']+info_signal['norm_2017']+info_signal['norm_2018']
@@ -658,7 +658,7 @@ if __name__ == "__main__":
                 out_dir=args.out_dir, mass=mass, signal_region=signal_region, cut=SR_cut
             )
 
-        #if 'SRH' in signal_region:
-        #    fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=CR, cut=CR_cut)
-        #if '_N' in signal_region:
-        #    fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=signal_region.split('_')[0], cut=SR_cut,signal_mass=(1550 if 'SRH' in signal_region else 1750))
+        if 'SRH' in signal_region:
+            fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=CR, cut=CR_cut)
+        if '_N' in signal_region:
+            fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=signal_region.split('_')[0], cut=SR_cut,signal_mass=(1550 if 'SRH' in signal_region else 1750))
