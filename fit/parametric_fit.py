@@ -657,8 +657,9 @@ if __name__ == "__main__":
                 in_file=os.path.join(args.in_dir, year, str(mass), f'{signal_region[:3]+signal_region[4:]}.root'),
                 out_dir=args.out_dir, mass=mass, signal_region=signal_region, cut=SR_cut
             )
-
+"""
         if 'SRH' in signal_region:
             fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=CR, cut=CR_cut)
         if '_N' in signal_region:
             fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=signal_region.split('_')[0], cut=SR_cut,signal_mass=(1550 if 'SRH' in signal_region else 1750))
+"""
