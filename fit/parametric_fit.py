@@ -11,7 +11,7 @@ ROOT.gStyle.SetOptTitle(0)
 def parse_commandline():
     parser = argparse.ArgumentParser(description='parametric fitting')
     parser.add_argument('-i', '--in_dir', help='To specify the input directory', type=str, default='/eos/user/d/dfu/B2G-24-007/slimmed_ntuple/')
-    parser.add_argument('-o', '--out_dir', help='To specify the input directory', type=str, default='/eos/user/d/dfu/B2G-24-007/workspace/')
+    parser.add_argument('-o', '--out_dir', help='To specify the output directory', type=str, default='/eos/user/d/dfu/B2G-24-007/workspace/')
     parser.add_argument('-y', '--year', help='To specify which year', choices=('2016pre', '2016post', '2016', '2017', '2018', 'Run2'), default='Run2')
     parser.add_argument('-m', '--signal_mass', help='To specify the mass of signal resonance', type=int, default=None)
     parser.add_argument('-R', '--signal_region', help='To specify which signal region', choices=('SRH1_N', 'SRH2_N', 'SRZ1_N', 'SRZ2_N', 'SRZ1_W', 'SRZ2_W', 'SRZ1_VW', 'SRZ2_VW', 'CR1', 'CR2', None), default=None)
@@ -128,12 +128,12 @@ def plot_signal_fit(model, result, fit_variable, mc, signal_region, mass, x_max,
     # plot
     pull_frame.SetTitle("")
     pull_frame.GetYaxis().SetLabelSize(0.1)
-    pull_frame.GetYaxis().SetTitle("(MC #minus fit) / #sigma_{STAT}")
+    pull_frame.GetYaxis().SetTitle("(MC #minus fit) / #it{#sigma}_{STAT}")
     pull_frame.GetYaxis().SetTitleOffset(0.32)
     pull_frame.GetYaxis().SetTitleSize(0.12)
 
     pull_frame.GetXaxis().SetLabelSize(0.09)
-    pull_frame.GetXaxis().SetTitle('m_{j#gamma} (GeV)')
+    pull_frame.GetXaxis().SetTitle('#it{m}_{j#gamma} (GeV)')
     pull_frame.GetXaxis().SetTitleSize(0.12)
     pull_frame.GetXaxis().SetTitleOffset(0.9)
     pull_frame.Draw()
@@ -351,7 +351,7 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     for i, k in enumerate(candidates):
         legend.AddEntry(frame.getObject(len(candidates)+1+i), f'f_{{{line_style[k]-1}}} ({k})', 'l')
         legend2.AddEntry(frame.getObject(len(candidates)+1+i), ' ', '') #f'#chi^{{2}}/NDF = {chi_square[k]:.2f}', '')
-    legend.AddEntry(frame.getObject(1), '#sigma_{syst}', "f")
+    legend.AddEntry(frame.getObject(1), '#it{#sigma}_{syst}', "f")
     legend2.AddEntry(frame.getObject(1), ' ', '')
 
     hpull = frame.pullHist(frame.getObject(2*len(candidates)+1).GetName(), best_fit)
@@ -373,8 +373,8 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
         )
         resonance = "Z'" if 'SRH' in signal_region else 'S'
         frac_width = '0.01%' if 'SRH' in signal_region else '0.014%'
-        legend.AddEntry(frame.getObject(2*len(candidates)+2), f'm_{{{resonance}}} = {signal_mass/1000} TeV,', 'l')
-        legend2.AddEntry(frame.getObject(2*len(candidates)+2), f'#frac{{#Gamma}}{{m_{{{resonance}}}}} = {frac_width}', '')
+        legend.AddEntry(frame.getObject(2*len(candidates)+2), f'#it{{m}}_{{{resonance}}} = {signal_mass/1000} TeV,', 'l')
+        legend2.AddEntry(frame.getObject(2*len(candidates)+2), f'#frac{{#it{{#Gamma}}}}{{#it{{m}}_{{{resonance}}}}} = {frac_width}', '')
 
     canvas.SetLogy()
     frame.SetMinimum(7e-2)
@@ -392,6 +392,8 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     frame.GetYaxis().SetTitleSize(0.05)
     frame.GetYaxis().SetTitle(f"Events / {bin_width} GeV")
     frame.GetYaxis().SetTitleOffset(0.92)
+    frame.GetYaxis().CenterTitle()
+
     frame.Draw()
     legend.Draw()
     legend2.Draw()
@@ -489,19 +491,21 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     # Calculate and plot the pulls for best-fit function
     pull_frame.addPlotable(hpull, "PZ")
     bottom_legend.AddEntry(pull_frame.getObject(1), f'Best fit: f_{{{best_fit_index}}} ({best_fit})', '')
-    bottom_legend2.AddEntry(pull_frame.getObject(0), '#sigma_{syst} / #sigma_{stat}', "f")
+    bottom_legend2.AddEntry(pull_frame.getObject(0), '#it{#sigma}_{syst} / #it{#sigma}_{stat}', "f")
 
     # plot
     pull_frame.SetTitle("")
     pull_frame.GetYaxis().SetLabelSize(0.1)
-    pull_frame.GetYaxis().SetTitle("#frac{Data - Fit}{#sigma_{stat}}")
+    pull_frame.GetYaxis().SetTitle("#frac{Data - Fit}{#it{#sigma}_{stat}}")
     pull_frame.GetYaxis().SetTitleOffset(0.35)
     pull_frame.GetYaxis().SetTitleSize(0.12)
+    pull_frame.GetYaxis().CenterTitle()
 
-    pull_frame.GetXaxis().SetTitle("m_{j#gamma} (GeV)")
+    pull_frame.GetXaxis().SetTitle("#it{m}_{j#gamma} (GeV)")
     pull_frame.GetXaxis().SetTitleSize(0.12)
     pull_frame.GetXaxis().SetLabelSize(0.1)
     pull_frame.GetXaxis().SetTitleOffset(0.95)
+    pull_frame.GetXaxis().CenterTitle()
     pull_frame.Draw()
     pull_frame.SetMaximum(+3.5)
     pull_frame.SetMinimum(-3.5)
@@ -652,14 +656,16 @@ if __name__ == "__main__":
             (tagger>{tagger_cut_low}) & (tagger<{tagger_cut_high})
         )"""
 
+        """
         for mass in signal_mass:
             fit_signal(
                 in_file=os.path.join(args.in_dir, year, str(mass), f'{signal_region[:3]+signal_region[4:]}.root'),
                 out_dir=args.out_dir, mass=mass, signal_region=signal_region, cut=SR_cut
             )
-"""
+        """
         if 'SRH' in signal_region:
             fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=CR, cut=CR_cut)
+
         if '_N' in signal_region:
             fit_background(in_file=os.path.join(args.in_dir, year, 'data.root'), out_dir=args.out_dir, region=signal_region.split('_')[0], cut=SR_cut,signal_mass=(1550 if 'SRH' in signal_region else 1750))
-"""
+

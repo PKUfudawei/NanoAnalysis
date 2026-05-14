@@ -15,7 +15,7 @@ c.SetFrameLineWidth(0)
 
 # Adjust margins
 c.SetLeftMargin(0.15)
-c.SetRightMargin(0.01)  # Reduced right margin
+c.SetRightMargin(0.01)
 c.SetTopMargin(0.01)
 c.SetBottomMargin(0.12)
 
@@ -49,15 +49,15 @@ y_arrow.Draw()
 x_label = ROOT.TLatex()
 x_label.SetTextFont(42)
 x_label.SetTextSize(0.05)
-x_label.SetTextAlign(21)
-x_label.DrawLatex(160, 0.732, "m_{j} (GeV)")
+x_label.SetTextAlign(22)  # 22 = 水平居中 + 垂直居中
+x_label.DrawLatex(110, 0.736, "#it{m}_{j} (GeV)")
 
 y_label = ROOT.TLatex()
 y_label.SetTextFont(42)
 y_label.SetTextSize(0.06)
-y_label.SetTextAlign(30)
+y_label.SetTextAlign(22)
 y_label.SetTextAngle(90)
-y_label.DrawLatex(26, 1.01, "Xbb score")
+y_label.DrawLatex(23, 0.889, "Xbb score")
 
 # Custom tick label at y = 0.98
 y_tick = ROOT.TLatex();
@@ -107,7 +107,5 @@ text.DrawLatex(95, 0.90, "SRZ1"); text.DrawLatex(130, 0.90, "SRH1")
 # Save outputs
 c.Draw()
 c.Update()
-#c.Print("Figure_004-a.pdf")
 os.makedirs("./plots", exist_ok=True)
 c.SaveAs("./plots/Figure_004-a.pdf")
-#os.system("display ./Figure_004-a.png &")
