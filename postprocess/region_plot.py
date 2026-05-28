@@ -104,6 +104,14 @@ text.DrawLatex(95, 0.99, "SRZ2"); text.DrawLatex(130, 0.99, "SRH2")
 text.DrawLatex(65, 0.90, "CR1");  text.DrawLatex(162, 0.90, "CR1")
 text.DrawLatex(95, 0.90, "SRZ1"); text.DrawLatex(130, 0.90, "SRH1")
 
+# Subfigure label
+subfig_label = ROOT.TLatex()
+subfig_label.SetTextFont(42)
+subfig_label.SetTextSize(0.06)
+subfig_label.SetTextAlign(11)
+subfig_label.SetNDC(True)
+subfig_label.DrawLatex(0.03, 0.03, "(a)")
+
 # Save outputs
 c.Draw()
 c.Update()

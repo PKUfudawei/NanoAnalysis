@@ -299,6 +299,16 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     bottom_pad.SetRightMargin(0.05)
     bottom_pad.Draw()
 
+    canvas.cd()
+    canvas.SetLogy(False)
+    # Subfig label
+    subfig_label = ROOT.TLatex()
+    subfig_label.SetTextFont(42)
+    subfig_label.SetTextSize(0.06)
+    subfig_label.SetTextAlign(11)
+    subfig_label.SetNDC(True)
+    label_map = {'CR1': '(a)', 'CR2': '(b)', 'SRH1': '(a)', 'SRZ1': '(b)', 'SRH2': '(c)', 'SRZ2': '(d)'}
+    subfig_label.DrawLatex(0.02, 0.02, label_map[region])
 
     # Draw the main plot in the top pad
     top_pad.cd()
@@ -447,6 +457,9 @@ def plot_b_only_fit(candidates, model, result, fit_variable, data, region, x_min
     bottom_legend2.SetNColumns(1)
     bottom_legend2.SetTextFont(42)
     #bottom_legend2.SetTextSize(0.1)
+
+
+
     # Create a frame for the pull plot
     pull_frame = fit_variable.frame(x_min, x_max, bins)
 
